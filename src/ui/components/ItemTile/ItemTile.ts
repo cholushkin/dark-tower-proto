@@ -6,6 +6,7 @@ export function mountItemTile(host: HTMLElement, initialModel: Readonly<ItemTile
   const uid=++serial;
   const abort=new AbortController();
   let model=initialModel;
+  let failedSrc: string | undefined;
   const root=document.createElement('article');
   root.className='dt-item dt-item__tile';
   root.innerHTML=`
@@ -36,14 +37,18 @@ export function mountItemTile(host: HTMLElement, initialModel: Readonly<ItemTile
     a.addEventListener('focus',()=>fit(tip),{signal:abort.signal});
   }
   info.addEventListener('click',event=>{ event.stopPropagation(); infoTip.classList.toggle('dt-item__tooltip--pinned');fit(infoTip); },{signal:abort.signal});
-  texture.addEventListener('error',()=>{texture.hidden=true;emoji.hidden=false;emoji.textContent=model.icon.kind==='texture'?(model.icon.fallbackEmoji??'📦'):model.icon.value;},{signal:abort.signal});
+  texture.addEventListener('error',()=>{failedSrc=texture.getAttribute('src')??undefined;texture.hidden=true;emoji.hidden=false;emoji.textContent=model.icon.kind==='texture'?(model.icon.fallbackEmoji??'📦'):model.icon.value;},{signal:abort.signal});
   function setModel(next:Readonly<ItemTileViewModel>):void {
     model=next;root.dataset.itemId=next.id;name.textContent=next.title;infoTip.textContent=next.description;
     info.setAttribute('aria-label',`About ${next.title}`);
     stack.hidden=!next.stack;
     if(next.stack){stackLabel.textContent=next.stack.label;stackTip.textContent=next.stack.tooltip;stack.setAttribute('aria-label',next.stack.tooltip);}
     if(next.icon.kind==='emoji'){texture.hidden=true;emoji.hidden=false;emoji.textContent=next.icon.value;}
-    else{texture.hidden=false;emoji.hidden=true;texture.alt=next.icon.alt;if(texture.getAttribute('src')!==next.icon.src)texture.src=next.icon.src;}
+    else{
+      const failed=failedSrc===next.icon.src;
+      texture.hidden=failed;emoji.hidden=!failed;emoji.textContent=next.icon.fallbackEmoji??'📦';texture.alt=next.icon.alt;
+      if(texture.getAttribute('src')!==next.icon.src){failedSrc=undefined;texture.src=next.icon.src;}
+    }
   }
   host.replaceChildren(root);setModel(initialModel);
   return {setModel,destroy(){abort.abort();root.remove();}};

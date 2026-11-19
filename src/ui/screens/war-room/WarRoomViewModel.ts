@@ -1,3 +1,4 @@
+import type { ItemIcon } from '../../components/ItemTile/ItemTile.types';
 import type { RoomOverviewViewModel } from '../../components/RoomOverviewCard/RoomOverviewCard.types';
 import type { UpgradeCardViewModel } from '../../components/UpgradeCard/UpgradeCard.types';
 import type { MinionComponentViewModel } from '../../components/MinionComponent/MinionComponent.types';
@@ -5,7 +6,7 @@ import type { MissionPinViewModel, MissionVisualState } from '../../components/M
 
 export interface RewardPreviewViewModel {
   readonly id: string;
-  readonly icon: string;
+  readonly icon: ItemIcon;
   readonly chanceLabel: string;
   readonly label: string;
 }
@@ -41,6 +42,8 @@ export interface WarRoomMinionViewModel {
   readonly unavailableReason?: string;
 }
 export interface WarRoomViewModel {
+  readonly mapImageSrc: string;
+  readonly mapImageAlt: string;
   readonly title: string;
   readonly room: Readonly<RoomOverviewViewModel>;
   readonly upgrades: readonly Readonly<UpgradeCardViewModel>[];

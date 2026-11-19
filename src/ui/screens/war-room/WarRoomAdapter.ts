@@ -5,7 +5,7 @@ import { canLaunchRaid, missionDef, previewRaid } from '../../../systems/world';
 import type { MinionComponentViewModel, MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
 import type { MissionPinViewModel, MissionVisualState } from '../../components/MissionPin/MissionPin.types';
 import { asset } from '../assets';
-import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, missionDifficultyIcons, missionLocationImage, missionWeather, nameFor, pct, portraitFor, roomUpgradeDefs, WORLD_TIER_ICON } from '../shared';
+import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather, nameFor, pct, portraitFor, roomUpgradeDefs, WORLD_TIER_ICON } from '../shared';
 import type { MissionDetailViewModel, RewardPreviewViewModel, WarRoomAction, WarRoomMinionViewModel, WarRoomViewModel } from './WarRoomViewModel';
 
 export interface WarRoomUiState {
@@ -19,27 +19,6 @@ export function createWarRoomUiState(): WarRoomUiState {
 }
 
 const roomImage = asset('war-room.webp');
-
-/** Mission map coordinates are not part of the game config; synthesize deterministic concentric
- * rings (one ring per World Tier) around the tower, matching the authored world-map artwork. */
-function missionsByTier(): Map<number, typeof CONFIG.missions> {
-  const byTier = new Map<number, typeof CONFIG.missions>();
-  for (const mission of CONFIG.missions) {
-    const list = byTier.get(mission.tier) ?? [];
-    list.push(mission);
-    byTier.set(mission.tier, list);
-  }
-  return byTier;
-}
-const MISSIONS_BY_TIER = missionsByTier();
-
-function missionPosition(mission: (typeof CONFIG.missions)[number]): { x: number; y: number } {
-  const tierMissions = MISSIONS_BY_TIER.get(mission.tier)!;
-  const index = tierMissions.indexOf(mission);
-  const angle = (index / tierMissions.length) * 2 * Math.PI - Math.PI / 2;
-  const radius = 12 + mission.tier * 11;
-  return { x: 50 + radius * Math.cos(angle), y: 50 + radius * Math.sin(angle) * 0.75 };
-}
 
 const STATUS_BY_ACTIVITY: Record<string, { label: string; icon: string }> = {
   idle: { label: 'Idle', icon: '◌' },
@@ -89,7 +68,7 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
 
   const rewards: RewardPreviewViewModel[] = mission.loot.map(l => {
     const def = CONFIG.items.find(i => i.id === l.itemId)!;
-    return { id: l.itemId, icon: '📦', chanceLabel: lootIntel >= 2 ? pct(l.chance) : lootIntel >= 1 ? '?' : '', label: lootIntel >= 1 ? def.name : 'Unknown loot' };
+    return { id: l.itemId, icon: lootIntel >= 1 ? itemIconFor(l.itemId) : { kind: 'emoji', value: '📦' }, chanceLabel: lootIntel >= 2 ? pct(l.chance) : lootIntel >= 1 ? '?' : '', label: lootIntel >= 1 ? def.name : 'Unknown loot' };
   });
 
   let statusLabel = 'Ready to raid';
@@ -167,8 +146,10 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
     return buildUpgradeLineViewModel(state, family, icon, title);
   });
 
-  const missions: MissionPinViewModel[] = CONFIG.missions.map(mission => {
-    const pos = missionPosition(mission);
+  const world = CONFIG.worlds.find(world => world.id === CONFIG.startingWorldId);
+  if (!world) throw new Error(`Unknown starting world: ${CONFIG.startingWorldId}`);
+  const missions: MissionPinViewModel[] = world.missions.map(mission => {
+    const pos = mission.mapPosition;
     const visual = missionPinState(state, mission.id);
     const processId = state.missionRunningProcess.get(mission.id);
     const process = state.processes.find(p => p.id === processId);
@@ -204,6 +185,8 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
 
   return {
     title: 'War Room',
+    mapImageSrc: `${import.meta.env.BASE_URL}${world.mapImage}`,
+    mapImageAlt: `${world.name} map`,
     room: {
       id: 'warRoom',
       title: 'War Room',

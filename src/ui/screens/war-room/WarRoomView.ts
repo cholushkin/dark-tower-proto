@@ -29,7 +29,7 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
     <section class="dt-warroom__map-area" aria-label="World map with missions">
       <div class="dt-warroom__map-viewport" tabindex="0" aria-label="Scrollable world map — select a mission pin">
         <div class="dt-warroom__map-stage">
-          <img class="dt-warroom__map-art" src="${import.meta.env.BASE_URL}assets/world-map.jpg" alt="Four circular world tiers surrounding the Dark Tower" draggable="false" />
+          <img class="dt-warroom__map-art" alt="" draggable="false" />
           <div class="dt-warroom__mission-pins"></div>
         </div>
       </div>
@@ -138,6 +138,9 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   function setModel(model: Readonly<WarRoomViewModel>): void {
     if (disposed) return;
     current = model;
+    const mapArt = root.querySelector<HTMLImageElement>('.dt-warroom__map-art')!;
+    if (mapArt.getAttribute('src') !== model.mapImageSrc) mapArt.src = model.mapImageSrc;
+    mapArt.alt = model.mapImageAlt;
     room.setModel(model.room);
     const activeUpgrades = new Set(model.upgrades.map(u => u.id));
     for (const [id, entry] of upgrades) if (!activeUpgrades.has(id)) {entry.handle.destroy();entry.host.remove();upgrades.delete(id);}
@@ -174,7 +177,12 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
       locationInfo.title=mission.description;
       rewardHost.replaceChildren(...mission.rewards.map(reward=>{
         const node=document.createElement('div');node.className='dt-warroom__reward';node.title=reward.label;
-        const art=document.createElement('span');art.className='dt-warroom__reward-icon';art.textContent=reward.icon;
+        const art=document.createElement('span');art.className='dt-warroom__reward-icon';if(reward.icon.kind==='texture'){
+          const image=document.createElement('img');image.src=reward.icon.src;image.alt=reward.icon.alt;
+          const fallback=reward.icon.fallbackEmoji??'📦';
+          image.addEventListener('error',()=>{art.textContent=fallback;},{once:true});
+          art.append(image);
+        }else art.textContent=reward.icon.value;
         const chance=document.createElement('span');chance.textContent=reward.chanceLabel;
         node.append(art,chance);return node;
       }));

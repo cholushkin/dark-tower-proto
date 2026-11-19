@@ -22,6 +22,7 @@ export function mountItemComponent(
   const stackTooltipId = `dt-item-stack-${instanceId}`;
   const abort = new AbortController();
   let model = initialModel;
+  let failedSrc: string | undefined;
   let disposed = false;
 
   // Fixed, trusted DOM skeleton. All ViewModel values use textContent/attributes.
@@ -109,6 +110,7 @@ export function mountItemComponent(
   }
 
   texture.addEventListener('error', () => {
+    failedSrc = texture.getAttribute('src') ?? undefined;
     texture.hidden = true;
     emoji.hidden = false;
     emoji.textContent = model.icon.kind === 'texture' ? (model.icon.fallbackEmoji ?? '📦') : model.icon.value;
@@ -134,11 +136,16 @@ export function mountItemComponent(
       emoji.hidden = false;
       emoji.textContent = model.icon.value;
     } else {
-      emoji.hidden = true;
-      texture.hidden = false;
+      const failed = failedSrc === model.icon.src;
+      emoji.hidden = !failed;
+      texture.hidden = failed;
+      emoji.textContent = model.icon.fallbackEmoji ?? '📦';
       texture.alt = model.icon.alt;
       // Avoid re-fetching the texture once per timer tick.
-      if (texture.getAttribute('src') !== model.icon.src) texture.src = model.icon.src;
+      if (texture.getAttribute('src') !== model.icon.src) {
+        failedSrc = undefined;
+        texture.src = model.icon.src;
+      }
     }
 
     const sale = model.sale;

@@ -4,7 +4,7 @@ import type { SaleProcess } from '../../../model/types';
 import { fullStackValue, instantSaleValue } from '../../../systems/storehouse';
 import type { ItemComponentViewModel } from '../../components/ItemComponent/ItemComponent.types';
 import { asset } from '../assets';
-import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, iconForItem, roomUpgradeDefs } from '../shared';
+import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, itemIconFor, roomUpgradeDefs } from '../shared';
 import type { StorehouseAction, StorehouseViewModel } from './StorehouseViewModel';
 
 const roomImage = asset('storehouse-room.webp');
@@ -50,7 +50,7 @@ export function buildStorehouseViewModel(engine: GameEngine, ui: StorehouseUiSta
       id: stack.id,
       title: def.name,
       description: `${def.name} — base value ${def.baseValueGold}g each.`,
-      icon: { kind: 'emoji', value: iconForItem(stack.itemId) },
+      icon: itemIconFor(stack.itemId),
       tags: def.tags,
       stack: { label: `× ${stack.count}`, tooltip: `${stack.count} of ${def.maxStackSize} in stack` },
       sale: {
@@ -72,7 +72,7 @@ export function buildStorehouseViewModel(engine: GameEngine, ui: StorehouseUiSta
         id: selling.stackId,
         title: def.name,
         description: `${def.name} — base value ${def.baseValueGold}g each.`,
-        icon: { kind: 'emoji', value: iconForItem(selling.itemId) },
+        icon: itemIconFor(selling.itemId),
         tags: def.tags,
         stack: { label: `× ${selling.count}`, tooltip: `${selling.count} of ${def.maxStackSize} in stack` },
         sale: {

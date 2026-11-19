@@ -100,7 +100,18 @@ export interface MissionLootDef {
     max: number;
 }
 
+export interface WorldDef {
+    id: string;
+    name: string;
+    /** Path relative to public/, without a leading slash. */
+    mapImage: string;
+    /** Mission IDs must be unique across all worlds. */
+    missions: MissionDef[];
+}
+
 export interface MissionDef {
+    /** Percentage coordinates on the world map, measured from the top-left. */
+    mapPosition: { x: number; y: number };
     id: string;
     tier: number;
     name: string;
@@ -152,6 +163,8 @@ export interface Constants {
 }
 
 export interface GameConfig {
+    worlds: WorldDef[];
+    startingWorldId: string;
     ranks: RankDef[];
     items: ItemDef[];
     missions: MissionDef[];

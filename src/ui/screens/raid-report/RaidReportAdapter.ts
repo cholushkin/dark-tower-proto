@@ -3,7 +3,7 @@ import type { GameEngine } from '../../../engine/GameEngine';
 import { adjustSelection, discoveredCounts, selectedSlots } from '../../../systems/raidReport';
 import { missionDef, previewRaid } from '../../../systems/world';
 import type { MinionComponentViewModel, MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
-import { fmtHours, iconForItem, missionDifficultyIcons, missionLocationImage, missionWeather, nameFor, portraitFor } from '../shared';
+import { fmtHours, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather, nameFor, portraitFor } from '../shared';
 import type { LootChoiceViewModel, RaidReportAction, RaidReportViewModel } from './RaidReportViewModel';
 
 function itemDef(itemId: string) {
@@ -48,7 +48,7 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
           id: `${itemId}#${i}`,
           title: def.name,
           description: `${def.name} — base value ${def.baseValueGold}g.`,
-          icon: { kind: 'emoji', value: iconForItem(itemId) },
+          icon: itemIconFor(itemId),
         },
         selected,
         canToggle: selected || canSelectOneMore,

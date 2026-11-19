@@ -134,3 +134,5 @@
 @media(max-width:1150px){.dt-warroom__raid-button{height:94px;min-height:94px}}
 @media(max-width:780px){.dt-warroom__raid-button{grid-column:3;grid-row:1;align-self:start;justify-self:center;width:94px;height:94px;min-height:94px}}
 @media(max-width:500px){.dt-warroom__raid-button{grid-column:2;grid-row:1;align-self:start;width:92px;height:92px;min-height:92px}}
+
+.dt-warroom__reward-icon img{display:block;width:40px;height:40px;object-fit:contain}

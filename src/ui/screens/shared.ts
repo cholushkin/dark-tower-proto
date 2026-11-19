@@ -1,3 +1,4 @@
+import type { ItemIcon } from '../components/ItemTile/ItemTile.types';
 import { CONFIG } from '../../data/config';
 import type { RoomId, UpgradeDef, UpgradeEffect } from '../../data/types';
 import type { GameState } from '../../model/GameState';
@@ -158,6 +159,23 @@ const ITEM_ICONS: Record<string, string> = {
 
 export function iconForItem(itemId: string): string {
   return ITEM_ICONS[itemId] ?? '📦';
+}
+
+// Only map matching subjects; the rest retain their original emoji.
+const ITEM_TEXTURES: Readonly<Record<string, string>> = {
+  golden_cup: 'golden-cup',
+  ancient_crown: 'crown',
+  cow: 'cow',
+  cobblestone: 'cobblestone',
+  steel_sword: 'sword',
+};
+
+export function itemIconFor(itemId: string): ItemIcon {
+  const texture = ITEM_TEXTURES[itemId];
+  const fallbackEmoji = iconForItem(itemId);
+  return texture
+    ? { kind: 'texture', src: asset(`items/${texture}.png`), alt: CONFIG.items.find(item => item.id === itemId)?.name ?? itemId, fallbackEmoji }
+    : { kind: 'emoji', value: fallbackEmoji };
 }
 
 /** Minion identity display (name + portrait) is cosmetic flavor not tracked by the engine, so it's
