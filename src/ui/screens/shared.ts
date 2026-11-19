@@ -1,3 +1,5 @@
+import { WEATHER } from '../../data/weather';
+import type { MissionDef } from '../../data/types';
 import type { ItemIcon } from '../components/ItemTile/ItemTile.types';
 import { CONFIG } from '../../data/config';
 import type { RoomId, UpgradeDef, UpgradeEffect } from '../../data/types';
@@ -203,18 +205,15 @@ export function portraitFor(id: string): MinionPortrait {
   return { kind: 'emoji', value: EMOJI_PORTRAITS[order % EMOJI_PORTRAITS.length] ?? '👹' };
 }
 
-/** Mission flavor (location art, weather, difficulty icons) is cosmetic and not in CONFIG, so it's
- * derived deterministically from mission index here — shared so War Room and Raid Report agree. */
+/** Shared mission presentation. Location artwork is selected by mission index. */
 export const WORLD_TIER_ICON = ['⚔️', '🛡️', '☠️'];
 const MISSION_LOCATION_IMAGES = ['aqueducts', 'frost-bridge', 'grave-orchard', 'ashen-gate', 'sunken-vault', 'green-hollow', 'flame-bastion'].map(name => asset(`${name}.webp`));
-const MISSION_WEATHER = [['☀️', 'Clear skies'], ['🌧️', 'Heavy rain'], ['🌫️', 'Fog'], ['⛈️', 'Storm']] as const;
 
 export function missionLocationImage(mission: { id: string }): string {
   return MISSION_LOCATION_IMAGES[CONFIG.missions.findIndex(m => m.id === mission.id) % MISSION_LOCATION_IMAGES.length];
 }
-export function missionWeather(mission: { id: string }): { icon: string; label: string } {
-  const [icon, label] = MISSION_WEATHER[CONFIG.missions.findIndex(m => m.id === mission.id) % MISSION_WEATHER.length];
-  return { icon, label };
+export function missionWeather(mission: Pick<MissionDef, 'weather'>) {
+  return WEATHER[mission.weather];
 }
 export function missionDifficultyIcons(mission: { tier: number }): string {
   return WORLD_TIER_ICON[Math.min(2, mission.tier - 1)].repeat(mission.tier);

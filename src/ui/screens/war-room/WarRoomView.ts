@@ -34,27 +34,23 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
         </div>
       </div>
     </section>
-    <section class="dt-warroom__planning" aria-label="Selected mission and raid planning">
-      <div class="dt-warroom__mission-empty" hidden>Select a mission on the world map to see its details.</div>
+    <section class="dt-warroom__planning" aria-label="Selected mission and raid planning" hidden>
+      <button class="dt-warroom__close" type="button" aria-label="Close mission planning" title="Close mission planning">×</button>
       <div class="dt-warroom__mission-info">
         <div class="dt-warroom__location">
           <img class="dt-warroom__location-art" alt="" />
           <button class="dt-warroom__location-info" type="button" title="Mission information" aria-label="Mission information">i</button>
-          <span class="dt-warroom__weather" title="Weather" aria-label="Weather"></span>
-          <div class="dt-warroom__location-bottom"><div class="dt-warroom__location-name"></div><div class="dt-warroom__location-difficulty"></div></div>
+          <div class="dt-warroom__location-bottom"><div class="dt-warroom__location-name"></div></div>
         </div>
-        <div class="dt-warroom__reward-block"><div class="dt-warroom__section-kicker">Rewards · estimated chances</div><div class="dt-warroom__rewards"></div></div>
-        <div class="dt-warroom__squad-block"><div class="dt-warroom__section-kicker">Squad size</div><div class="dt-warroom__squad-size"></div><div class="dt-warroom__squad-selected"></div></div>
         <div class="dt-warroom__raid-block">
-          <div class="dt-warroom__section-kicker dt-warroom__raid-heading">Raid summary</div>
-          <div class="dt-warroom__raid-duration"></div><div class="dt-warroom__raid-fatigue"></div><div class="dt-warroom__raid-success"></div>
+          <ul class="dt-warroom__parameters" aria-label="Mission parameters"></ul>
           <div class="dt-warroom__raid-active" hidden><div class="dt-warroom__raid-active-label"></div><div class="dt-warroom__raid-active-track"><span></span></div><div class="dt-warroom__raid-active-remaining"></div></div>
         </div>
+        <div class="dt-warroom__reward-block" role="group" aria-label="Reward estimation"><div class="dt-warroom__rewards"></div></div>
+        <div class="dt-warroom__tray">
+          <div class="dt-warroom__tray-viewport" aria-label="Minions available for raid assignment" tabindex="0"><div class="dt-warroom__minion-track" role="listbox" aria-label="Select minions" aria-multiselectable="true"></div></div>
+        </div>
         <button class="dt-warroom__raid-button" type="button" aria-label="Launch selected raid"><span class="dt-warroom__raid-icon" aria-hidden="true">⚔️</span><strong>Raid!</strong></button>
-      </div>
-      <div class="dt-warroom__tray">
-        <button class="dt-warroom__tray-toggle" type="button" aria-expanded="true"><span class="dt-warroom__tray-title">Assign Minions</span><span class="dt-warroom__tray-count"></span><span class="dt-warroom__tray-chevron">⌄</span></button>
-        <div class="dt-warroom__tray-viewport" aria-label="Minions available for raid assignment" tabindex="0"><div class="dt-warroom__minion-track" role="listbox" aria-label="Select minions" aria-multiselectable="true"></div></div>
       </div>
     </section>
   </div>`;
@@ -69,28 +65,21 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   const nextUpgrade = get<HTMLButtonElement>('.dt-warroom__arrow--right');
   const pinHost = get<HTMLElement>('.dt-warroom__mission-pins');
   const mapViewport = get<HTMLElement>('.dt-warroom__map-viewport');
-  const empty = get<HTMLElement>('.dt-warroom__mission-empty');
+  const planning = get<HTMLElement>('.dt-warroom__planning');
+  const close = get<HTMLButtonElement>('.dt-warroom__close');
   const missionInfo = get<HTMLElement>('.dt-warroom__mission-info');
   const locationImg = get<HTMLImageElement>('.dt-warroom__location-art');
   const locationName = get<HTMLElement>('.dt-warroom__location-name');
-  const locationDifficulty = get<HTMLElement>('.dt-warroom__location-difficulty');
-  const weather = get<HTMLElement>('.dt-warroom__weather');
   const locationInfo = get<HTMLButtonElement>('.dt-warroom__location-info');
   const rewardHost = get<HTMLElement>('.dt-warroom__rewards');
-  const squadSize = get<HTMLElement>('.dt-warroom__squad-size');
-  const squadSelected = get<HTMLElement>('.dt-warroom__squad-selected');
-  const duration = get<HTMLElement>('.dt-warroom__raid-duration');
-  const fatigue = get<HTMLElement>('.dt-warroom__raid-fatigue');
-  const successEstimate = get<HTMLElement>('.dt-warroom__raid-success');
+  const parameters = get<HTMLElement>('.dt-warroom__parameters');
+  const rewardBlock = get<HTMLElement>('.dt-warroom__reward-block');
   const activeProgress = get<HTMLElement>('.dt-warroom__raid-active');
   const activeLabel = get<HTMLElement>('.dt-warroom__raid-active-label');
   const activeBar = get<HTMLElement>('.dt-warroom__raid-active-track span');
   const activeRemaining = get<HTMLElement>('.dt-warroom__raid-active-remaining');
   const raidButton = get<HTMLButtonElement>('.dt-warroom__raid-button');
-  const raidHeading = get<HTMLElement>('.dt-warroom__raid-heading');
   const minionTray = get<HTMLElement>('.dt-warroom__tray');
-  const minionToggle = get<HTMLButtonElement>('.dt-warroom__tray-toggle');
-  const minionCount = get<HTMLElement>('.dt-warroom__tray-count');
   const minionTrack = get<HTMLElement>('.dt-warroom__minion-track');
 
   const room = mountRoomOverviewCard(get<HTMLElement>('.dt-warroom__room'), initial.room, {variant:'embedded'});
@@ -114,27 +103,36 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   raidButton.addEventListener('click', () => {
     if (current.selectedMission?.canRaid && current.selectedMissionId) onAction({type:'raidRequested',missionId:current.selectedMissionId});
   }, {signal:abort.signal});
-  minionToggle.addEventListener('click', () => onAction({type:'minionTrayToggled',expanded:!current.minionsExpanded}), {signal:abort.signal});
+  close.addEventListener('click', () => onAction({type:'missionClosed'}), {signal:abort.signal});
+  root.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && current.selectedMissionId) onAction({type:'missionClosed'});
+  }, {signal:abort.signal});
 
   // Presentation-only map dragging. No zoom chrome or instructional message.
-  let dragging: {id:number;x:number;y:number;left:number;top:number}|null = null;
+  let dragging: {id:number;x:number;y:number;left:number;top:number;moved:boolean}|null = null;
   mapViewport.addEventListener('pointerdown', (event:PointerEvent) => {
     if (event.button !== 0 || (event.target as HTMLElement).closest('.dt-mission-pin')) return;
-    dragging = {id:event.pointerId,x:event.clientX,y:event.clientY,left:mapViewport.scrollLeft,top:mapViewport.scrollTop};
+    dragging = {id:event.pointerId,x:event.clientX,y:event.clientY,left:mapViewport.scrollLeft,top:mapViewport.scrollTop,moved:false};
     mapViewport.setPointerCapture(event.pointerId);
     mapViewport.classList.add('dt-warroom__map-viewport--dragging');
   }, {signal:abort.signal});
   mapViewport.addEventListener('pointermove', (event:PointerEvent) => {
     if (!dragging || event.pointerId !== dragging.id) return;
+    if (Math.hypot(event.clientX-dragging.x,event.clientY-dragging.y)>5) dragging.moved=true;
     mapViewport.scrollLeft = dragging.left + (dragging.x-event.clientX);
     mapViewport.scrollTop = dragging.top + (dragging.y-event.clientY);
   }, {signal:abort.signal});
   const finishDrag = () => {dragging=null;mapViewport.classList.remove('dt-warroom__map-viewport--dragging');};
-  mapViewport.addEventListener('pointerup', finishDrag, {signal:abort.signal});
+  mapViewport.addEventListener('pointerup', (event:PointerEvent) => {
+    const dismiss = dragging && event.pointerId === dragging.id && !dragging.moved && Math.hypot(event.clientX-dragging.x,event.clientY-dragging.y)<=5;
+    finishDrag();
+    if (dismiss && current.selectedMissionId) onAction({type:'missionClosed'});
+  }, {signal:abort.signal});
   mapViewport.addEventListener('pointercancel', finishDrag, {signal:abort.signal});
   mapViewport.addEventListener('lostpointercapture', finishDrag, {signal:abort.signal});
 
   let mapPositionInitialized = false;
+  let rewardSignature = '';
   function setModel(model: Readonly<WarRoomViewModel>): void {
     if (disposed) return;
     current = model;
@@ -165,18 +163,20 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
     }
     if (pinHost.childElementCount!==pinHosts.length || pinHosts.some((node,i)=>pinHost.children[i]!==node)) pinHost.replaceChildren(...pinHosts);
     const mission=model.selectedMission;
-    empty.hidden=!!mission;
+    planning.hidden=!mission;
     missionInfo.hidden=!mission;
     minionTray.hidden=!mission;
     if (mission) {
       locationImg.src=mission.locationImageSrc;locationImg.alt=mission.locationImageAlt;
       locationName.textContent=mission.name;
-      locationDifficulty.textContent=`Difficulty  ${mission.difficultyIcons}`;
-      weather.textContent=mission.weatherIcon;weather.title=`Weather: ${mission.weatherDescription}`;
-      weather.setAttribute('aria-label',`Weather: ${mission.weatherDescription}`);
       locationInfo.title=mission.description;
-      rewardHost.replaceChildren(...mission.rewards.map(reward=>{
-        const node=document.createElement('div');node.className='dt-warroom__reward';node.title=reward.label;
+      rewardBlock.setAttribute('aria-label', `Reward estimation: ${mission.rewardIntelLabel}`);
+      rewardBlock.title=mission.rewardIntelLabel;
+      const nextRewardSignature = JSON.stringify(mission.rewards);
+      if (nextRewardSignature !== rewardSignature) {
+        rewardSignature = nextRewardSignature;
+        rewardHost.replaceChildren(...mission.rewards.map(reward=>{
+        const node=document.createElement('div');node.className='dt-warroom__reward';node.title=reward.label;node.tabIndex=0;node.setAttribute('aria-label',reward.label);
         const art=document.createElement('span');art.className='dt-warroom__reward-icon';if(reward.icon.kind==='texture'){
           const image=document.createElement('img');image.src=reward.icon.src;image.alt=reward.icon.alt;
           const fallback=reward.icon.fallbackEmoji??'📦';
@@ -185,18 +185,30 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
         }else art.textContent=reward.icon.value;
         const chance=document.createElement('span');chance.textContent=reward.chanceLabel;
         node.append(art,chance);return node;
-      }));
-      squadSize.textContent=mission.squadSizeLabel;
-      squadSelected.textContent=mission.squadSelectionLabel;
-      duration.textContent=`⌛ ${mission.estimatedDuration}`;
-      fatigue.textContent=`⚡ ${mission.estimatedFatigue}`;
-      successEstimate.textContent=mission.successEstimateLabel?`🎯 ${mission.successEstimateLabel}`:'';
-      successEstimate.hidden=!mission.successEstimateLabel;
+        }));
+      }
+      // Keep parameter nodes stable across ticks so keyboard focus and hover persist.
+      for (const node of Array.from(parameters.children)) {
+        if (!mission.parameters.some(p => p.id === (node as HTMLElement).dataset.parameterId)) node.remove();
+      }
+      for (const parameter of mission.parameters) {
+        let row = parameters.querySelector<HTMLElement>(`[data-parameter-id="${parameter.id}"]`);
+        if (!row) {
+          row=document.createElement('li');row.className='dt-warroom__parameter';row.tabIndex=0;
+          row.dataset.parameterId=parameter.id;
+          const icon=document.createElement('span');icon.className='dt-warroom__parameter-icon';icon.setAttribute('aria-hidden','true');
+          const value=document.createElement('span');value.className='dt-warroom__parameter-value';
+          const tip=document.createElement('span');tip.className='dt-warroom__parameter-tooltip';tip.id=`mission-parameter-${parameter.id}`;tip.setAttribute('role','tooltip');
+          row.setAttribute('aria-describedby',tip.id);row.append(icon,value,tip);parameters.append(row);
+        }
+        row.title=parameter.description;
+        row.querySelector('.dt-warroom__parameter-icon')!.textContent=parameter.icon;
+        row.querySelector('.dt-warroom__parameter-value')!.textContent=parameter.value;
+        row.querySelector('.dt-warroom__parameter-tooltip')!.textContent=parameter.description;
+      }
       const ongoing=mission.state==='inProgress';
       const readyToClaim=mission.state==='completed'&&mission.canRaid;
-      raidHeading.textContent=ongoing?'Raid in Progress':readyToClaim?'Squad Returned':mission.state==='completed'?'Mission Completed':'Raid summary';
       activeProgress.hidden=!ongoing;
-      duration.hidden=ongoing;fatigue.hidden=ongoing;
       activeLabel.textContent=mission.statusLabel;
       activeBar.style.width=`${Math.max(0,Math.min(100,(mission.activeProgress??0)*100))}%`;
       activeRemaining.textContent=mission.activeRemainingTime??'';
@@ -204,13 +216,8 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
       raidButton.title=mission.canRaid?(readyToClaim?'Open raid report and claim rewards':'Launch raid'):mission.raidDisabledReason??mission.statusLabel;
       raidButton.classList.toggle('dt-warroom__raid-button--running',ongoing);
       raidButton.querySelector<HTMLElement>('strong')!.textContent=ongoing?'Active':mission.state==='locked'?'Locked':readyToClaim?'Claim Rewards':mission.state==='completed'?'Claimed':'Raid!';
-      minionToggle.disabled=!mission.canEditSquad;
-      minionToggle.title=mission.canEditSquad?'Show or hide minions':'Squad cannot be changed during this raid';
-      minionToggle.querySelector('.dt-warroom__tray-title')!.textContent=mission.minionTrayLabel;
-      minionCount.textContent=mission.squadSelectionLabel;
+      minionTrack.setAttribute('aria-label',`Assign minions: ${mission.squadSelectionLabel}`);
     }
-    minionTray.classList.toggle('dt-warroom__tray--collapsed',!model.minionsExpanded);
-    minionToggle.setAttribute('aria-expanded',String(model.minionsExpanded));
     const activeMinions=new Set(model.minions.map(x=>x.minion.id));
     for (const [id,entry] of minions) if (!activeMinions.has(id)) {entry.handle.destroy();entry.host.remove();minions.delete(id);}
     const minionHosts:HTMLElement[]=[];

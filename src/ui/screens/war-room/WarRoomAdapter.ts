@@ -6,16 +6,15 @@ import type { MinionComponentViewModel, MinionConditionDisplay } from '../../com
 import type { MissionPinViewModel, MissionVisualState } from '../../components/MissionPin/MissionPin.types';
 import { asset } from '../assets';
 import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather, nameFor, pct, portraitFor, roomUpgradeDefs, WORLD_TIER_ICON } from '../shared';
-import type { MissionDetailViewModel, RewardPreviewViewModel, WarRoomAction, WarRoomMinionViewModel, WarRoomViewModel } from './WarRoomViewModel';
+import type { MissionDetailViewModel, MissionParameterViewModel, RewardPreviewViewModel, WarRoomAction, WarRoomMinionViewModel, WarRoomViewModel } from './WarRoomViewModel';
 
 export interface WarRoomUiState {
   selectedMissionId: string | null;
   squadSelection: Set<string>;
-  minionsExpanded: boolean;
 }
 
 export function createWarRoomUiState(): WarRoomUiState {
-  return { selectedMissionId: null, squadSelection: new Set(), minionsExpanded: true };
+  return { selectedMissionId: null, squadSelection: new Set() };
 }
 
 const roomImage = asset('war-room.webp');
@@ -68,7 +67,7 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
 
   const rewards: RewardPreviewViewModel[] = mission.loot.map(l => {
     const def = CONFIG.items.find(i => i.id === l.itemId)!;
-    return { id: l.itemId, icon: lootIntel >= 1 ? itemIconFor(l.itemId) : { kind: 'emoji', value: '📦' }, chanceLabel: lootIntel >= 2 ? pct(l.chance) : lootIntel >= 1 ? '?' : '', label: lootIntel >= 1 ? def.name : 'Unknown loot' };
+    return { id: l.itemId, icon: lootIntel >= 1 ? itemIconFor(l.itemId) : { kind: 'emoji', value: '📦' }, chanceLabel: lootIntel >= 2 ? pct(l.chance) : '', label: lootIntel >= 2 ? `${def.name}: ${pct(l.chance)} chance on victory; ${l.min}–${l.max} found when dropped.` : lootIntel >= 1 ? `${def.name}. Upgrade Loot Intelligence to reveal its drop chance.` : 'Unknown loot type. Upgrade Loot Intelligence to identify it.' };
   });
 
   let statusLabel = 'Ready to raid';
@@ -86,9 +85,6 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
   else if (liveState === 'COOLDOWN') statusLabel = 'Already claimed this week';
   else if (liveState === 'LOCKED') statusLabel = 'Locked — unlock this World Tier first';
 
-  // Computed regardless of squad size (an empty squad previews as a sure failure, which is itself
-  // useful feedback) so the success estimate and squad-aware duration/fatigue are always available
-  // while planning, not just once a squad happens to be selected.
   const preview = liveState === 'AVAILABLE' ? previewRaid(state, missionId, squad) : null;
   const canRaid = liveState === 'AVAILABLE' ? canLaunchRaid(state, missionId, squad) : liveState === 'COMPLETED_UNCLAIMED';
   let raidDisabledReason: string | undefined;
@@ -97,36 +93,35 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
   else if (liveState === 'COOLDOWN') raidDisabledReason = 'Already claimed this week';
   else if (liveState === 'LOCKED') raidDisabledReason = 'World Tier locked';
 
-  // Mirrors the pre-integration WorldMapScreen.enemyEstimate gating: no Enemy Intel means no
-  // estimate at all, and an estimate still needs a squad to preview against.
-  let successEstimateLabel = '';
+  const weather = missionWeather(mission);
+  const duration = preview?.durationHours ?? mission.baseDurationHours;
+  const parameters: MissionParameterViewModel[] = [
+    { id: 'difficulty', icon: missionDifficultyIcons(mission), value: `Tier ${mission.tier}`,
+      description: `Difficulty: Tier ${mission.tier}. Higher tiers contain tougher missions. Your chance of victory depends on the assigned squad.` },
+    { id: 'duration', icon: '⌛', value: liveState === 'RUNNING' ? `${activeRemainingTime ?? '—'} remaining` : scouted ? `${duration.toFixed(1)}h` : `~${Math.round(duration)}h`,
+      description: liveState === 'RUNNING' ? 'Time remaining until this raid resolves, in game hours.' : `${squad.length ? 'Estimated raid duration' : 'Base raid duration'} in game hours. Additional minions and higher average rank reduce the duration by up to 20%. Enemy Intelligence reveals a more precise estimate.` },
+  ];
   if (preview) {
-    successEstimateLabel = !scouted
-      ? 'Enemy strength unknown'
-      : squad.length === 0
-        ? 'Select minions to estimate'
-        : `Success ≈ ${pct(1 - preview.failureChance)}`;
+    parameters.push(
+      { id: 'success', icon: '🎯', value: !scouted ? 'Success unknown' : squad.length ? `${pct(1 - preview.failureChance)} success` : 'Assign minions',
+        description: !scouted ? 'Success chance is hidden. Upgrade Enemy Intelligence to estimate it for your assigned squad.' : 'Chance of winning and receiving rewards. Calculated from combined squad power versus mission strength. Attack, defense, rank, research and favorable weather improve squad power.' },
+      { id: 'capacity', icon: '🎒', value: `${squad.reduce((sum, id) => sum + CONFIG.ranks[state.findMinion(id)!.rank - 1].carryCapacity, 0)} loot slots`,
+        description: 'Carrying capacity: total item-stack slots your assigned minions can bring back. Higher-rank minions carry more. Items of the same type can share a stack.' },
+    );
   }
 
-  const idleAvailable = state.minions.filter(m => m.activity.type === 'idle' && !m.tired && !m.injured).length;
+  parameters.push({ id: 'weather', icon: weather.icon, value: weather.label, description: weather.description });
 
   return {
     id: missionId,
     name: mission.name,
-    description: `${mission.name}. A Tier ${mission.tier} mission. Required power ${mission.requiredPower}.`,
+    description: mission.description,
     locationImageSrc: missionLocationImage(mission),
     locationImageAlt: mission.name,
-    difficultyIcons: missionDifficultyIcons(mission),
-    weatherIcon: missionWeather(mission).icon,
-    weatherDescription: missionWeather(mission).label,
     rewards,
-    squadSizeLabel: `${idleAvailable} minion${idleAvailable === 1 ? '' : 's'} available`,
+    rewardIntelLabel: lootIntel >= 2 ? 'Drop chances on victory' : lootIntel >= 1 ? 'Items revealed · chances unknown' : `${mission.loot.length} possible loot types · unidentified`,
+    parameters,
     squadSelectionLabel: `${squad.length} selected`,
-    estimatedDuration: preview
-      ? (scouted ? `${preview.durationHours.toFixed(1)}h` : `~${Math.round(preview.durationHours)}h`)
-      : (scouted ? `${mission.baseDurationHours.toFixed(1)}h` : `~${Math.round(mission.baseDurationHours)}h`),
-    estimatedFatigue: pct(preview ? preview.avgInjuryChance : mission.baseInjuryChance),
-    successEstimateLabel,
     state: visual,
     statusLabel,
     activeProgress,
@@ -202,7 +197,6 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
     selectedMissionId: ui.selectedMissionId,
     selectedMission,
     minions,
-    minionsExpanded: ui.minionsExpanded,
   };
 }
 
@@ -231,8 +225,9 @@ export function handleWarRoomAction(engine: GameEngine, ui: WarRoomUiState, acti
       if (ui.squadSelection.has(action.minionId)) ui.squadSelection.delete(action.minionId);
       else ui.squadSelection.add(action.minionId);
       return;
-    case 'minionTrayToggled':
-      ui.minionsExpanded = action.expanded;
+    case 'missionClosed':
+      ui.selectedMissionId = null;
+      ui.squadSelection.clear();
       return;
     case 'raidRequested': {
       const missionState = state.missionState(action.missionId);

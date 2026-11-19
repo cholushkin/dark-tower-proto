@@ -35,27 +35,16 @@
 .dt-warroom__mission-pins{position:absolute;inset:0;pointer-events:none}
 .dt-warroom__mission-pins>div{display:contents}
 .dt-warroom__mission-pins button{pointer-events:auto}
-.dt-warroom__planning{flex:0 0 auto;margin-top:12px;border-top:1px solid #a65b91;padding:12px 1px 0}
-.dt-warroom__mission-empty{display:grid;place-items:center;min-height:145px;font:17px Georgia,serif;color:#cbb1d0}
-.dt-warroom__mission-info{display:grid;grid-template-columns:minmax(220px, 27%) minmax(180px, 1fr) minmax(100px, .43fr) minmax(160px,.66fr) 112px;gap:14px;align-items:stretch;min-height:135px}
-.dt-warroom__mission-info>div:not(:first-child){border-left:1px solid #795374;padding-left:14px}
-.dt-warroom__location{border:1px solid #e7bb53;border-radius:9px;position:relative;overflow:hidden;min-height:135px;background:#201327;box-shadow:0 0 0 2px #31162c}
+.dt-warroom__location{border:1px solid #e7bb53;border-radius:9px;position:relative;overflow:hidden;aspect-ratio:1;align-self:start;width:100%;background:#201327;box-shadow:0 0 0 2px #31162c}
 .dt-warroom__location-art{display:block;width:100%;height:100%;position:absolute;inset:0;object-fit:cover}
 .dt-warroom__location::before{content:'';position:absolute;z-index:1;inset:35% 0 0;background:linear-gradient(transparent 0%,#140c20b8 55%,#120c1f)}
 .dt-warroom__location-info{position:absolute;z-index:2;top:8px;left:8px;height:27px;width:27px;border-radius:50%;border:1px solid #ffc678;background:#271427c9;color:#ffe1a4;font:800 19px Georgia,serif;cursor:help}
 .dt-warroom__location-info:hover{background:#6a3b50}
-.dt-warroom__weather{position:absolute;z-index:2;top:7px;right:8px;font-size:28px;line-height:1;filter:drop-shadow(0 2px 4px #12071d)}
 .dt-warroom__location-bottom{position:absolute;z-index:2;bottom:8px;left:12px;right:10px}
-.dt-warroom__location-name{color:#fff1d9;font:bold 24px/1.1 Georgia,serif;text-shadow:0 2px 4px #000}
-.dt-warroom__location-difficulty{font-weight:700;font-size:12px;color:#f6e5dd;margin-top:5px}
-.dt-warroom__section-kicker{font:700 14px/1.2 Georgia,serif;color:#edd7dc;margin:2px 0 12px}
-.dt-warroom__rewards{display:flex;gap:11px;align-items:center;justify-content:flex-start;flex-wrap:nowrap}
+.dt-warroom__location-name{color:#fff1d9;font:bold 20px/1.1 Georgia,serif;text-shadow:0 2px 4px #000}
+.dt-warroom__rewards{display:flex;gap:11px;align-items:center;justify-content:flex-start;flex-wrap:wrap}
 .dt-warroom__reward{display:flex;min-width:0;align-items:center;flex-direction:column;gap:6px;color:#f1e1dc;font:800 13px/1 sans-serif}
 .dt-warroom__reward-icon{font-size:29px;white-space:nowrap;filter:drop-shadow(0 3px 3px #0007)}
-.dt-warroom__squad-size{color:#ffe7be;font:800 20px/1.15 Georgia,serif}
-.dt-warroom__squad-selected{font-size:12px;color:#cdb7cf;margin-top:7px}
-.dt-warroom__raid-duration,.dt-warroom__raid-fatigue,.dt-warroom__raid-success{margin-bottom:9px;font-size:14px;font-weight:650;color:#f9e3df;white-space:nowrap}
-.dt-warroom__raid-success{color:#ffd76d}
 .dt-warroom__raid-active-label{font:800 14px Georgia,serif;color:#f7d47a;margin-bottom:6px}
 .dt-warroom__raid-active-track{height:12px;border:1px solid #ad729e;border-radius:10px;overflow:hidden;background:#1a0e23}
 .dt-warroom__raid-active-track span{display:block;height:100%;background:linear-gradient(90deg,#8c65d0,#ffc563)}
@@ -64,17 +53,9 @@
 .dt-warroom__raid-button:hover:not(:disabled){filter:brightness(1.12)}
 .dt-warroom__raid-button:disabled{cursor:default;filter:saturate(.43) brightness(.85);border-color:#9c7d9b;background:linear-gradient(#615075,#392d4f)}
 .dt-warroom__raid-icon{font-size:34px;line-height:1}
-.dt-warroom__tray{border-top:1px solid #795476;margin-top:12px;padding-top:6px}
-.dt-warroom__tray-toggle{display:flex;align-items:center;gap:11px;width:100%;height:30px;padding:0 3px;background:transparent;border:0;color:#f9e8dc;text-align:left;cursor:pointer}
-.dt-warroom__tray-toggle:disabled{opacity:.7;cursor:default}
-.dt-warroom__tray-title{font:800 18px/1.1 Georgia,serif}
-.dt-warroom__tray-count{color:#e2bddc;font-size:12px}
-.dt-warroom__tray-chevron{margin-left:auto;color:#f6cb79;font-size:27px;line-height:1;transform:rotate(180deg);transition:transform .15s}
-.dt-warroom__tray--collapsed .dt-warroom__tray-chevron{transform:rotate(0deg)}
 .dt-warroom__tray-viewport{overflow-x:auto;scrollbar-width:thin;scrollbar-color:#a26495 #26152b;overscroll-behavior-inline:contain;padding:4px 3px 7px}
-.dt-warroom__tray--collapsed .dt-warroom__tray-viewport{display:none}
 .dt-warroom__minion-track{display:flex;gap:10px;width:max-content;min-width:100%}
-.dt-warroom__minion-slot{width:128px;height:128px;flex:none;position:relative;border-radius:12px;cursor:pointer;outline:2px solid transparent;outline-offset:2px}
+.dt-warroom__minion-slot{width:112px;height:112px;flex:none;position:relative;border-radius:12px;cursor:pointer;outline:2px solid transparent;outline-offset:2px}
 .dt-warroom__minion-slot>.dt-minion{height:100%}
 .dt-warroom__minion-slot--selected{outline-color:#ffd76d;box-shadow:0 0 14px #ffba3e75}
 .dt-warroom__minion-slot--selected::after{content:'✓';position:absolute;z-index:16;right:-5px;top:-8px;display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#ffc745;border:2px solid #8c4e1d;color:#352126;font:900 17px/1 sans-serif;pointer-events:none}
@@ -87,9 +68,6 @@
  .dt-warroom__room .dt-room-card--embedded{grid-template-columns:55% 45%}
  .dt-warroom__room .dt-room-card__stat{font-size:11px}
  .dt-warroom__room .dt-room-card__stat-value{font-size:17px}
- .dt-warroom__mission-info{grid-template-columns:minmax(200px,26%) minmax(150px,1fr) 100px minmax(140px,.7fr) 94px;gap:9px}
- .dt-warroom__mission-info>div:not(:first-child){padding-left:9px}
- .dt-warroom__raid-button{width:94px;font-size:22px}
  .dt-warroom__rewards{gap:5px}
 }
 @media(max-width:780px){
@@ -98,7 +76,7 @@
  .dt-warroom__topbar{height:48px}
  .dt-warroom__title{font-size:28px}
  .dt-warroom__title::before,.dt-warroom__title::after{margin:0 8px;font-size:9px}
- .dt-warroom__upper{display:flex;flex-direction:column;gap:8px}
+ .dt-warroom__upper{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 16px}
  .dt-warroom__room{height:145px;max-width:420px;width:100%}
  .dt-warroom__room .dt-room-card__art{height:145px}
  .dt-warroom__room .dt-room-card__stat-value{font-size:20px}
@@ -106,33 +84,73 @@
  .dt-warroom__upgrade-slot{width:160px;height:165px}
  .dt-warroom__map-viewport{height:425px}
  .dt-warroom__map-stage{width:1450px;height:660px}
- .dt-warroom__mission-info{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 95px;gap:10px}
- .dt-warroom__location{min-height:160px;grid-row:span 2}
- .dt-warroom__mission-info>div:not(:first-child){border:0;padding-left:0}
- .dt-warroom__reward-block{grid-column:2;grid-row:1}
- .dt-warroom__raid-button{grid-column:3;grid-row:1 / span 2;align-self:stretch;width:100%;min-height:150px}
- .dt-warroom__squad-block{grid-column:2;grid-row:2}
- .dt-warroom__raid-block{grid-column:1 / -1;border-top:1px solid #6b4964!important;grid-row:3;padding:9px 0 0!important}
  .dt-warroom__reward-icon{font-size:24px}
  .dt-warroom__location-name{font-size:19px}
- .dt-warroom__minion-slot{width:125px;height:125px}
 }
 @media(max-width:500px){
  .dt-warroom__title{font-size:25px}
  .dt-warroom__map-viewport{height:380px}
- .dt-warroom__mission-info{grid-template-columns:minmax(0,1fr) 92px;gap:10px}
- .dt-warroom__location{grid-column:1;grid-row:1;height:150px}
- .dt-warroom__reward-block{grid-column:1;grid-row:2}
- .dt-warroom__squad-block{grid-column:1;grid-row:3}
- .dt-warroom__raid-block{grid-column:1 / -1;grid-row:4}
- .dt-warroom__raid-button{grid-column:2;grid-row:1 / span 3;min-height:165px;font-size:20px}
  .dt-warroom__rewards{gap:18px}
  .dt-warroom__reward-icon{font-size:29px}
 }
 /* Raid button is always square, including narrow layouts. */
-.dt-warroom__raid-button{height:112px;min-height:112px;align-self:center;aspect-ratio:1 / 1}
-@media(max-width:1150px){.dt-warroom__raid-button{height:94px;min-height:94px}}
-@media(max-width:780px){.dt-warroom__raid-button{grid-column:3;grid-row:1;align-self:start;justify-self:center;width:94px;height:94px;min-height:94px}}
-@media(max-width:500px){.dt-warroom__raid-button{grid-column:2;grid-row:1;align-self:start;width:92px;height:92px;min-height:92px}}
 
 .dt-warroom__reward-icon img{display:block;width:40px;height:40px;object-fit:contain}
+
+.dt-warroom__parameters{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 16px}
+.dt-warroom__parameter{position:relative;display:flex;align-items:center;gap:10px;width:fit-content;max-width:100%;color:#f9e3df;font-size:14px;line-height:1.4;cursor:help;border-radius:4px}
+.dt-warroom__parameter-icon{min-width:30px;text-align:center;font-size:17px}
+.dt-warroom__parameter[data-parameter-id="success"]{color:#ffd76d}
+.dt-warroom__parameter:focus-visible{outline:2px solid #ffd76d;outline-offset:4px}
+.dt-warroom__parameter-tooltip{display:none;position:absolute;z-index:30;bottom:calc(100% + 8px);left:0;width:260px;max-width:70vw;padding:10px 12px;border:1px solid #b787a5;border-radius:8px;background:#211429;box-shadow:0 6px 20px #0008;color:#f6e7ee;font:400 13px/1.5 sans-serif;pointer-events:none}
+.dt-warroom__parameter:hover .dt-warroom__parameter-tooltip,.dt-warroom__parameter:focus .dt-warroom__parameter-tooltip{display:block}
+.dt-warroom__raid-active{margin-top:10px}
+@media(max-width:780px){
+ .dt-warroom__window{overflow-y:auto}
+ .dt-warroom__map-area{flex:0 0 280px}
+ .dt-warroom__map-viewport{height:100%;min-height:0}
+}
+
+
+.dt-warroom__close{position:absolute;top:3px;right:0;display:grid;place-items:center;width:26px;height:26px;border:1px solid #946080;border-radius:6px;background:#342039;color:#ffe2bd;font:24px/1 sans-serif;cursor:pointer}
+.dt-warroom__close:hover{background:#68415c;border-color:#ffd16b}
+.dt-warroom__close:focus-visible{outline:2px solid #ffd76d;outline-offset:2px}
+.dt-warroom__parameter{grid-column:1}
+.dt-warroom__parameter[data-parameter-id="weather"]{grid-column:2;grid-row:1;align-self:start}
+.dt-warroom__reward,.dt-warroom__reward *{cursor:help}
+
+@media(max-width:780px){
+ .dt-warroom__parameters{gap:6px 10px}
+ .dt-warroom__parameter{font-size:12px;gap:5px}
+}
+
+
+/* One image-height planning strip. The roster gets the remaining width. */
+.dt-warroom__planning{--mission-size:128px;position:relative;flex:0 0 auto;margin-top:8px;padding:8px 34px 0 1px;border-top:1px solid #a65b91}
+.dt-warroom__mission-info{display:grid;grid-template-columns:var(--mission-size) max-content max-content minmax(112px,1fr) 72px;gap:12px;align-items:center;min-height:var(--mission-size)}
+.dt-warroom__location{width:var(--mission-size);height:var(--mission-size);min-height:0;align-self:center}
+.dt-warroom__location-name{font-size:18px}
+.dt-warroom__raid-block{padding-left:10px;border-left:1px solid #795374}
+.dt-warroom__parameters{grid-template-columns:max-content max-content;gap:6px 12px}
+.dt-warroom__parameter{font-size:13px;gap:6px;white-space:nowrap}
+.dt-warroom__parameter-icon{min-width:24px;font-size:16px}
+.dt-warroom__parameter-tooltip{white-space:normal}
+.dt-warroom__reward-block{padding-left:10px;border-left:1px solid #795374;max-width:148px;cursor:help}
+.dt-warroom__rewards{gap:8px;flex-wrap:nowrap}
+.dt-warroom__reward-icon img{width:32px;height:32px}
+.dt-warroom__reward-icon{font-size:28px}
+.dt-warroom__reward{font-size:12px}
+.dt-warroom__tray{min-width:0;margin:0;padding:0;border:1px solid #795374;border-radius:8px;background:#1c122680;height:var(--mission-size)}
+.dt-warroom__tray-viewport{height:100%;width:100%;overflow-x:auto;overflow-y:hidden;padding:10px 7px 8px;scrollbar-gutter:stable}
+.dt-warroom__minion-track{gap:9px;align-items:center}
+.dt-warroom__minion-slot{width:100px;height:100px}
+.dt-warroom__raid-button{width:72px;height:72px;min-height:72px;align-self:center;font-size:18px;padding:5px;gap:4px;aspect-ratio:1}
+.dt-warroom__raid-icon{font-size:26px}
+.dt-warroom__close{top:8px;right:0}
+.dt-warroom__raid-active{margin-top:6px}
+.dt-warroom__raid-active-label{font-size:12px}
+/* On small screens preserve the single row instead of consuming map height. */
+@media(max-width:1000px){
+ .dt-warroom__mission-info{overflow-x:auto;overflow-y:hidden;grid-template-columns:var(--mission-size) max-content max-content minmax(150px,1fr) 72px;padding-bottom:5px;scrollbar-width:thin;scrollbar-color:#a26495 #26152b}
+ .dt-warroom__parameter-tooltip{display:none!important}
+}

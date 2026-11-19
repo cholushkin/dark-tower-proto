@@ -10,22 +10,22 @@ export interface RewardPreviewViewModel {
   readonly chanceLabel: string;
   readonly label: string;
 }
+export interface MissionParameterViewModel {
+  readonly id: string;
+  readonly icon: string;
+  readonly value: string;
+  readonly description: string;
+}
 export interface MissionDetailViewModel {
   readonly id: string;
   readonly name: string;
   readonly description: string;
   readonly locationImageSrc: string;
   readonly locationImageAlt: string;
-  readonly difficultyIcons: string;
-  readonly weatherIcon: string;
-  readonly weatherDescription: string;
   readonly rewards: readonly RewardPreviewViewModel[];
-  readonly squadSizeLabel: string;
+  readonly rewardIntelLabel: string;
+  readonly parameters: readonly MissionParameterViewModel[];
   readonly squadSelectionLabel: string;
-  readonly estimatedDuration: string;
-  readonly estimatedFatigue: string;
-  /** Empty string when no estimate applies (not planning a raid right now). */
-  readonly successEstimateLabel: string;
   readonly state: MissionVisualState;
   readonly statusLabel: string;
   readonly activeProgress?: number;
@@ -51,8 +51,6 @@ export interface WarRoomViewModel {
   readonly selectedMissionId: string | null;
   readonly selectedMission: Readonly<MissionDetailViewModel> | null;
   readonly minions: readonly Readonly<WarRoomMinionViewModel>[];
-  /** Host-published state for presentation toggling. */
-  readonly minionsExpanded: boolean;
 }
 export type WarRoomAction =
   | Readonly<{type:'upgradeRequested'; upgradeId:string}>
@@ -60,7 +58,7 @@ export type WarRoomAction =
   | Readonly<{type:'missionInfoRequested'; missionId:string}>
   | Readonly<{type:'minionSelectionRequested'; missionId:string; minionId:string}>
   | Readonly<{type:'minionInfoRequested'; minionId:string}>
-  | Readonly<{type:'minionTrayToggled'; expanded:boolean}>
+  | Readonly<{type:'missionClosed'}>
   | Readonly<{type:'raidRequested'; missionId:string}>;
 export type WarRoomActionHandler = (action:WarRoomAction) => void;
 export interface WarRoomViewHandle {setModel(model:Readonly<WarRoomViewModel>): void;destroy():void}

@@ -24,6 +24,22 @@ there's no stored `MissionState` field to go stale.
 
 ## Notes for agents
 
+- Mission planning uses a square location image with an info overlay and its name at the bottom.
+  Difficulty, duration, success estimate, and carrying capacity appear as icon/value rows with hover
+  and keyboard-focus explanations. Weather occupies the second details column. Location descriptions
+  and weather are defined in mission data. Rewards use the help cursor.
+- The embedded planning panel is hidden until a mission is selected. Its X button, Escape, or an
+  empty-map click dismisses it and clears the draft squad; map dragging does not dismiss it.
+  The minion assignment tray is always visible inside the open panel.
+- Planning is a single horizontal strip sized around a 128px square location image: two-column
+  parameters, compact reward icons, a horizontally scrolling minion box, and the raid action.
+  Section headings are omitted; accessible labels and hover explanations retain their meaning.
+  Narrow screens scroll the strip horizontally rather than stacking it over the map.
+- Injury risk is hidden from mission planning. Both victory and defeat independently roll each
+  participant's injury using `injuryChanceFor`; defeat no longer automatically injures everyone.
+- Loot Intelligence 0 shows one unidentified box per possible loot type; level 1 reveals item
+  identities; level 2 also reveals drop chances on victory. Boxes do not guarantee quantities.
+
 - `previewRaid()`/`canLaunchRaid()` are pure read-only functions the UI calls directly (not through
   `GameEngine`) to render success/duration estimates before the player commits — see the
   read/write split explained in
@@ -35,5 +51,7 @@ there's no stored `MissionState` field to go stale.
 - Mission `mapPosition.x` and `.y` are percentages from the map’s top-left (0–100).
   Reordering missions no longer changes pin positions. Initial coordinates preserve the previous
   ring layout as editable placeholders. Location art/weather/difficulty flavor remains in `shared.ts`.
-- Combat formulas in `world.ts` (`unitPower`, `failureChance`, `injuryChanceFor`) match design doc
-  §11 exactly but are explicitly **provisional**, not final balance.
+- Weather is configured in `src/data/weather.ts`: clear skies are neutral; fog, rain, and storms
+  multiply squad power by 1.05, 1.10, and 1.15 respectively in both preview and resolution.
+- Combat formulas in `world.ts` (`unitPower`, `failureChance`, `injuryChanceFor`) follow design doc
+  §11 with the weather power multiplier above and are explicitly **provisional**, not final balance.
