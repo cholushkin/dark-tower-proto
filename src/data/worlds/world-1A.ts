@@ -10,7 +10,7 @@ export const WORLD_1A: WorldDef = {
         {
             id: "t1_millbrook", tier: 1, name: "Millbrook Village",
             description: "A sleepy riverside village built around an old watermill. Grain stores and modest treasures lie behind its timber palisade.", weather: "clear",
-            mapPosition: { x: 50.0, y: 32.75 },
+            mapPosition: { x: 41.0, y: 45.0 },
             requiredPower: 18, baseDurationHours: 6, baseInjuryChance: 0.05,
             rewardGoldRange: [20, 50], rewardCrystalsRange: [0, 2],
             loot: [

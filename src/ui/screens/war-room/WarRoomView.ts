@@ -33,6 +33,8 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
           <div class="dt-warroom__mission-pins"></div>
         </div>
       </div>
+      <div class="dt-warroom__world-name"></div>
+      <div class="dt-warroom__map-coordinates" hidden></div>
     </section>
     <section class="dt-warroom__planning" aria-label="Selected mission and raid planning" hidden>
       <button class="dt-warroom__close" type="button" aria-label="Close mission planning" title="Close mission planning">×</button>
@@ -65,6 +67,27 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   const nextUpgrade = get<HTMLButtonElement>('.dt-warroom__arrow--right');
   const pinHost = get<HTMLElement>('.dt-warroom__mission-pins');
   const mapViewport = get<HTMLElement>('.dt-warroom__map-viewport');
+  const worldName = get<HTMLElement>('.dt-warroom__world-name');
+  const mapStage = get<HTMLElement>('.dt-warroom__map-stage');
+  const mapCoordinates = get<HTMLElement>('.dt-warroom__map-coordinates');
+  let mapPointer: { x: number; y: number } | null = null;
+  const refreshMapCoordinates = () => {
+    mapCoordinates.hidden = !current.showMapCoordinates || !mapPointer;
+    if (mapCoordinates.hidden || !mapPointer) return;
+    const bounds = mapStage.getBoundingClientRect();
+    const percent = (position: number, start: number, size: number) =>
+      Math.min(100, Math.max(0, (position - start) / size * 100)).toFixed(1);
+    mapCoordinates.textContent = `X: ${percent(mapPointer.x, bounds.left, bounds.width)}%  Y: ${percent(mapPointer.y, bounds.top, bounds.height)}%`;
+  };
+  mapViewport.addEventListener('pointermove', event => {
+    mapPointer = { x: event.clientX, y: event.clientY };
+    refreshMapCoordinates();
+  }, { signal: abort.signal });
+  const clearMapPointer = () => { mapPointer = null; refreshMapCoordinates(); };
+  mapViewport.addEventListener('pointerleave', clearMapPointer, { signal: abort.signal });
+  mapViewport.addEventListener('pointercancel', clearMapPointer, { signal: abort.signal });
+  mapViewport.addEventListener('scroll', refreshMapCoordinates, { signal: abort.signal, passive: true });
+  window.addEventListener('resize', refreshMapCoordinates, { signal: abort.signal });
   const planning = get<HTMLElement>('.dt-warroom__planning');
   const close = get<HTMLButtonElement>('.dt-warroom__close');
   const missionInfo = get<HTMLElement>('.dt-warroom__mission-info');
@@ -136,9 +159,11 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   function setModel(model: Readonly<WarRoomViewModel>): void {
     if (disposed) return;
     current = model;
+    refreshMapCoordinates();
     const mapArt = root.querySelector<HTMLImageElement>('.dt-warroom__map-art')!;
     if (mapArt.getAttribute('src') !== model.mapImageSrc) mapArt.src = model.mapImageSrc;
     mapArt.alt = model.mapImageAlt;
+    worldName.textContent = model.worldName;
     room.setModel(model.room);
     const activeUpgrades = new Set(model.upgrades.map(u => u.id));
     for (const [id, entry] of upgrades) if (!activeUpgrades.has(id)) {entry.handle.destroy();entry.host.remove();upgrades.delete(id);}

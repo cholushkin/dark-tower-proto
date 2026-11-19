@@ -9,12 +9,13 @@ import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, itemIconFor,
 import type { MissionDetailViewModel, MissionParameterViewModel, RewardPreviewViewModel, WarRoomAction, WarRoomMinionViewModel, WarRoomViewModel } from './WarRoomViewModel';
 
 export interface WarRoomUiState {
+  showMapCoordinates: boolean;
   selectedMissionId: string | null;
   squadSelection: Set<string>;
 }
 
 export function createWarRoomUiState(): WarRoomUiState {
-  return { selectedMissionId: null, squadSelection: new Set() };
+  return { selectedMissionId: null, squadSelection: new Set(), showMapCoordinates: false };
 }
 
 const roomImage = asset('war-room.webp');
@@ -180,6 +181,8 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
 
   return {
     title: 'War Room',
+    worldName: world.name,
+    showMapCoordinates: ui.showMapCoordinates,
     mapImageSrc: `${import.meta.env.BASE_URL}${world.mapImage}`,
     mapImageAlt: `${world.name} map`,
     room: {

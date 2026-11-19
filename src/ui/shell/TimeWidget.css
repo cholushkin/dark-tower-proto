@@ -41,7 +41,7 @@
 .tw-main { display: flex; align-items: center; gap: 16px; }
 .tw-clock { position: relative; width: 120px; height: 120px; flex: none; }
 .tw-clock-svg { display: block; width: 120px; height: 120px; pointer-events: none; }
-.tw-hour-marker { fill: var(--dt-purple-soft); }
+.tw-hour-marker { fill: #fff; }
 /* The outgoing icon settles down as the incoming one gently rises into place. */
 .tw-sun, .tw-moon {
   transform-box: fill-box;

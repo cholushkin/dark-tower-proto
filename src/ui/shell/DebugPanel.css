@@ -1,4 +1,5 @@
 .dt-debug { width: 100%; font-family: var(--dt-font); }
+.dt-debug__option { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; font-size: 12px; cursor: pointer; }
 .dt-debug__toggle {
   width: 100%;
   padding: 8px 12px;

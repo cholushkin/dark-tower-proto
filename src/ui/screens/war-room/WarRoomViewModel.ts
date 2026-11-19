@@ -42,6 +42,8 @@ export interface WarRoomMinionViewModel {
   readonly unavailableReason?: string;
 }
 export interface WarRoomViewModel {
+  readonly worldName: string;
+  readonly showMapCoordinates: boolean;
   readonly mapImageSrc: string;
   readonly mapImageAlt: string;
   readonly title: string;

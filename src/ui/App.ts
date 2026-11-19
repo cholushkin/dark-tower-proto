@@ -132,9 +132,10 @@ export class App {
     const debugHost = document.createElement('div');
     debugHost.style.width = '100%';
     this.shell.slots.leftColumn.append(debugHost);
-    this.debugPanel = mountDebugPanel(debugHost, { processes: [] }, action => {
+    this.debugPanel = mountDebugPanel(debugHost, { processes: [], showMapCoordinates: this.warRoomUi.showMapCoordinates }, action => {
       if (action.type === 'forceComplete') this.engine.forceCompleteProcess(action.processId);
       else if (action.type === 'copyState') navigator.clipboard.writeText(this.gameStateToJson());
+      else if (action.type === 'setMapCoordinates') this.warRoomUi.showMapCoordinates = action.enabled;
       this.refresh();
     });
 
@@ -366,6 +367,7 @@ export class App {
     this.roomNav.setModel(this.roomNavModel());
     this.payrollButton.setModel({ visible: state.paydayPending && !this.payrollView });
     this.debugPanel.setModel({
+      showMapCoordinates: this.warRoomUi.showMapCoordinates,
       processes: state.processes.map(p => ({
         id: p.id,
         label: `${p.type} — ${Math.max(0, p.endHour - state.hours).toFixed(1)}h left`,

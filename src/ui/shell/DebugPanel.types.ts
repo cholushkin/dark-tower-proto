@@ -5,9 +5,11 @@ export interface DebugProcessRow {
   readonly progress: number;
 }
 export interface DebugPanelViewModel {
+  readonly showMapCoordinates: boolean;
   readonly processes: readonly DebugProcessRow[];
 }
 export type DebugPanelAction =
+  | Readonly<{ type: 'setMapCoordinates'; enabled: boolean }>
   | Readonly<{ type: 'forceComplete'; processId: string }>
   | Readonly<{ type: 'copyState' }>;
 export type DebugPanelActionHandler = (action: DebugPanelAction) => void;

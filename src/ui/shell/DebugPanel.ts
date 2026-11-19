@@ -16,12 +16,15 @@ export function mountDebugPanel(host: HTMLElement, initial: Readonly<DebugPanelV
         <div class="dt-debug__actions">
           <button type="button" data-action="copyState">📋 Copy state</button>
         </div>
+        <label class="dt-debug__option"><input type="checkbox" data-role="map-coordinates" /> Render percent on the map</label>
         <div class="dt-debug__processes"></div>
       </div>
     </section>`;
   const toggle = host.querySelector<HTMLButtonElement>('.dt-debug__toggle')!;
   const panel = host.querySelector<HTMLElement>('.dt-debug__panel')!;
   const processesHost = host.querySelector<HTMLElement>('.dt-debug__processes')!;
+  const mapCoordinates = host.querySelector<HTMLInputElement>('[data-role="map-coordinates"]')!;
+  mapCoordinates.addEventListener('change', () => onAction({ type: 'setMapCoordinates', enabled: mapCoordinates.checked }), { signal: abort.signal });
 
   toggle.addEventListener('click', () => {
     panel.hidden = !panel.hidden;
@@ -31,6 +34,7 @@ export function mountDebugPanel(host: HTMLElement, initial: Readonly<DebugPanelV
   host.querySelector('[data-action="copyState"]')!.addEventListener('click', () => onAction({ type: 'copyState' }), { signal: abort.signal });
 
   function setModel(model: Readonly<DebugPanelViewModel>): void {
+    mapCoordinates.checked = model.showMapCoordinates;
     processesHost.replaceChildren(...model.processes.map(row => {
       const line = document.createElement('div');
       line.className = 'dt-debug__row';
