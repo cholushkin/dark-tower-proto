@@ -3,7 +3,8 @@ import type { GameEngine } from '../../../engine/GameEngine';
 import { adjustSelection, discoveredCounts, selectedSlots } from '../../../systems/raidReport';
 import { missionDef, previewRaid } from '../../../systems/world';
 import type { MinionComponentViewModel, MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
-import { fmtHours, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather, nameFor, portraitFor } from '../shared';
+import { fmtHours, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather } from '../shared';
+import { nameFor, portraitFor } from '../../minionIdentity';
 import type { LootChoiceViewModel, RaidReportAction, RaidReportViewModel } from './RaidReportViewModel';
 
 function itemDef(itemId: string) {
@@ -19,7 +20,7 @@ function prisonerViewModel(rank: number, index: number): MinionComponentViewMode
     name: `Captured ${rankDef.name}`,
     description: `A Rank ${rank} ${rankDef.name} captured during the raid.`,
     rank: { label: `${rankDef.name} (R${rank})`, icon: rank === 5 ? '👑' : '⌃' },
-    portrait: { kind: 'emoji', value: '🔗' },
+    portrait: portraitFor(`found-${index}-${rank}`),
     conditions: [],
     status: { id: 'captured', label: 'Captured', icon: '⛓️' },
   };

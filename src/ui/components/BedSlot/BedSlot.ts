@@ -8,7 +8,7 @@ export function mountBedSlot(host: HTMLElement, initial: Readonly<BedSlotViewMod
   root.innerHTML = `
     <div class="dt-bed__art" aria-hidden="true">
       <img class="dt-bed__bed-image" alt="">
-      <div class="dt-bed__portrait-wrap"><img class="dt-bed__portrait" alt=""><span class="dt-bed__portrait-emoji" hidden></span></div>
+      <div class="dt-bed__portrait-wrap"><img class="dt-bed__portrait" alt=""></div>
       <span class="dt-bed__sleep-dots">z<span>z</span><span>z</span></span>
     </div>
     <div class="dt-bed__badges"></div>
@@ -22,7 +22,6 @@ export function mountBedSlot(host: HTMLElement, initial: Readonly<BedSlotViewMod
   };
   const portraitWrap = get('.dt-bed__portrait-wrap');
   const portraitImage = get<HTMLImageElement>('.dt-bed__portrait');
-  const portraitEmoji = get('.dt-bed__portrait-emoji');
   const badges = get('.dt-bed__badges');
   const name = get('.dt-bed__name');
   const timer = get('.dt-bed__timer');
@@ -49,22 +48,9 @@ export function mountBedSlot(host: HTMLElement, initial: Readonly<BedSlotViewMod
     timerValue.textContent = occupant.remainingLabel;
     timer.title = occupant.remainingTooltip ?? `${model.presentation === 'treatment' ? 'Treatment' : 'Rest'} remaining: ${occupant.remainingLabel}`;
     progress.style.width = `${Math.max(0, Math.min(1, occupant.restProgress)) * 100}%`;
-    if (occupant.portrait.kind === 'texture') {
-      portraitImage.hidden = false;
-      portraitEmoji.hidden = true;
-      portraitImage.src = occupant.portrait.src;
-      portraitImage.alt = occupant.portrait.alt;
-      portraitImage.onerror = () => {
-        portraitImage.hidden = true;
-        portraitEmoji.hidden = false;
-        portraitEmoji.textContent = occupant.portrait.kind === 'texture' ? (occupant.portrait.fallbackEmoji ?? '👹') : '👹';
-      };
-    } else {
-      portraitImage.hidden = true;
-      portraitEmoji.hidden = false;
-      portraitEmoji.textContent = occupant.portrait.value;
-      portraitImage.removeAttribute('src');
-    }
+    portraitImage.hidden = false;
+    portraitImage.src = occupant.portrait.src;
+    portraitImage.alt = occupant.portrait.alt;
     const newBadges = occupant.conditionBadges.map(badge => {
       const chip = document.createElement('span');
       chip.className = `dt-bed__badge dt-bed__badge--${badge.tone}`;

@@ -1,3 +1,4 @@
+import { minionStatus } from '../../minionStatus';
 import { CONFIG } from '../../../data/config';
 import type { GameEngine } from '../../../engine/GameEngine';
 import type { GameState } from '../../../model/GameState';
@@ -5,7 +6,8 @@ import { canLaunchRaid, missionDef, previewRaid } from '../../../systems/world';
 import type { MinionComponentViewModel, MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
 import type { MissionPinViewModel, MissionVisualState } from '../../components/MissionPin/MissionPin.types';
 import { asset } from '../assets';
-import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather, nameFor, pct, portraitFor, roomUpgradeDefs, WORLD_TIER_ICON } from '../shared';
+import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather, pct, roomUpgradeDefs } from '../shared';
+import { nameFor, portraitFor } from '../../minionIdentity';
 import type { MissionDetailViewModel, MissionParameterViewModel, RewardPreviewViewModel, WarRoomAction, WarRoomMinionViewModel, WarRoomViewModel } from './WarRoomViewModel';
 
 export interface WarRoomUiState {
@@ -20,19 +22,11 @@ export function createWarRoomUiState(): WarRoomUiState {
 
 const roomImage = asset('war-room.webp');
 
-const STATUS_BY_ACTIVITY: Record<string, { label: string; icon: string }> = {
-  idle: { label: 'Idle', icon: '◌' },
-  raid: { label: 'On Raid', icon: '⚔️' },
-  training: { label: 'Training', icon: '🏋️' },
-  resting: { label: 'Resting', icon: '🛏️' },
-  treatment: { label: 'In Treatment', icon: '💗' },
-};
 
 function minionViewModel(state: GameState, id: string): MinionComponentViewModel {
   const minion = state.findMinion(id)!;
   const name = nameFor(id);
   const rankDef = CONFIG.ranks[minion.rank - 1];
-  const status = STATUS_BY_ACTIVITY[minion.activity.type] ?? { label: minion.activity.type, icon: '•' };
   const conditions: MinionConditionDisplay[] = [];
   if (minion.injured) conditions.push({ id: 'injured', label: 'Injured', icon: '🩹', tone: 'injured' });
   if (minion.tired) conditions.push({ id: 'tired', label: 'Tired', icon: '🌙', tone: 'tired' });
@@ -43,7 +37,7 @@ function minionViewModel(state: GameState, id: string): MinionComponentViewModel
     rank: { label: `${rankDef.name} (R${minion.rank})`, icon: minion.rank === 5 ? '👑' : '⌃', tooltip: `Rank ${minion.rank}: ${rankDef.name}` },
     portrait: portraitFor(id),
     conditions,
-    status: { id: status.label.toLowerCase().replace(/\s+/g, ''), label: status.label, icon: status.icon },
+    status: minionStatus(state, minion),
   };
 }
 
@@ -144,23 +138,23 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
 
   const world = CONFIG.worlds.find(world => world.id === CONFIG.startingWorldId);
   if (!world) throw new Error(`Unknown starting world: ${CONFIG.startingWorldId}`);
-  const missions: MissionPinViewModel[] = world.missions.map(mission => {
+  const missions: MissionPinViewModel[] = world.missions.filter(mission => state.missionState(mission.id) !== 'LOCKED').map(mission => {
     const pos = mission.mapPosition;
     const visual = missionPinState(state, mission.id);
     const processId = state.missionRunningProcess.get(mission.id);
     const process = state.processes.find(p => p.id === processId);
+    const detail = buildMissionDetail(engine, mission.id === ui.selectedMissionId ? ui : { ...ui, squadSelection: new Set() }, mission.id);
     return {
       id: mission.id,
       name: mission.name,
       x: pos.x,
       y: pos.y,
       tier: mission.tier,
-      icon: WORLD_TIER_ICON[Math.min(2, mission.tier - 1)],
-      difficultyIcons: missionDifficultyIcons(mission),
-      rewardIcons: mission.loot.slice(0, 2).map(() => '📦'),
+      parameters: detail.parameters,
+      rewards: detail.rewards,
+      statusLabel: detail.statusLabel,
       state: visual,
       raidProgress: process ? Math.min(1, Math.max(0, (state.hours - process.startHour) / (process.endHour - process.startHour))) : undefined,
-      raidStatusLabel: visual === 'inProgress' ? 'Raid in progress' : undefined,
       selected: mission.id === ui.selectedMissionId,
     };
   });

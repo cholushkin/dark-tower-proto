@@ -19,9 +19,7 @@ export function mountAssignmentPicker(host:HTMLElement, initial:Readonly<Assignm
      const row=document.createElement('button');row.type='button';row.className='dt-assign__candidate';row.disabled=!person.selectable;
      row.title=person.selectable?'Select this minion':person.disabledReason??'Unavailable';
      const face=document.createElement('span');face.className='dt-assign__portrait';
-     if(person.portrait.kind==='texture'){
-       const img=document.createElement('img');img.src=person.portrait.src;img.alt='';img.onerror=()=>{img.remove();face.textContent=person.portrait.kind==='texture'?(person.portrait.fallbackEmoji??'👹'):'👹';};face.append(img);
-     }else face.textContent=person.portrait.value;
+     const img=document.createElement('img');img.src=person.portrait.src;img.alt=person.portrait.alt;face.append(img);
      const info=document.createElement('span');info.className='dt-assign__info';
      const name=document.createElement('strong');name.textContent=person.name;
      const detail=document.createElement('small');detail.textContent=person.detail;

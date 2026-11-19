@@ -1,7 +1,8 @@
 import type { GameEngine } from '../../../engine/GameEngine';
 import type { MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
 import { asset } from '../assets';
-import { buildIncrementalUpgradeViewModel, fmtHours, incrementalUpgradeDefs, nameFor, portraitFor } from '../shared';
+import { buildIncrementalUpgradeViewModel, fmtHours, incrementalUpgradeDefs } from '../shared';
+import { nameFor, portraitFor } from '../../minionIdentity';
 import type { InfirmaryAction, InfirmaryViewModel } from './InfirmaryViewModel';
 
 const roomImage = asset('infirmary-room.webp');

@@ -8,7 +8,7 @@ export function mountTrainingStation(host: HTMLElement, initial: Readonly<Traini
   root.innerHTML = `
     <img class="dt-station__art" alt="" />
     <div class="dt-station__art-tint" aria-hidden="true"></div>
-    <div class="dt-station__portrait-wrap" hidden><img class="dt-station__portrait" alt="" /><span class="dt-station__emoji" hidden></span></div>
+    <div class="dt-station__portrait-wrap" hidden><img class="dt-station__portrait" alt="" /></div>
     <div class="dt-station__top-left"><span class="dt-station__info" title="Minion training details">i</span></div>
     <div class="dt-station__top-right"><div class="dt-station__badges"></div></div>
     <div class="dt-station__rank-ladder" hidden aria-label="Rank progression"><div class="dt-station__rank-next"></div><span class="dt-station__rank-arrow" aria-hidden="true">⬆</span><div class="dt-station__rank-current"></div></div>
@@ -21,7 +21,6 @@ export function mountTrainingStation(host: HTMLElement, initial: Readonly<Traini
   const get = <T extends HTMLElement=HTMLElement>(s: string): T => { const el=root.querySelector<T>(s); if(!el) throw new Error(`TrainingStation missing ${s}`); return el; };
   const portraitWrap=get('.dt-station__portrait-wrap');
   const portrait=get<HTMLImageElement>('.dt-station__portrait');
-  const emoji=get('.dt-station__emoji');
   const button=get<HTMLButtonElement>('.dt-station__hit');
   const art=get<HTMLImageElement>('.dt-station__art');
   let current=initial;
@@ -55,10 +54,7 @@ export function mountTrainingStation(host: HTMLElement, initial: Readonly<Traini
     get('.dt-station__timer').title=minion.timeRemainingTooltip??`Training remaining: ${minion.timeRemainingLabel}`;
     get<HTMLElement>('.dt-station__progress-fill').style.width=`${Math.max(0,Math.min(1,minion.progress))*100}%`;
     get('.dt-station__info').title=`${minion.name} · ${minion.rankLabel} (Rank ${minion.rank}) → ${minion.nextRankLabel} (Rank ${minion.nextRank}) · ${minion.timeRemainingLabel} remaining`;
-    if(minion.portrait.kind==='texture'){
-      portrait.hidden=false;emoji.hidden=true;portrait.src=minion.portrait.src;portrait.alt=minion.portrait.alt;
-      portrait.onerror=()=>{portrait.hidden=true;emoji.hidden=false;emoji.textContent=minion.portrait.kind==='texture'?(minion.portrait.fallbackEmoji??'👹'):'👹';};
-    }else{ portrait.onerror=null;portrait.hidden=true;portrait.removeAttribute('src');emoji.hidden=false;emoji.textContent=minion.portrait.value; }
+    portrait.hidden=false;portrait.src=minion.portrait.src;portrait.alt=minion.portrait.alt;
     const badges=(minion.conditionBadges??[]).map(b=>{const el=document.createElement('span');el.className='dt-station__badge';el.textContent=b.icon;el.title=b.label;el.setAttribute('aria-label',b.label);return el;});
     get('.dt-station__badges').replaceChildren(...badges);
   }

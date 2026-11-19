@@ -1,8 +1,10 @@
+import { minionStatus } from '../../minionStatus';
 import { CONFIG } from '../../../data/config';
 import type { GameEngine } from '../../../engine/GameEngine';
 import type { MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
 import { asset } from '../assets';
-import { buildIncrementalUpgradeViewModel, fmtHours, incrementalUpgradeDefs, nameFor, portraitFor } from '../shared';
+import { buildIncrementalUpgradeViewModel, fmtHours, incrementalUpgradeDefs } from '../shared';
+import { nameFor, portraitFor } from '../../minionIdentity';
 import type { QuartersAction, QuartersViewModel } from './QuartersViewModel';
 
 const roomImage = asset('quarters-room.webp');
@@ -46,14 +48,6 @@ export function buildQuartersViewModel(engine: GameEngine): QuartersViewModel {
     const conditions: MinionConditionDisplay[] = [];
     if (m.injured) conditions.push({ id: 'injured', label: 'Injured', icon: '🩹', tone: 'injured' });
     if (m.tired) conditions.push({ id: 'tired', label: 'Tired', icon: '🌙', tone: 'tired' });
-    const statusByActivity: Record<string, { label: string; icon: string }> = {
-      idle: { label: 'Idle', icon: '◌' },
-      raid: { label: 'On Raid', icon: '⚔️' },
-      training: { label: 'Training', icon: '🏋️' },
-      resting: { label: 'Resting', icon: '🛏️' },
-      treatment: { label: 'In Treatment', icon: '💗' },
-    };
-    const status = statusByActivity[m.activity.type] ?? { label: m.activity.type, icon: '•' };
     return {
       id: m.id,
       name,
@@ -61,7 +55,7 @@ export function buildQuartersViewModel(engine: GameEngine): QuartersViewModel {
       rank: { label: `${rankDef.name} (R${m.rank})`, icon: m.rank === 5 ? '👑' : '⌃', tooltip: `Rank ${m.rank}: ${rankDef.name}` },
       portrait: portraitFor(m.id),
       conditions,
-      status: { id: status.label.toLowerCase().replace(/\s+/g, ''), label: status.label, icon: status.icon },
+      status: minionStatus(state, m),
     };
   });
 

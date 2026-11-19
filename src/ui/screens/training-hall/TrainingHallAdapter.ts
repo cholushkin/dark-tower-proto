@@ -5,7 +5,8 @@ import { canTrain, transitionFor } from '../../../systems/trainingHall';
 import type { AssignmentCandidateViewModel } from '../../components/AssignmentPicker/AssignmentPicker.types';
 import type { TrainingOccupantViewModel, TrainingStationViewModel } from '../../components/TrainingStation/TrainingStation.types';
 import { asset } from '../assets';
-import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, nameFor, portraitFor, roomUpgradeDefs } from '../shared';
+import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, roomUpgradeDefs } from '../shared';
+import { nameFor, portraitFor } from '../../minionIdentity';
 import type { TrainingHallAction, TrainingHallViewModel } from './TrainingHallViewModel';
 
 const roomImage = asset('training-hall-room.png');

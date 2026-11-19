@@ -65,7 +65,7 @@
 .dt-warroom__minion-slot--disabled:not(.dt-warroom__minion-slot--selected){opacity:.65;cursor:not-allowed}
 .dt-warroom__minion-slot:focus-visible{outline:2px solid #fff0af}
 .dt-warroom__minion-slot:hover:not(.dt-warroom__minion-slot--disabled){transform:translateY(-2px)}
-.dt-warroom__minion-slot .dt-minion{border-radius:10px}
+
 @media(max-width:1150px){
  .dt-warroom__upper{grid-template-columns:270px minmax(0,1fr)}
  .dt-warroom__room .dt-room-card--embedded{grid-template-columns:55% 45%}

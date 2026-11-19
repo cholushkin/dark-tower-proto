@@ -1,7 +1,8 @@
 import type { GameEngine } from '../../../engine/GameEngine';
 import type { PrisonCellViewModel, PrisonerViewModel } from '../../components/PrisonCell/PrisonCell.types';
 import { asset } from '../assets';
-import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, nameFor, roomUpgradeDefs } from '../shared';
+import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, roomUpgradeDefs } from '../shared';
+import { nameFor } from '../../minionIdentity';
 import type { DungeonAction, DungeonViewModel } from './DungeonViewModel';
 
 const roomImage = asset('dungeon-room.webp');

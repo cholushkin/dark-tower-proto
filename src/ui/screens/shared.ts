@@ -8,7 +8,6 @@ import { canPurchaseUpgrade, isUpgradeInProgress } from '../../systems/upgrades'
 import { canPurchaseIncremental, isIncrementalInProgress, nextCost, nextDuration } from '../../systems/incrementalUpgrades';
 import type { IncrementalUpgradeDef } from '../../data/types';
 import type { UpgradeCardViewModel } from '../components/UpgradeCard/UpgradeCard.types';
-import type { MinionPortrait } from '../components/MinionComponent/MinionComponent.types';
 import { asset } from './assets';
 
 /** Adapter-side formatting helpers shared by screen adapters. Views never see raw hours/numbers. */
@@ -178,31 +177,6 @@ export function itemIconFor(itemId: string): ItemIcon {
   return texture
     ? { kind: 'texture', src: asset(`items/${texture}.png`), alt: CONFIG.items.find(item => item.id === itemId)?.name ?? itemId, fallbackEmoji }
     : { kind: 'emoji', value: fallbackEmoji };
-}
-
-/** Minion identity display (name + portrait) is cosmetic flavor not tracked by the engine, so it's
- * generated here once and memoized by id — every screen that shows the same minion must agree on
- * its name/portrait, so this is shared rather than duplicated per adapter. */
-const NAME_POOL = ['Grub', 'Mork', 'Skrit', 'Brakka', 'Nyx', 'Sludge', 'Vex', 'Mira', 'Thorn', 'Zark', 'Krel', 'Morg', 'Silia', 'Brog', 'Pip', 'Nora', 'Vark', 'Zog'];
-const PORTRAIT_TEXTURES = ['grub', 'mork', 'skrit', 'brakka'].map(name => asset(`${name}.webp`));
-const EMOJI_PORTRAITS = ['🧟', '👹', '🐺', '🧙', '🌳', '🥷', '😈', '👾', '🧝', '👺'];
-const namesById = new Map<string, string>();
-
-export function nameFor(id: string): string {
-  let name = namesById.get(id);
-  if (!name) {
-    name = NAME_POOL[namesById.size % NAME_POOL.length] ?? `Minion ${namesById.size + 1}`;
-    namesById.set(id, name);
-  }
-  return name;
-}
-
-export function portraitFor(id: string): MinionPortrait {
-  const order = [...namesById.keys()].indexOf(id);
-  if (order >= 0 && order < PORTRAIT_TEXTURES.length) {
-    return { kind: 'texture', src: PORTRAIT_TEXTURES[order], alt: `Portrait of ${nameFor(id)}`, fallbackEmoji: '👹' };
-  }
-  return { kind: 'emoji', value: EMOJI_PORTRAITS[order % EMOJI_PORTRAITS.length] ?? '👹' };
 }
 
 /** Shared mission presentation. Location artwork is selected by mission index. */

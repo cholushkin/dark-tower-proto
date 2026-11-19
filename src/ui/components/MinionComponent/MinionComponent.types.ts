@@ -1,11 +1,9 @@
 /** Read-only, display-ready contract for a single minion card. No game state or service types. */
-export type MinionPortrait =
-  | Readonly<{ kind: 'texture'; src: string; alt: string; fallbackEmoji?: string }>
-  | Readonly<{ kind: 'emoji'; value: string }>;
+export type MinionPortrait = Readonly<{ kind: 'texture'; src: string; alt: string }>;
 
 export interface MinionRankDisplay {
   readonly label: string;
-  /** Small display icon/emoji, e.g. '⌃' or '👑'. */
+  /** Small rank icon. */
   readonly icon: string;
   readonly tooltip?: string;
 }
@@ -20,6 +18,8 @@ export interface MinionConditionDisplay {
 }
 
 export interface MinionStatusDisplay {
+  /** Process completion from 0 to 1; absent for statuses without a process. */
+  readonly progress?: number;
   readonly id: string;
   readonly label: string;
   readonly icon: string;
