@@ -108,6 +108,32 @@ html, body, #app { width: 100%; height: 100%; overflow: hidden; }
    (100vh/100dvh). Embedded inside the shell's bounded window, they must fill it instead. */
 .shell-content > * { height: 100%; min-height: 0; }
 
+/* Room windows share Storehouse's bounds; scenery belongs to the app shell. */
+.shell-content > :is(.dt-storehouse, .dt-quarters, .dt-infirmary, .dt-training-hall, .dt-dungeon, .dt-laboratory, .dt-warroom) {
+  padding: 0;
+  background: transparent;
+}
+.shell-content :is(.dt-storehouse__shell, .dt-quarters__shell, .dt-infirmary__shell, .dt-training-hall__shell, .dt-dungeon__shell) {
+  height: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0;
+}
+.shell-content :is(.dt-storehouse__window, .dt-quarters__window, .dt-infirmary__window, .dt-training-hall__window, .dt-dungeon__window, .dt-warroom__window, .lab-window) {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  max-width: 1600px;
+  height: 100%;
+  margin: 0 auto;
+}
+.shell-content :is(.dt-quarters__mountains, .dt-infirmary__mountains, .dt-training-hall__mountains, .dt-dungeon__mountains, .lab-outer-glow),
+.shell-content > .dt-laboratory::before,
+.shell-content > .dt-laboratory::after,
+.shell-content > .dt-warroom::after {
+  display: none;
+}
+
 .shell-overlay {
   position: absolute;
   z-index: 10;
