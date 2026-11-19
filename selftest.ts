@@ -388,4 +388,63 @@ console.log("\n[16] Training Hall: infinite training stations via incremental up
     check(engine.state.trainingStationCount() === stationsBefore + 1, "training station count increases by one after completion");
 }
 
+// Hidden injury rolls must still permit both injured and uninjured survivors on defeat.
+console.log("\n[17] Failed raids roll injuries individually");
+{
+    const engine = new GameEngine();
+    const squad = engine.state.minions.slice(0, 2).map(m => m.id);
+    const rolls = [0, 0, 0.99];
+    engine.state.rng = () => {
+        const roll = rolls.shift();
+        if (roll === undefined) throw new Error("Unexpected random roll during failed raid");
+        return roll;
+    };
+    const draft = resolveRaid(engine.state, {
+        id: 'failed-injury-test', type: 'raid', missionId: 't3_the_shattered_throne',
+        squad, startHour: 0, endHour: 1,
+    });
+    check(!draft.success, "underpowered squad fails the raid");
+    check(draft.injuryRolls[squad[0]] === 1, "low individual roll causes an injury on defeat");
+    check(draft.injuryRolls[squad[1]] === 0, "high individual roll avoids injury on defeat");
+    check(draft.goldFound === 0 && draft.lootCopies.length === 0, "defeat still awards no loot");
+    engine.state.pendingReports.set(draft.missionId, draft);
+    engine.claimReport(draft.missionId);
+    check(engine.state.findMinion(squad[0])!.injured && !engine.state.findMinion(squad[1])!.injured,
+        "claiming a failed raid preserves each individual injury outcome");
+    check(squad.every(id => engine.state.findMinion(id)!.tired), "all survivors still need rest after defeat");
+    check(previewRaid(engine.state, 't1_stonebridge', []).durationHours === 8,
+        "empty squad displays base duration without an artificial time penalty");
+}
+
+console.log("\n[18] Weather improves raid outcomes");
+{
+    const engine = new GameEngine();
+    const mission = CONFIG.missions.find(m => m.id === 't1_stonebridge')!;
+    const originalWeather = mission.weather;
+    const squad = engine.state.minions.map(m => m.id);
+    try {
+        mission.weather = 'clear';
+        const clear = previewRaid(engine.state, mission.id, squad);
+        for (const [weather, multiplier] of [['fog', 1.05], ['rain', 1.1], ['storm', 1.15]] as const) {
+            mission.weather = weather;
+            const preview = previewRaid(engine.state, mission.id, squad);
+            check(Math.abs(preview.totalPower - clear.totalPower * multiplier) < 1e-9,
+                `${weather} applies its configured squad-power bonus`);
+            check(preview.failureChance < clear.failureChance, `${weather} improves victory odds for an underpowered squad`);
+            check(preview.avgInjuryChance <= clear.avgInjuryChance, `${weather} does not increase hidden injury risk`);
+        }
+        mission.weather = 'rain';
+        const rainy = previewRaid(engine.state, mission.id, squad);
+        const roll = (clear.failureChance + rainy.failureChance) / 2;
+        engine.state.rng = () => roll;
+        const process = { id: 'weather-test', type: 'raid' as const, missionId: mission.id, squad, startHour: 0, endHour: 1 };
+        check(resolveRaid(engine.state, process).success, 'rain bonus affects actual raid resolution');
+        mission.weather = 'clear';
+        check(!resolveRaid(engine.state, process).success, 'same roll fails without the rain bonus');
+    } finally {
+        mission.weather = originalWeather;
+    }
+    check(CONFIG.missions.every(m => m.description.trim().length > 0), 'every mission has a location description in data');
+}
+
 console.log(`\n== All ${passed} checks passed ==`);

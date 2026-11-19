@@ -1,4 +1,5 @@
 import { CONFIG } from "../data/config";
+import { WEATHER } from "../data/weather";
 import type { MissionDef } from "../data/types";
 import type { GameState } from "../model/GameState";
 import type { RaidProcess, RaidReportDraft } from "../model/types";
@@ -28,12 +29,12 @@ export interface RaidPreview {
 
 export function previewRaid(state: GameState, missionId: string, squad: string[]): RaidPreview {
     const mission = missionDef(missionId);
-    const totalPower = squadPower(state, squad);
+    const totalPower = squadPower(state, squad) * WEATHER[mission.weather].powerMultiplier;
     const powerRatio = mission.requiredPower > 0 ? totalPower / mission.requiredPower : 1;
     const failureChance = clamp(2.0 * (1 - powerRatio), 0, 1);
     const avgRank = squad.length ? squad.reduce((s, id) => s + state.findMinion(id)!.rank, 0) / squad.length : 1;
     const durationHours = mission.baseDurationHours *
-        Math.max(0.8, 1 - 0.04 * (squad.length - 1) - 0.01 * (avgRank - 1));
+        Math.max(0.8, 1 - 0.04 * Math.max(0, squad.length - 1) - 0.01 * (avgRank - 1));
     const avgInjuryChance = squad.length
         ? squad.reduce((s, id) => s + injuryChanceFor(state, mission, id, powerRatio), 0) / squad.length
         : mission.baseInjuryChance;
@@ -89,9 +90,8 @@ export function resolveRaid(state: GameState, process: RaidProcess): RaidReportD
 
     const injuryRolls: Record<string, number> = {};
     for (const id of process.squad) {
-        injuryRolls[id] = success
-            ? (state.rng() < injuryChanceFor(state, mission, id, preview.powerRatio) ? 1 : 0)
-            : 1;
+        // Hidden individual injury risk applies on both victory and defeat.
+        injuryRolls[id] = state.rng() < injuryChanceFor(state, mission, id, preview.powerRatio) ? 1 : 0;
     }
 
     let goldFound = 0;

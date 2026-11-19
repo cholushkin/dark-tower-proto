@@ -118,7 +118,7 @@ A completed Training Hall session increases Rank by exactly one, using the targe
 - **`Tired`** prevents starting a raid or training. It may follow raids, training, Dungeon recruitment, and other configured events.
 - **`Injured`** also prevents starting a raid or training. Both conditions may coexist.
 - A successful raid makes every participant `Tired`; each participant has an independent, configured chance of becoming `Injured`.
-- A failed raid makes every participant both `Tired` and `Injured`.
+- A failed raid makes every participant `Tired`; each participant independently rolls for `Injured` using the same hidden injury-risk formula as a successful raid.
 - Recruited prisoners become `Tired` and have a **50%** chance to become `Injured`.
 - At **nightfall**, all owned minions receive `Tired`.
 - A minion cannot occupy multiple activities simultaneously. A completed raid whose Raid Report has not been Claimed still reserves its squad.
@@ -305,7 +305,7 @@ Opening a mission on the War Room map displays its details, intelligence, durati
 
 **Success:** generate configured rewards; every participant becomes `Tired` and independently rolls for `Injured`.
 
-**Failure:** no rewards are generated; every participant becomes both `Tired` and `Injured`.
+**Failure:** no rewards are generated; every participant becomes `Tired` and independently rolls for `Injured` using the same hidden injury-risk formula as on success. Failure does not guarantee injury.
 
 Returning minions are reserved until the player **Claims** the Raid Report, including after a failed raid.
 

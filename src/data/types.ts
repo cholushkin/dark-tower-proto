@@ -110,6 +110,8 @@ export interface WorldDef {
 }
 
 export interface MissionDef {
+    description: string;
+    weather: "clear" | "rain" | "fog" | "storm";
     /** Percentage coordinates on the world map, measured from the top-left. */
     mapPosition: { x: number; y: number };
     id: string;
