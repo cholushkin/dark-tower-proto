@@ -7,7 +7,7 @@ import { buildIncrementalUpgradeViewModel, fmtHours, incrementalUpgradeDefs } fr
 import { nameFor, portraitFor } from '../../minionIdentity';
 import type { QuartersAction, QuartersViewModel } from './QuartersViewModel';
 
-const roomImage = asset('quarters-room.webp');
+const roomImage = asset('rooms/quarters.webp');
 const bedImage = asset('bed.svg');
 
 export function buildQuartersViewModel(engine: GameEngine): QuartersViewModel {

@@ -4,7 +4,7 @@ import { asset } from '../assets';
 import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, roomUpgradeDefs } from '../shared';
 import type { LaboratoryAction, LaboratoryResearchViewModel, LaboratoryViewModel } from './LaboratoryViewModel';
 
-const roomImage = asset('laboratory-room.png');
+const roomImage = asset('rooms/laboratory.webp');
 const ICON_TIER = asset('icon-tier2.png');
 // Note: icon-efficiency.png and icon-potion.png have "Research" text baked into the source PNG
 // (a ViewModelsProto mock asset defect) — avoided here in favor of clean icons.

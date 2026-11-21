@@ -1,8 +1,6 @@
+import { mountRoomSummary } from '../../components/RoomSummary/RoomSummary';
 import { mountMinionComponent } from '../../components/MinionComponent/MinionComponent';
 import type { MinionComponentHandle } from '../../components/MinionComponent/MinionComponent.types';
-import { mountRoomOverviewCard } from '../../components/RoomOverviewCard/RoomOverviewCard';
-import { mountUpgradeCard } from '../../components/UpgradeCard/UpgradeCard';
-import type { UpgradeCardHandle } from '../../components/UpgradeCard/UpgradeCard.types';
 import { mountMissionPin } from '../../components/MissionPin/MissionPin';
 import type { MissionPinHandle } from '../../components/MissionPin/MissionPin.types';
 import type { WarRoomActionHandler, WarRoomViewHandle, WarRoomViewModel } from './WarRoomViewModel';
@@ -18,14 +16,7 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   const root = document.createElement('main');
   root.className = 'dt-warroom';
   root.innerHTML = `<div class="dt-warroom__window">
-    <section class="dt-warroom__upper" aria-label="War Room summary and upgrades">
-      <div class="dt-warroom__room"></div>
-      <div class="dt-warroom__upgrade-shell">
-        <button class="dt-warroom__arrow dt-warroom__arrow--left" type="button" aria-label="Previous upgrades">‹</button>
-        <div class="dt-warroom__upgrade-viewport" tabindex="0" aria-label="Scrollable War Room upgrades"><div class="dt-warroom__upgrade-track"></div></div>
-        <button class="dt-warroom__arrow dt-warroom__arrow--right" type="button" aria-label="Next upgrades">›</button>
-      </div>
-    </section>
+    <div class="dt-room-summary-host"></div>
     <section class="dt-warroom__map-area" aria-label="World map with missions">
       <div class="dt-warroom__map-viewport" tabindex="0" aria-label="Scrollable world map — select a mission pin">
         <div class="dt-warroom__map-stage">
@@ -61,10 +52,6 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
     if (!element) throw new Error(`WarRoomView missing ${selector}`);
     return element;
   };
-  const upgradeViewport = get<HTMLElement>('.dt-warroom__upgrade-viewport');
-  const upgradeTrack = get<HTMLElement>('.dt-warroom__upgrade-track');
-  const prevUpgrade = get<HTMLButtonElement>('.dt-warroom__arrow--left');
-  const nextUpgrade = get<HTMLButtonElement>('.dt-warroom__arrow--right');
   const pinHost = get<HTMLElement>('.dt-warroom__mission-pins');
   const mapViewport = get<HTMLElement>('.dt-warroom__map-viewport');
   const worldName = get<HTMLElement>('.dt-warroom__world-name');
@@ -105,20 +92,9 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   const minionTray = get<HTMLElement>('.dt-warroom__tray');
   const minionTrack = get<HTMLElement>('.dt-warroom__minion-track');
 
-  const room = mountRoomOverviewCard(get<HTMLElement>('.dt-warroom__room'), initial.room, {variant:'embedded'});
-  const upgrades = new Map<string, Mounted<UpgradeCardHandle>>();
+  const room = mountRoomSummary(root.querySelector<HTMLElement>('.dt-room-summary-host')!, initial.room, initial.upgrades, upgradeId => onAction({ type: 'upgradeRequested', upgradeId }));
   const pins = new Map<string, Mounted<MissionPinHandle>>();
   const minions = new Map<string, Mounted<MinionComponentHandle>>();
-
-  const scrollUpgrades = (direction: number) => upgradeViewport.scrollBy({left:direction * 380,behavior:'smooth'});
-  prevUpgrade.addEventListener('click', () => scrollUpgrades(-1), {signal:abort.signal});
-  nextUpgrade.addEventListener('click', () => scrollUpgrades(1), {signal:abort.signal});
-  const refreshArrows = () => {
-    prevUpgrade.disabled = upgradeViewport.scrollLeft <= 2;
-    nextUpgrade.disabled = upgradeViewport.scrollLeft + upgradeViewport.clientWidth >= upgradeViewport.scrollWidth - 2;
-  };
-  upgradeViewport.addEventListener('scroll', refreshArrows, {signal:abort.signal, passive:true});
-  window.addEventListener('resize', refreshArrows, {signal:abort.signal});
 
   locationInfo.addEventListener('click', () => {
     if (current.selectedMissionId) onAction({type:'missionInfoRequested',missionId:current.selectedMissionId});
@@ -164,19 +140,8 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
     if (mapArt.getAttribute('src') !== model.mapImageSrc) mapArt.src = model.mapImageSrc;
     mapArt.alt = model.mapImageAlt;
     worldName.textContent = model.worldName;
-    room.setModel(model.room);
-    const activeUpgrades = new Set(model.upgrades.map(u => u.id));
-    for (const [id, entry] of upgrades) if (!activeUpgrades.has(id)) {entry.handle.destroy();entry.host.remove();upgrades.delete(id);}
-    const upgradeHosts:HTMLElement[] = [];
-    for (const u of model.upgrades) {
-      let entry=upgrades.get(u.id);
-      if (!entry) {
-        const slot=document.createElement('div');slot.className='dt-warroom__upgrade-slot';
-        entry={host:slot,handle:mountUpgradeCard(slot,u,id=>onAction({type:'upgradeRequested',upgradeId:id}))};upgrades.set(u.id,entry);
-      } else entry.handle.setModel(u);
-      upgradeHosts.push(entry.host);
-    }
-    if (upgradeTrack.childElementCount!==upgradeHosts.length || upgradeHosts.some((node,i)=>upgradeTrack.children[i]!==node)) upgradeTrack.replaceChildren(...upgradeHosts);
+    room.setModel(model.room, model.upgrades);
+
     const activeMissions = new Set(model.missions.map(m=>m.id));
     for (const [id,entry] of pins) if (!activeMissions.has(id)) {entry.handle.destroy();entry.host.remove();pins.delete(id);}
     const pinHosts: HTMLElement[]=[];
@@ -271,7 +236,6 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
       minionHosts.push(entry.host);
     }
     if (minionTrack.childElementCount!==minionHosts.length || minionHosts.some((node,i)=>minionTrack.children[i]!==node)) minionTrack.replaceChildren(...minionHosts);
-    refreshArrows();
     if (!mapPositionInitialized) {
       mapPositionInitialized=true;
       requestAnimationFrame(()=>{
@@ -283,5 +247,5 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   }
   host.replaceChildren(root);
   setModel(initial);
-  return {setModel,destroy(){if(disposed)return;disposed=true;abort.abort();room.destroy();for(const x of upgrades.values())x.handle.destroy();for(const x of pins.values())x.handle.destroy();for(const x of minions.values())x.handle.destroy();upgrades.clear();pins.clear();minions.clear();root.remove();}};
+  return {setModel,destroy(){if(disposed)return;disposed=true;abort.abort();room.destroy();for(const x of pins.values())x.handle.destroy();for(const x of minions.values())x.handle.destroy();pins.clear();minions.clear();root.remove();}};
 }

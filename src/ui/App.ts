@@ -1,4 +1,5 @@
 import { GameEngine } from '../engine/GameEngine';
+import { asset } from './screens/assets';
 import { mountAppShell } from './shell/AppShell';
 import type { AppShellHandle } from './shell/AppShell.types';
 import { mountTimeWidget } from './shell/TimeWidget';
@@ -49,13 +50,13 @@ import { buildVictoryViewModel, handleVictoryAction, hasWonGame } from './screen
 type ScreenId = 'storehouse' | 'quarters' | 'infirmary' | 'trainingHall' | 'laboratory' | 'dungeon' | 'warRoom';
 
 const ROOM_ENTRIES: ReadonlyArray<{ id: ScreenId; icon: string; label: string }> = [
-  { id: 'storehouse', icon: '📦', label: 'Storehouse' },
-  { id: 'quarters', icon: '🛏️', label: 'Quarters' },
-  { id: 'infirmary', icon: '💗', label: 'Infirmary' },
-  { id: 'trainingHall', icon: '🏋️', label: 'Training Hall' },
-  { id: 'laboratory', icon: '🧪', label: 'Laboratory' },
-  { id: 'dungeon', icon: '⛓️', label: 'Dungeon' },
-  { id: 'warRoom', icon: '🗺️', label: 'War Room' },
+  { id: 'storehouse', icon: asset('rooms/storehouse-icon.webp'), label: 'Storehouse' },
+  { id: 'quarters', icon: asset('rooms/quarters-icon.webp'), label: 'Quarters' },
+  { id: 'infirmary', icon: asset('rooms/infirmary-icon.webp'), label: 'Infirmary' },
+  { id: 'trainingHall', icon: asset('rooms/training-hall-icon.webp'), label: 'Training Hall' },
+  { id: 'laboratory', icon: asset('rooms/laboratory-icon.webp'), label: 'Laboratory' },
+  { id: 'dungeon', icon: asset('rooms/dungeon-icon.webp'), label: 'Dungeon' },
+  { id: 'warRoom', icon: asset('rooms/war-room-icon.webp'), label: 'War Room' },
 ];
 /** Rooms not yet wired still show in the nav (greyed/no-op) so the full room list is visible
  * from day one; this grows to include every ScreenId as Phase 2 screens land. */

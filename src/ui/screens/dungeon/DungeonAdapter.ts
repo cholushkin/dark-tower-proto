@@ -5,7 +5,7 @@ import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, roomUpgradeD
 import { nameFor } from '../../minionIdentity';
 import type { DungeonAction, DungeonViewModel } from './DungeonViewModel';
 
-const roomImage = asset('dungeon-room.webp');
+const roomImage = asset('rooms/dungeon.webp');
 const emptyCellImage = asset('empty-cell.webp');
 const PRISONER_PORTRAITS = ['grub-prisoner', 'mork-prisoner', 'skrit-prisoner', 'brakka-prisoner'].map(name => asset(`${name}.webp`));
 

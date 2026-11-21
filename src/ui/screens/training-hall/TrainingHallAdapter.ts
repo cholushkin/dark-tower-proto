@@ -9,7 +9,7 @@ import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, roomUpgradeD
 import { nameFor, portraitFor } from '../../minionIdentity';
 import type { TrainingHallAction, TrainingHallViewModel } from './TrainingHallViewModel';
 
-const roomImage = asset('training-hall-room.png');
+const roomImage = asset('rooms/training-hall.webp');
 const STATION_IMAGES = ['station-1', 'station-2', 'station-3', 'station-4'].map(name => asset(`${name}.webp`));
 
 export interface TrainingHallUiState {

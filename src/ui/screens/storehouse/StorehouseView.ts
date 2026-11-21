@@ -1,9 +1,7 @@
+import { mountRoomSummary } from '../../components/RoomSummary/RoomSummary';
 import { mountItemComponent } from '../../components/ItemComponent/ItemComponent';
 import type { ItemComponentHandle } from '../../components/ItemComponent/ItemComponent.types';
-import { mountRoomOverviewCard } from '../../components/RoomOverviewCard/RoomOverviewCard';
 import { mountTagFilterBar } from '../../components/TagFilterBar/TagFilterBar';
-import { mountUpgradeCard } from '../../components/UpgradeCard/UpgradeCard';
-import type { UpgradeCardHandle } from '../../components/UpgradeCard/UpgradeCard.types';
 import type { StorehouseActionHandler, StorehouseViewHandle, StorehouseViewModel } from './StorehouseViewModel';
 import './StorehouseView.css';
 
@@ -26,17 +24,7 @@ export function mountStorehouseView(
     <div class="dt-storehouse__mountains" aria-hidden="true"></div>
     <div class="dt-storehouse__shell">
       <section class="dt-storehouse__window" aria-label="Storehouse window">
-      <section class="dt-storehouse__upper" aria-label="Room information and upgrades">
-        <div class="dt-storehouse__room"></div>
-        <section class="dt-storehouse__upgrades" aria-label="Upgrades">
-          <div class="dt-storehouse__upgrade-caption">Upgrades</div>
-          <button class="dt-storehouse__scroll-arrow dt-storehouse__scroll-arrow--left" type="button" aria-label="Scroll upgrades left">‹</button>
-          <div class="dt-storehouse__upgrade-viewport" tabindex="0" aria-label="Horizontal list of Storehouse upgrades">
-            <div class="dt-storehouse__upgrade-track"></div>
-          </div>
-          <button class="dt-storehouse__scroll-arrow dt-storehouse__scroll-arrow--right" type="button" aria-label="Scroll upgrades right">›</button>
-        </section>
-      </section>
+      <div class="dt-room-summary-host"></div>
       <section class="dt-storehouse__inventory" aria-label="Stored items">
         <div class="dt-storehouse__filters"></div>
         <div class="dt-storehouse__inventory-frame">
@@ -56,74 +44,25 @@ export function mountStorehouseView(
     if (!el) throw new Error(`StorehouseView missing ${selector}`);
     return el;
   }
-  const roomEl = required<HTMLElement>('.dt-storehouse__room');
-  const upgradesTrack = required<HTMLElement>('.dt-storehouse__upgrade-track');
-  const upgradesViewport = required<HTMLElement>('.dt-storehouse__upgrade-viewport');
   const inventoryViewport = required<HTMLElement>('.dt-storehouse__inventory-viewport');
   const inventoryGrid = required<HTMLElement>('.dt-storehouse__items');
   const inventoryCount = required<HTMLElement>('.dt-storehouse__inventory-count');
   const emptyEl = required<HTMLElement>('.dt-storehouse__empty');
   const emptyText = required<HTMLElement>('.dt-storehouse__empty p');
-  const prev = required<HTMLButtonElement>('.dt-storehouse__scroll-arrow--left');
-  const next = required<HTMLButtonElement>('.dt-storehouse__scroll-arrow--right');
-  const room = mountRoomOverviewCard(roomEl, initial.room, { variant: 'embedded' });
+  const room = mountRoomSummary(root.querySelector<HTMLElement>('.dt-room-summary-host')!, initial.room, initial.upgrades, upgradeId => onAction({ type: 'upgradeRequested', upgradeId }));
   const filters = mountTagFilterBar(required<HTMLElement>('.dt-storehouse__filters'), initial.filters, tag => {
     onAction({ type: 'filterToggled', tag });
   });
   const itemCards = new Map<string, MountedCard<ItemComponentHandle>>();
-  const upgradeCards = new Map<string, MountedCard<UpgradeCardHandle>>();
   let disposed = false;
-
-  function updateArrows(): void {
-    const end = Math.max(0, upgradesViewport.scrollWidth - upgradesViewport.clientWidth);
-    prev.disabled = upgradesViewport.scrollLeft <= 2;
-    next.disabled = upgradesViewport.scrollLeft >= end - 2;
-    prev.hidden = upgradeCards.size <= 5;
-    next.hidden = upgradeCards.size <= 5;
-  }
-  function scrollUpgrades(dir: 1 | -1): void {
-    upgradesViewport.scrollBy({ left: dir * Math.min(500, upgradesViewport.clientWidth * 0.8), behavior: 'smooth' });
-  }
-  prev.addEventListener('click', () => scrollUpgrades(-1), { signal: abort.signal });
-  next.addEventListener('click', () => scrollUpgrades(1), { signal: abort.signal });
-  upgradesViewport.addEventListener('scroll', updateArrows, { signal: abort.signal, passive: true });
-  // Shift + wheel also scrolls the carousel; default vertical wheel continues scrolling the inventory/page.
-  upgradesViewport.addEventListener('wheel', (event: WheelEvent) => {
-    if (event.shiftKey && Math.abs(event.deltaY) > 0) {
-      event.preventDefault();
-      upgradesViewport.scrollLeft += event.deltaY;
-    }
-  }, { signal: abort.signal, passive: false });
-  window.addEventListener('resize', updateArrows, { signal: abort.signal });
 
   function setModel(model: Readonly<StorehouseViewModel>): void {
     if (disposed) return;
-    room.setModel(model.room);
+    room.setModel(model.room, model.upgrades);
     filters.setModel(model.filters);
     inventoryCount.textContent = model.inventoryLabel;
     emptyText.textContent = model.emptyMessage;
     root.classList.toggle('dt-storehouse--busy', !!model.busy);
-
-    const activeUpgrades = new Set(model.upgrades.map(upgrade => upgrade.id));
-    for (const [id, mounted] of upgradeCards) {
-      if (!activeUpgrades.has(id)) { mounted.handle.destroy(); mounted.host.remove(); upgradeCards.delete(id); }
-    }
-    const upgradeHosts: HTMLElement[] = [];
-    for (const upgrade of model.upgrades) {
-      let card = upgradeCards.get(upgrade.id);
-      if (!card) {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'dt-storehouse__upgrade-slot';
-        card = { host: wrapper, handle: mountUpgradeCard(wrapper, upgrade, id => onAction({ type: 'upgradeRequested', upgradeId: id })) };
-        upgradeCards.set(upgrade.id, card);
-      } else card.handle.setModel(upgrade);
-      upgradeHosts.push(card.host);
-    }
-    // Reuse mounted cards and preserve carousel scroll position on updates.
-    if (upgradesTrack.childElementCount !== upgradeHosts.length || upgradeHosts.some((element, index) => upgradesTrack.children[index] !== element)) {
-      upgradesTrack.replaceChildren(...upgradeHosts);
-    }
-
     const activeItems = new Set(model.items.map(item => item.id));
     for (const [id, card] of itemCards) {
       if (!activeItems.has(id)) { card.handle.destroy(); card.host.remove(); itemCards.delete(id); }
@@ -146,7 +85,6 @@ export function mountStorehouseView(
     inventoryViewport.scrollTop = priorScroll;
     emptyEl.hidden = model.items.length !== 0;
     inventoryGrid.hidden = model.items.length === 0;
-    updateArrows();
   }
   host.replaceChildren(root);
   setModel(initial);
@@ -158,8 +96,8 @@ export function mountStorehouseView(
       abort.abort();
       room.destroy(); filters.destroy();
       for (const card of itemCards.values()) card.handle.destroy();
-      for (const card of upgradeCards.values()) card.handle.destroy();
-      itemCards.clear(); upgradeCards.clear();
+
+      itemCards.clear();
       root.remove();
     },
   };

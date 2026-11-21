@@ -1,5 +1,4 @@
-import { mountUpgradeCard } from '../../components/UpgradeCard/UpgradeCard';
-import type { UpgradeCardHandle } from '../../components/UpgradeCard/UpgradeCard.types';
+import { mountRoomSummary } from '../../components/RoomSummary/RoomSummary';
 import type { LaboratoryActionHandler, LaboratoryActiveProjectViewModel, LaboratoryResearchViewModel, LaboratoryViewHandle, LaboratoryViewModel } from './LaboratoryViewModel';
 import './LaboratoryView.css';
 
@@ -58,8 +57,7 @@ function researchHtml(research: LaboratoryResearchViewModel): string {
 
 export function mountLaboratoryView(host: HTMLElement, initial: Readonly<LaboratoryViewModel>, onAction: LaboratoryActionHandler): LaboratoryViewHandle {
   let model: Readonly<LaboratoryViewModel> = initial;
-  let upgradePage = 0;
-  const upgradeCards: UpgradeCardHandle[] = [];
+  let summary: ReturnType<typeof mountRoomSummary> | undefined;
   let layoutSignature = '';
   let destroyed = false;
 
@@ -70,17 +68,18 @@ export function mountLaboratoryView(host: HTMLElement, initial: Readonly<Laborat
     const target = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
     if (!target || target.disabled) return;
     if (target.hasAttribute('data-research')) onAction({ type: 'startResearchRequested', researchId: target.dataset.research! });
-    if (target.hasAttribute('data-page')) {
-      upgradePage += Number(target.dataset.page);
-      layoutSignature = '';
-      render();
-    }
+
   }
   root.addEventListener('click', onClick);
 
+  function roomModel() {
+    return { id: 'laboratory', title: 'Laboratory', imageSrc: model.image, imageAlt: 'Laboratory room illustration',
+      stats: model.stats.map((stat, index) => ({ id: String(index), label: stat.label, value: stat.value,
+        icon: stat.icon === 'clock' ? '⏱️' : '⚗️' })) };
+  }
+
   function updateProgress(): void {
-    const pageSize = Math.max(1, model.upgradePageSize ?? 5);
-    upgradeCards.forEach((card, index) => card.setModel(model.upgrades[upgradePage * pageSize + index]));
+    summary?.setModel(roomModel(), model.upgrades);
     const active = model.activeProject;
     if (!active) return;
     const track = root.querySelector<HTMLElement>('.lab-progress-track');
@@ -92,25 +91,12 @@ export function mountLaboratoryView(host: HTMLElement, initial: Readonly<Laborat
   }
 
   function render(): void {
-    const pageSize = Math.max(1, model.upgradePageSize ?? 5);
-    const pageCount = Math.max(1, Math.ceil(model.upgrades.length / pageSize));
-    upgradePage = clamp(upgradePage, 0, pageCount - 1);
-    const visibleUpgrades = model.upgrades.slice(upgradePage * pageSize, (upgradePage + 1) * pageSize);
-    upgradeCards.splice(0).forEach(card => card.destroy());
+    const summaryHost = root.querySelector<HTMLElement>('.dt-room-summary-host');
+    summaryHost?.remove();
     root.innerHTML = `
       <div class="lab-outer-glow"></div>
       <main class="lab-window">
-        <section class="lab-overview" aria-label="Laboratory upgrades">
-          <div class="lab-room-overview"><img class="lab-room-art" src="${esc(model.image)}" alt="Laboratory room illustration" />
-            <div class="lab-room-stats">${model.stats.map(stat => `<div class="lab-room-stat"><span class="lab-stat-symbol">${iconHtml(stat.icon ?? 'flask')}</span><span>${esc(stat.label)}</span><strong>${esc(stat.value)}</strong></div>`).join('')}</div>
-          </div>
-          <div class="lab-upgrade-region">
-            <button type="button" class="lab-slider-arrow" data-page="-1" ${upgradePage === 0 ? 'disabled' : ''} aria-label="Previous upgrades">${iconHtml('chevronLeft')}</button>
-            <div class="lab-upgrade-grid"></div>
-            <button type="button" class="lab-slider-arrow" data-page="1" ${upgradePage >= pageCount - 1 ? 'disabled' : ''} aria-label="Next upgrades">${iconHtml('chevronRight')}</button>
-            <div class="lab-carousel-dots" aria-label="Upgrade pages">${Array.from({ length: pageCount }, (_, i) => `<span class="${i === upgradePage ? 'selected' : ''}"></span>`).join('')}</div>
-          </div>
-        </section>
+        <div class="dt-room-summary-host"></div>
         <section class="lab-content-section" aria-label="Current active research">
           <h2 class="lab-section-title">CURRENT ACTIVE RESEARCH</h2>
           ${activeHtml(model.activeProject)}
@@ -121,13 +107,10 @@ export function mountLaboratoryView(host: HTMLElement, initial: Readonly<Laborat
         </section>
       </main>
       ${model.toast ? `<div class="lab-toast" role="status">${esc(model.toast)}</div>` : ''}`;
-    const grid = root.querySelector<HTMLElement>('.lab-upgrade-grid')!;
-    for (const upgrade of visibleUpgrades) {
-      const slot = document.createElement('div');
-      slot.className = 'lab-upgrade-slot';
-      grid.append(slot);
-      upgradeCards.push(mountUpgradeCard(slot, upgrade, upgradeId => onAction({ type: 'upgradeRequested', upgradeId })));
-    }
+    const placeholder = root.querySelector<HTMLElement>('.dt-room-summary-host')!;
+    if (summaryHost) placeholder.replaceWith(summaryHost);
+    else summary = mountRoomSummary(placeholder, roomModel(), model.upgrades,
+      upgradeId => onAction({ type: 'upgradeRequested', upgradeId }));
     updateProgress();
   }
 
@@ -147,7 +130,7 @@ export function mountLaboratoryView(host: HTMLElement, initial: Readonly<Laborat
     destroy(): void {
       if (destroyed) return;
       destroyed = true;
-      upgradeCards.splice(0).forEach(card => card.destroy());
+      summary?.destroy();
       root.removeEventListener('click', onClick);
       root.remove();
     },

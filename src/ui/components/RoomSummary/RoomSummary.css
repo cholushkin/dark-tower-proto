@@ -1,0 +1,26 @@
+/* Dungeon-sized cards and square art, shared by every room. */
+.dt-room-summary-host { flex:0 0 auto; min-width:0; overflow-x:auto; }
+.dt-room-summary {
+  --room-height:231px;
+  box-sizing:border-box; display:grid; grid-template-columns:431px minmax(265px,1fr);
+  gap:18px; height:calc(var(--room-height) + 13px); min-width:714px; padding:6px 0;
+  border-bottom:1px solid #7e4c6f77; color:#f9ebed;
+  font-family:'Trebuchet MS',Arial,sans-serif;
+}
+.dt-room-summary [hidden] { display:none!important; }
+.dt-room-summary__overview { min-width:0; height:var(--room-height); }
+.dt-room-summary .dt-room-card--embedded { display:grid; grid-template-columns:var(--room-height) minmax(0,1fr); gap:18px; overflow:visible; }
+.dt-room-summary .dt-room-card__art { height:var(--room-height); width:var(--room-height); border:1px solid #946b7f; border-radius:9px; }
+.dt-room-summary .dt-room-card__art::after { display:none; }
+.dt-room-summary .dt-room-card__details { align-self:center; padding:0; }
+.dt-room-summary .dt-room-card__stat { grid-template-columns:26px minmax(0,1fr); gap:3px 7px; padding:8px 0; font-size:13px; }
+.dt-room-summary .dt-room-card__stat-icon { grid-row:span 2; font-size:22px; }
+.dt-room-summary .dt-room-card__stat-value { grid-column:2; font-size:20px; white-space:normal; overflow-wrap:anywhere; }
+.dt-room-summary__upgrades { display:grid; grid-template-columns:27px minmax(187px,1fr) 27px; align-items:center; gap:6px; min-width:0; }
+.dt-room-summary__cards { grid-column:2; grid-row:1; display:flex; gap:12px; min-width:0; height:var(--room-height); }
+.dt-room-summary__slot { flex:0 0 187px; width:187px; height:var(--room-height); }
+.dt-room-summary__arrow { grid-row:1; width:27px; height:56px; padding:0; border:1px solid #76466d; border-radius:6px; background:#38253e; color:#ffc952; cursor:pointer; font:38px/1 Georgia,serif; }
+.dt-room-summary__arrow:first-child { grid-column:1; }
+.dt-room-summary__arrow:last-child { grid-column:3; }
+.dt-room-summary__arrow:disabled { opacity:.33; cursor:default; }
+.dt-room-summary__arrow:focus-visible { outline:2px solid #fff2aa; outline-offset:2px; }

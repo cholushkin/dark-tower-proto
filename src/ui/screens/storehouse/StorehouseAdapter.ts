@@ -7,7 +7,7 @@ import { asset } from '../assets';
 import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, itemIconFor, roomUpgradeDefs } from '../shared';
 import type { StorehouseAction, StorehouseViewModel } from './StorehouseViewModel';
 
-const roomImage = asset('storehouse-room.webp');
+const roomImage = asset('rooms/storehouse.webp');
 
 export interface StorehouseUiState {
   activeTags: Set<string>;

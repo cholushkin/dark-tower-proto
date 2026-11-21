@@ -1,5 +1,6 @@
 export interface RoomNavEntryViewModel {
   readonly id: string;
+  /** Resolved URL of the room's transparent white glyph asset. */
   readonly icon: string;
   readonly label: string;
   readonly active: boolean;

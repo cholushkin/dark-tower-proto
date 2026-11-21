@@ -5,7 +5,7 @@ import { buildIncrementalUpgradeViewModel, fmtHours, incrementalUpgradeDefs } fr
 import { nameFor, portraitFor } from '../../minionIdentity';
 import type { InfirmaryAction, InfirmaryViewModel } from './InfirmaryViewModel';
 
-const roomImage = asset('infirmary-room.webp');
+const roomImage = asset('rooms/infirmary.webp');
 const bedImage = asset('infirmary-bed.svg');
 
 export function buildInfirmaryViewModel(engine: GameEngine): InfirmaryViewModel {

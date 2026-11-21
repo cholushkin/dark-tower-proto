@@ -8,23 +8,6 @@
 .dt-dungeon__back:hover { color:#ffd36b; border-color:#d49c65; }
 .dt-dungeon__window-title { margin:0; color:#fff0d5; text-shadow:0 2px 3px #080411; letter-spacing:.035em; font:bold clamp(25px,2.8vw,41px)/1.15 Georgia,serif; }
 .dt-dungeon__window-title::before,.dt-dungeon__window-title::after { content:'◆'; font:12px Georgia,serif; color:#ffc44d; vertical-align:6px; margin:0 14px; }
-.dt-dungeon__upper { flex:0 0 268px; min-height:0; display:grid; grid-template-columns:minmax(245px,310px) minmax(0,1fr); gap:22px; padding:1px 0 13px; border-bottom:1px solid #7e4c6f77; }
-.dt-dungeon__room { min-width:0; min-height:0; }
-.dt-dungeon__room .dt-room-card__art::after { display:none; }
-.dt-dungeon__room .dt-room-card__art { flex:1; }
-.dt-dungeon__room .dt-room-card__stat { font-size:14px; padding:4px 2px; }
-.dt-dungeon__room .dt-room-card__stat-value { font-size:17px; }
-.dt-dungeon__upgrades { position:relative; display:flex; flex-direction:column; min-height:0; padding:5px 35px 18px; }
-.dt-dungeon__upgrade-viewport { overflow:auto hidden; overscroll-behavior-x:contain; scrollbar-width:none; flex:1; min-height:0; scroll-behavior:smooth; outline-offset:4px; }
-.dt-dungeon__upgrade-viewport::-webkit-scrollbar { display:none; }
-.dt-dungeon__upgrade-track { display:flex; gap:12px; height:100%; width:max-content; min-width:100%; }
-.dt-dungeon__upgrade-slot { flex:0 0 187px; height:100%; min-width:0; }
-.dt-dungeon__scroll-arrow { position:absolute; top:36%; width:29px; height:56px; display:grid; place-items:center; border:1px solid #76466d; border-radius:6px; background:#38253e; color:#ffc952; cursor:pointer; font:38px/1 Georgia,serif; }
-.dt-dungeon__scroll-arrow--left { left:0; }.dt-dungeon__scroll-arrow--right { right:0; }
-.dt-dungeon__scroll-arrow:disabled { opacity:.33; color:#b58aa6; cursor:default; }
-.dt-dungeon__upgrade-dots { position:absolute; bottom:0; left:50%; transform:translateX(-50%); display:flex; gap:8px; }
-.dt-dungeon__upgrade-dots span { width:8px; height:8px; background:#57384f; border-radius:100%; }
-.dt-dungeon__upgrade-dots .dt-dungeon__dot--active { background:#fbc34a; box-shadow:0 0 8px #eaae37aa; }
 .dt-dungeon__cells-section { min-height:0; flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .dt-dungeon__cells-topline { flex:0 0 auto; display:flex; justify-content:space-between; padding:2px 17px 10px; font:700 12px/1.1 'Trebuchet MS',sans-serif; text-transform:uppercase; letter-spacing:.15em; color:#d5a8cf; }
 .dt-dungeon__cells-viewport { position:relative; flex:1; min-height:0; overflow:auto hidden; padding:6px 16px 18px; scrollbar-color:#a25495 #342039; scrollbar-width:thin; }
@@ -33,16 +16,8 @@
 .dt-dungeon__cell-slot { min-width:0; }
 .dt-dungeon__no-cells { min-height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:#d5afd0; }.dt-dungeon__no-cells[hidden] { display:none; }.dt-dungeon__no-cells span { font-size:54px; }.dt-dungeon__no-cells strong { font:bold 24px Georgia,serif; }.dt-dungeon__no-cells p { margin:0; }
 .dt-dungeon--busy { cursor:wait; }
-@media(max-width:1000px) { .dt-dungeon__upper { grid-template-columns:250px minmax(0,1fr); gap:12px; flex-basis:245px; } .dt-dungeon__upgrade-slot { flex-basis:172px; } .dt-dungeon__upgrades { padding-inline:30px; } .dt-dungeon__cells-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
-@media(max-width:720px) { .dt-dungeon { min-height:630px; } .dt-dungeon__shell { padding:8px; } .dt-dungeon__window { padding:8px 9px 10px; gap:8px; border-radius:12px; } .dt-dungeon__topbar { flex-basis:43px; padding-bottom:6px; } .dt-dungeon__back { width:45px;height:39px;font-size:30px; } .dt-dungeon__window-title { font-size:clamp(22px,5vw,28px);letter-spacing:0; } .dt-dungeon__window-title::before,.dt-dungeon__window-title::after { margin:0 5px;vertical-align:3px;font-size:8px; } .dt-dungeon__upper { grid-template-columns:165px minmax(0,1fr); flex-basis:215px; gap:8px; padding-bottom:9px; } .dt-dungeon__room .dt-room-card__art { flex-basis:43%; } .dt-dungeon__room .dt-room-card__details { padding:6px 2px 0; } .dt-dungeon__room .dt-room-card__stat { display:grid; grid-template-columns:20px minmax(0,1fr); font-size:10px;gap:1px;padding:2px 0; } .dt-dungeon__room .dt-room-card__stat-icon { grid-row:span 2; font-size:16px; } .dt-dungeon__room .dt-room-card__stat-value { grid-column:2;font-size:11px; } .dt-dungeon__upgrades { padding:8px 23px 19px; } .dt-dungeon__upgrade-slot { flex-basis:146px; } .dt-dungeon__scroll-arrow { width:19px;height:44px;font-size:25px; } .dt-dungeon__cells-viewport { padding:4px 8px 12px; } .dt-dungeon__cells-topline { font-size:10px;padding:4px 8px 8px; } .dt-dungeon__cells-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } }
-@media(max-width:400px) { .dt-dungeon__upper { grid-template-columns:140px minmax(0,1fr); flex-basis:210px; }.dt-dungeon__upgrade-slot { flex-basis:140px; } }
-@media(max-height:720px) and (min-width:721px) { .dt-dungeon__upper { flex-basis:227px; }.dt-dungeon__topbar { flex-basis:42px; }.dt-dungeon__window { gap:8px; } }
+@media(max-width:1000px) { .dt-dungeon__cells-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media(max-width:720px) { .dt-dungeon { min-height:630px; } .dt-dungeon__shell { padding:8px; } .dt-dungeon__window { padding:8px 9px 10px; gap:8px; border-radius:12px; } .dt-dungeon__topbar { flex-basis:43px; padding-bottom:6px; } .dt-dungeon__back { width:45px;height:39px;font-size:30px; } .dt-dungeon__window-title { font-size:clamp(22px,5vw,28px);letter-spacing:0; } .dt-dungeon__window-title::before,.dt-dungeon__window-title::after { margin:0 5px;vertical-align:3px;font-size:8px; } .dt-dungeon__cells-viewport { padding:4px 8px 12px; } .dt-dungeon__cells-topline { font-size:10px;padding:4px 8px 8px; } .dt-dungeon__cells-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } }
+
+@media(max-height:720px) and (min-width:721px) {.dt-dungeon__topbar { flex-basis:42px; }.dt-dungeon__window { gap:8px; } }
 @media(prefers-reduced-motion:reduce) { .dt-dungeon *, .dt-dungeon *::before, .dt-dungeon *::after { scroll-behavior:auto!important; } }
-/* Keep both room properties on one row, even on narrow phones. */
-@media(max-width:720px) {
-  .dt-dungeon__room .dt-room-card__stat { grid-template-columns:18px minmax(0,1fr) auto; column-gap:2px; font-size:10px; }
-  .dt-dungeon__room .dt-room-card__stat-icon { grid-row:auto; font-size:14px; }
-  .dt-dungeon__room .dt-room-card__stat-value { grid-column:auto; font-size:11px; }
-}
-
-

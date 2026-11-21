@@ -28,13 +28,14 @@ export function mountRoomNav(host: HTMLElement, initial: Readonly<RoomNavViewMod
         button = document.createElement('button');
         button.type = 'button';
         button.className = 'dt-room-nav__item';
-        button.innerHTML = `<span class="dt-room-nav__icon" aria-hidden="true"></span><span class="dt-room-nav__label"></span>`;
+        button.innerHTML = `<img class="dt-room-nav__icon" alt="" aria-hidden="true" width="32" height="32"><span class="dt-room-nav__label"></span>`;
         button.addEventListener('click', () => onAction({ type: 'navigate', id: room.id }), { signal: abort.signal });
         buttons.set(room.id, button);
       }
       button.classList.toggle('is-active', room.active);
       button.setAttribute('aria-pressed', String(room.active));
-      button.querySelector('.dt-room-nav__icon')!.textContent = room.icon;
+      const icon = button.querySelector<HTMLImageElement>('.dt-room-nav__icon')!;
+      if (icon.getAttribute('src') !== room.icon) icon.setAttribute('src', room.icon);
       button.querySelector('.dt-room-nav__label')!.textContent = room.label;
       ordered.push(button);
     }

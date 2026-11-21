@@ -10,7 +10,7 @@ export const WORLD_1A: WorldDef = {
         {
             id: "t1_millbrook", tier: 1, name: "Millbrook Village",
             description: "A sleepy riverside village built around an old watermill. Grain stores and modest treasures lie behind its timber palisade.", weather: "clear",
-            mapPosition: { x: 43.0, y: 41.0 },
+            mapPosition: { x: 41.0, y: 38.0 },
             requiredPower: 18, baseDurationHours: 6, baseInjuryChance: 0.05,
             rewardGoldRange: [20, 50], rewardCrystalsRange: [0, 2],
             loot: [
@@ -23,7 +23,7 @@ export const WORLD_1A: WorldDef = {
         {
             id: "t1_stonebridge", tier: 1, name: "Stonebridge Hamlet",
             description: "A stone bridge binds this hamlet to the trade road. Merchants shelter here under the watch of a small local militia.", weather: "rain",
-            mapPosition: { x: 63.52, y: 36.04 },
+            mapPosition: { x: 59.0, y: 40.0 },
             requiredPower: 25, baseDurationHours: 8, baseInjuryChance: 0.07,
             rewardGoldRange: [30, 70], rewardCrystalsRange: [0, 3],
             loot: [
@@ -36,7 +36,7 @@ export const WORLD_1A: WorldDef = {
         {
             id: "t1_fallowcreek", tier: 1, name: "Fallow Creek Farms",
             description: "Golden fields surround scattered farmsteads. Full granaries and livestock make tempting prizes for raiders.", weather: "fog",
-            mapPosition: { x: 71.87, y: 44.67 },
+            mapPosition: { x: 42.5, y: 48.5 },
             requiredPower: 22, baseDurationHours: 7, baseInjuryChance: 0.06,
             rewardGoldRange: [25, 60], rewardCrystalsRange: [0, 2],
             loot: [
@@ -49,7 +49,7 @@ export const WORLD_1A: WorldDef = {
         {
             id: "t1_oakhollow", tier: 1, name: "Oakhollow Outpost",
             description: "A lonely watchtower guards the oak-lined border road. Its disciplined garrison keeps supplies ready for a siege.", weather: "storm",
-            mapPosition: { x: 71.87, y: 55.33 },
+            mapPosition: { x: 59.0, y: 51.0 },
             requiredPower: 32, baseDurationHours: 10, baseInjuryChance: 0.09,
             rewardGoldRange: [40, 90], rewardCrystalsRange: [1, 4],
             loot: [

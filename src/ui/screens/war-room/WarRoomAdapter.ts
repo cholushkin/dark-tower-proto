@@ -20,7 +20,7 @@ export function createWarRoomUiState(): WarRoomUiState {
   return { selectedMissionId: null, squadSelection: new Set(), showMapCoordinates: false };
 }
 
-const roomImage = asset('war-room.webp');
+const roomImage = asset('rooms/war-room.webp');
 
 
 function minionViewModel(state: GameState, id: string): MinionComponentViewModel {
