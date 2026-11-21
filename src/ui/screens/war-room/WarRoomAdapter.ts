@@ -99,7 +99,7 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
   if (preview) {
     parameters.push(
       { id: 'success', icon: '🎯', value: !scouted ? 'Success unknown' : squad.length ? `${pct(1 - preview.failureChance)} success` : 'Assign minions',
-        description: !scouted ? 'Success chance is hidden. Upgrade Enemy Intelligence to estimate it for your assigned squad.' : 'Chance of winning and receiving rewards. Calculated from combined squad power versus mission strength. Attack, defense, rank, research and favorable weather improve squad power.' },
+        description: !scouted ? 'Success chance is hidden. Upgrade Enemy Intelligence to estimate it for your assigned squad.' : 'Chance of winning and receiving rewards. Calculated from combined squad power versus mission strength. Attack, defense, rank, upgrades and favorable weather improve squad power.' },
       { id: 'capacity', icon: '🎒', value: `${squad.reduce((sum, id) => sum + CONFIG.ranks[state.findMinion(id)!.rank - 1].carryCapacity, 0)} loot slots`,
         description: 'Carrying capacity: total item-stack slots your assigned minions can bring back. Higher-rank minions carry more. Items of the same type can share a stack.' },
     );

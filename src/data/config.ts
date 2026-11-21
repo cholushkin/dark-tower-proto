@@ -50,52 +50,48 @@ export const CONFIG: GameConfig = {
 
     upgrades: [
         // Storehouse
-        { id: "sh_storage_1", room: "storehouse", name: "Storage Shelves I", description: "Add 10 storage slots.", costGold: 100, durationHours: 1, requires: [], effect: { type: "storageSlots", amount: 10 }, towerXp: 5 },
-        { id: "sh_storage_2", room: "storehouse", name: "Storage Shelves II", description: "Add 20 more storage slots.", costGold: 200, durationHours: 3, requires: ["sh_storage_1"], effect: { type: "storageSlots", amount: 20 }, towerXp: 8 },
-        { id: "sh_storage_3", room: "storehouse", name: "Storage Shelves III", description: "Add 80 more storage slots.", costGold: 500, durationHours: 6, requires: ["sh_storage_2"], effect: { type: "storageSlots", amount: 80 }, towerXp: 12 },
-        { id: "sh_sale_eff_1", room: "storehouse", name: "Sale Efficiency I", description: "Normal sales take 25% less time.", costGold: 200, durationHours: 2, requires: [], effect: { type: "saleEfficiency", multiplier: 0.75 }, towerXp: 5 },
-        { id: "sh_sale_eff_2", room: "storehouse", name: "Sale Efficiency II", description: "Normal sales take another 25% less time.", costGold: 500, durationHours: 4, requires: ["sh_sale_eff_1"], effect: { type: "saleEfficiency", multiplier: 0.75 }, towerXp: 8 },
+        { id: "sh_storage_1", room: "storehouse", name: "Storage Shelves I", description: "Add 10 storage slots.", costGold: 100, durationHours: 1, requirements: { type: "all", requirements: [] }, effect: { type: "storageSlots", amount: 10 }, towerXp: 5 },
+        { id: "sh_storage_2", room: "storehouse", name: "Storage Shelves II", description: "Add 20 more storage slots.", costGold: 200, durationHours: 3, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_storage_1" }] }, effect: { type: "storageSlots", amount: 20 }, towerXp: 8 },
+        { id: "sh_storage_3", room: "storehouse", name: "Storage Shelves III", description: "Add 80 more storage slots.", costGold: 500, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_storage_2" }] }, effect: { type: "storageSlots", amount: 80 }, towerXp: 12 },
+        { id: "sh_sale_eff_1", room: "storehouse", name: "Sale Efficiency I", description: "Normal sales take 25% less time.", costGold: 200, durationHours: 2, requirements: { type: "all", requirements: [] }, effect: { type: "saleEfficiency", multiplier: 0.75 }, towerXp: 5 },
+        { id: "sh_sale_eff_2", room: "storehouse", name: "Sale Efficiency II", description: "Normal sales take another 25% less time.", costGold: 500, durationHours: 4, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_sale_eff_1" }] }, effect: { type: "saleEfficiency", multiplier: 0.75 }, towerXp: 8 },
 
         // Infirmary
-        { id: "inf_eff_1", room: "infirmary", name: "Treatment Efficiency I", description: "Treatment takes 25% less time.", costGold: 100, durationHours: 3, requires: [], effect: { type: "treatmentEfficiency", multiplier: 0.75 }, towerXp: 6 },
-        { id: "inf_eff_2", room: "infirmary", name: "Treatment Efficiency II", description: "Treatment takes another 27% less time.", costGold: 220, durationHours: 5, requires: ["inf_eff_1"], effect: { type: "treatmentEfficiency", multiplier: 0.73 }, towerXp: 9 },
+        { id: "inf_eff_1", room: "infirmary", name: "Treatment Efficiency I", description: "Treatment takes 25% less time.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "treatmentEfficiency", multiplier: 0.75 }, towerXp: 6 },
+        { id: "inf_eff_2", room: "infirmary", name: "Treatment Efficiency II", description: "Treatment takes another 27% less time.", costGold: 220, durationHours: 5, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "inf_eff_1" }] }, effect: { type: "treatmentEfficiency", multiplier: 0.73 }, towerXp: 9 },
 
         // Training Hall
-        { id: "th_unlock_2_3", room: "trainingHall", name: "Advanced Training: Grunt→Raider", description: "Unlocks training Rank 2 to Rank 3.", costGold: 200, durationHours: 4, requires: [], effect: { type: "trainingUnlock", fromRank: 2 }, towerXp: 9 },
-        { id: "th_unlock_3_4", room: "trainingHall", name: "Advanced Training: Raider→Veteran", description: "Unlocks training Rank 3 to Rank 4.", costGold: 450, durationHours: 7, requires: ["th_unlock_2_3"], effect: { type: "trainingUnlock", fromRank: 3 }, towerXp: 12 },
-        { id: "th_unlock_4_5", room: "trainingHall", name: "Advanced Training: Veteran→Captain", description: "Unlocks training Rank 4 to Rank 5.", costGold: 900, durationHours: 12, requires: ["th_unlock_3_4"], effect: { type: "trainingUnlock", fromRank: 4 }, towerXp: 16 },
+        { id: "th_unlock_2_3", room: "trainingHall", name: "Advanced Training: Grunt→Raider", description: "Unlocks training Rank 2 to Rank 3.", costGold: 200, durationHours: 4, requirements: { type: "all", requirements: [] }, effect: { type: "trainingUnlock", fromRank: 2 }, towerXp: 9 },
+        { id: "th_unlock_3_4", room: "trainingHall", name: "Advanced Training: Raider→Veteran", description: "Unlocks training Rank 3 to Rank 4.", costGold: 450, durationHours: 7, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "th_unlock_2_3" }] }, effect: { type: "trainingUnlock", fromRank: 3 }, towerXp: 12 },
+        { id: "th_unlock_4_5", room: "trainingHall", name: "Advanced Training: Veteran→Captain", description: "Unlocks training Rank 4 to Rank 5.", costGold: 900, durationHours: 12, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "th_unlock_3_4" }] }, effect: { type: "trainingUnlock", fromRank: 4 }, towerXp: 16 },
 
         // Laboratory
-        { id: "lab_tier_1", room: "laboratory", name: "Research Tier Unlock I", description: "Unlocks Tier 2 research projects.", costGold: 200, durationHours: 5, requires: [], effect: { type: "researchTier", tier: 2 }, towerXp: 10 },
-        { id: "lab_tier_2", room: "laboratory", name: "Research Tier Unlock II", description: "Unlocks Tier 3 research projects.", costGold: 500, durationHours: 9, requires: ["lab_tier_1"], effect: { type: "researchTier", tier: 3 }, towerXp: 14 },
-        { id: "lab_eff_1", room: "laboratory", name: "Research Efficiency I", description: "Research takes 20% less time.", costGold: 150, durationHours: 4, requires: [], effect: { type: "researchEfficiency", multiplier: 0.8 }, towerXp: 8 },
-        { id: "lab_eff_2", room: "laboratory", name: "Research Efficiency II", description: "Research takes another 25% less time.", costGold: 350, durationHours: 7, requires: ["lab_eff_1"], effect: { type: "researchEfficiency", multiplier: 0.75 }, towerXp: 12 },
+        { id: "lab_tier_1", room: "laboratory", name: "Laboratory Tier Unlock I", description: "Unlocks Tier 2 laboratory upgrades.", costGold: 200, durationHours: 5, requirements: { type: "all", requirements: [] }, effect: { type: "laboratoryTier", tier: 2 }, towerXp: 10 },
+        { id: "lab_tier_2", room: "laboratory", name: "Laboratory Tier Unlock II", description: "Unlocks Tier 3 laboratory upgrades.", costGold: 500, durationHours: 9, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "lab_tier_1" }] }, effect: { type: "laboratoryTier", tier: 3 }, towerXp: 14 },
+
+        { id: "res_improved_weapons", room: "laboratory", name: "Improved Weapons", description: "+3 Attack for all minions.", costGold: 150, durationHours: 6, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 1 }] }, effect: { type: "minionStat", stat: "attack", mode: "add", value: 3 }, towerXp: 10 },
+        { id: "res_improved_armor", room: "laboratory", name: "Improved Armor", description: "+3 Defense for all minions.", costGold: 150, durationHours: 6, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 1 }] }, effect: { type: "minionStat", stat: "defense", mode: "add", value: 3 }, towerXp: 10 },
+        { id: "res_fury_spell", room: "laboratory", name: "Fury Spell", description: "+15% Attack for all minions.", costGold: 400, durationHours: 10, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 2 }, { type: "upgradeCompleted", upgradeId: "res_improved_weapons" }] }, effect: { type: "minionStat", stat: "attack", mode: "mult", value: 1.15 }, towerXp: 16 },
 
         // Dungeon
-        { id: "dg_cell_1", room: "dungeon", name: "Extra Cell I", description: "Add one prisoner cell.", costGold: 50, durationHours: 1, requires: [], effect: { type: "dungeonCell" }, towerXp: 4 },
-        { id: "dg_cell_2", room: "dungeon", name: "Extra Cell II", description: "Add one more prisoner cell.", costGold: 120, durationHours: 3, requires: ["dg_cell_1"], effect: { type: "dungeonCell" }, towerXp: 6 },
-        { id: "dg_torture_eff_1", room: "dungeon", name: "Torture Efficiency I", description: "Processing takes 20% less time.", costGold: 100, durationHours: 3, requires: [], effect: { type: "tortureEfficiency", multiplier: 0.8 }, towerXp: 6 },
-        { id: "dg_torture_eff_2", room: "dungeon", name: "Torture Efficiency II", description: "Processing takes another 25% less time.", costGold: 250, durationHours: 6, requires: ["dg_torture_eff_1"], effect: { type: "tortureEfficiency", multiplier: 0.75 }, towerXp: 9 },
-        { id: "dg_recruit_eff_1", room: "dungeon", name: "Recruitment Efficiency I", description: "Increases recruitment chance.", costGold: 120, durationHours: 3, requires: [], effect: { type: "recruitmentEfficiency", bonus: 0.1 }, towerXp: 7 },
-        { id: "dg_recruit_eff_2", room: "dungeon", name: "Recruitment Efficiency II", description: "Increases recruitment chance further.", costGold: 300, durationHours: 6, requires: ["dg_recruit_eff_1"], effect: { type: "recruitmentEfficiency", bonus: 0.15 }, towerXp: 10 },
+        { id: "dg_cell_1", room: "dungeon", name: "Extra Cell I", description: "Add one prisoner cell.", costGold: 50, durationHours: 1, requirements: { type: "all", requirements: [] }, effect: { type: "dungeonCell" }, towerXp: 4 },
+        { id: "dg_cell_2", room: "dungeon", name: "Extra Cell II", description: "Add one more prisoner cell.", costGold: 120, durationHours: 3, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "dg_cell_1" }] }, effect: { type: "dungeonCell" }, towerXp: 6 },
+        { id: "dg_torture_eff_1", room: "dungeon", name: "Torture Efficiency I", description: "Processing takes 20% less time.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "tortureEfficiency", multiplier: 0.8 }, towerXp: 6 },
+        { id: "dg_torture_eff_2", room: "dungeon", name: "Torture Efficiency II", description: "Processing takes another 25% less time.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "dg_torture_eff_1" }] }, effect: { type: "tortureEfficiency", multiplier: 0.75 }, towerXp: 9 },
+        { id: "dg_recruit_eff_1", room: "dungeon", name: "Recruitment Efficiency I", description: "Increases recruitment chance.", costGold: 120, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "recruitmentEfficiency", bonus: 0.1 }, towerXp: 7 },
+        { id: "dg_recruit_eff_2", room: "dungeon", name: "Recruitment Efficiency II", description: "Increases recruitment chance further.", costGold: 300, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "dg_recruit_eff_1" }] }, effect: { type: "recruitmentEfficiency", bonus: 0.15 }, towerXp: 10 },
 
         // War Room
-        { id: "wr_enemy_intel_1", room: "warRoom", name: "Enemy Intelligence I", description: "Narrower estimated enemy-strength range.", costGold: 100, durationHours: 3, requires: [], effect: { type: "enemyIntel", level: 1 }, towerXp: 6 },
-        { id: "wr_enemy_intel_2", room: "warRoom", name: "Enemy Intelligence II", description: "Even narrower estimated enemy-strength range.", costGold: 250, durationHours: 6, requires: ["wr_enemy_intel_1"], effect: { type: "enemyIntel", level: 2 }, towerXp: 9 },
-        { id: "wr_loot_intel_1", room: "warRoom", name: "Loot Intelligence I", description: "Reveals possible loot types.", costGold: 100, durationHours: 3, requires: [], effect: { type: "lootIntel", level: 1 }, towerXp: 6 },
-        { id: "wr_loot_intel_2", room: "warRoom", name: "Loot Intelligence II", description: "Reveals estimated drop chances.", costGold: 250, durationHours: 6, requires: ["wr_loot_intel_1"], effect: { type: "lootIntel", level: 2 }, towerXp: 9 },
+        { id: "wr_enemy_intel_1", room: "warRoom", name: "Enemy Intelligence I", description: "Narrower estimated enemy-strength range.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "enemyIntel", level: 1 }, towerXp: 6 },
+        { id: "wr_enemy_intel_2", room: "warRoom", name: "Enemy Intelligence II", description: "Even narrower estimated enemy-strength range.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "wr_enemy_intel_1" }] }, effect: { type: "enemyIntel", level: 2 }, towerXp: 9 },
+        { id: "wr_loot_intel_1", room: "warRoom", name: "Loot Intelligence I", description: "Reveals possible loot types.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "lootIntel", level: 1 }, towerXp: 6 },
+        { id: "wr_loot_intel_2", room: "warRoom", name: "Loot Intelligence II", description: "Reveals estimated drop chances.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "wr_loot_intel_1" }] }, effect: { type: "lootIntel", level: 2 }, towerXp: 9 },
     ],
 
     incrementalUpgrades: [
         { id: "qt_bed", room: "quarters", name: "Add Bed", description: "Add one Quarters bed. Cost and build time rise with each bed added.", baseCostGold: 100, costStepGold: 20, baseDurationHours: 1, durationStepHours: 0.5, effect: { type: "bed" }, towerXp: 3 },
         { id: "inf_bed", room: "infirmary", name: "Add Treatment Bed", description: "Add one treatment bed. Cost and build time rise with each bed added.", baseCostGold: 120, costStepGold: 25, baseDurationHours: 1, durationStepHours: 0.5, effect: { type: "treatmentBed" }, towerXp: 3 },
         { id: "th_station", room: "trainingHall", name: "Add Training Station", description: "Add one training station. Cost and build time rise with each station added.", baseCostGold: 50, costStepGold: 40, baseDurationHours: 1, durationStepHours: 0.5, effect: { type: "trainingStation" }, towerXp: 4 },
-    ],
-
-    research: [
-        { id: "res_improved_weapons", name: "Improved Weapons", description: "+3 Attack for all minions.", tier: 1, costGold: 150, durationHours: 6, requires: [], effects: [{ stat: "attack", mode: "add", value: 3 }], towerXp: 10 },
-        { id: "res_improved_armor", name: "Improved Armor", description: "+3 Defense for all minions.", tier: 1, costGold: 150, durationHours: 6, requires: [], effects: [{ stat: "defense", mode: "add", value: 3 }], towerXp: 10 },
-        { id: "res_fury_spell", name: "Fury Spell", description: "+15% Attack for all minions.", tier: 2, costGold: 400, durationHours: 10, requires: ["res_improved_weapons"], effects: [{ stat: "attack", mode: "mult", value: 1.15 }], towerXp: 16 },
     ],
 
     trainingTransitions: [

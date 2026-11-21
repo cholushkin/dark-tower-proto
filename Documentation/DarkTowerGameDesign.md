@@ -24,13 +24,13 @@ A **Room** is a functional facility inside the tower. Each Room contains its own
 | **Quarters** | Sleeping beds and automatic recovery from `Tired` |
 | **Infirmary** | Treatment beds and automatic recovery from `Injured` |
 | **Training Hall** | Manual minion rank training at training stations |
-| **Laboratory** | Permanent research and research-related upgrades |
+| **Laboratory** | Global minion upgrades and Alchemy |
 | **Dungeon** | Prisoner cells, processing, interrogation, and recruitment |
 | **War Room** | World Map, full minion roster, raid planning, raid progress, and intelligence upgrades |
 
 There is **no separate Inventory screen**: physical items are managed in the Storehouse, and the full minion roster is in the War Room. There is **no separate World Map screen**: the World Map is part of the War Room.
 
-Rooms have no individual room levels. **Tower Level** is a tower-wide progression value based on hidden XP earned from configured completed upgrades and research.
+Rooms have no individual room levels. **Tower Level** is a tower-wide progression value based on hidden XP earned from configured completed upgrades.
 
 ### 1.2 Popups
 
@@ -59,7 +59,7 @@ The Dark Lord remains present at the tower base. Payday and Game Over have promi
 - **One real minute equals one in-game day** at the normal simulation rate; one in-game week is seven days.
 - The world has a day/night cycle, a day counter, and a week counter.
 - Time advances while the game is running. The current design has no save system or offline progression.
-- A shared game-time scheduler handles raids, resting, treatment, training, sales, research, Dungeon processing, Room upgrades, and payday.
+- A shared game-time scheduler handles raids, resting, treatment, training, sales, Dungeon processing, Room upgrades, and payday.
 - The player has no ordinary pause or game-speed controls. The **New Week / Payday Announcement**, **Payroll**, and **Raid Report** popups pause time while open. Ordinary Room views do not.
 - After Bankruptcy, the game remains **permanently paused**; dismissing the Game Over popup does not resume time.
 - A developer-only scheduler/debug panel may list ongoing processes, speed up time, and force completion.
@@ -101,7 +101,7 @@ Normal purchases require sufficient resources and cannot create negative currenc
 
 ### 3.1 Ranks
 
-Each minion has a Rank from **1 to 5**. Rank determines baseline Attack, Defense, Salary, and Carry Capacity. Completed Laboratory research can modify effective characteristics.
+Each minion has a Rank from **1 to 5**. Rank determines baseline Attack, Defense, Salary, and Carry Capacity. Completed Laboratory upgrades can modify effective characteristics.
 
 | Rank | Name |
 | --- | --- |
@@ -144,7 +144,7 @@ The **Storehouse** is the complete management location for all physical items, s
 - Example maximum stack sizes: **Golden Cup: 5**, **Cow: 1**, **Cobblestone: 30**.
 - The `treasure` tag supplies the **Treasures** filter; other physical items appear under **Items**. Both filters display the same storage pool.
 - An item definition has an ID, tags, `max_stack_size`, and a configured per-copy `base_value_gold`.
-- Identical copies may occupy multiple stacks. Items may be sold or consumed as costs for research and upgrades.
+- Identical copies may occupy multiple stacks. Items may be sold or consumed as costs for upgrades.
 - Loot that cannot fit during Claim is **silently discarded** under the ordered acceptance rule (§6.2).
 - **Gold and Crystals** are currencies shown in the HUD; they do not occupy Storehouse slots.
 
@@ -208,22 +208,16 @@ Training Hall increases Rank through **manual assignments**.
 
 ### 4.5 Laboratory
 
-Laboratory conducts research with **permanent, global** effects.
+Laboratory provides ordinary upgrades with **permanent, global** effects and an **Alchemy** area.
 
-- Each research project defines costs, prerequisites, duration, and effects.
-- Only **one Laboratory research/improvement process** may run at a time; there is **no research queue**.
-- A research project is completed once; only at completion do its permanent effects apply.
-- Bonuses may affect Attack, Defense, and other eligible global parameters.
-- For combined research bonuses, apply **additive effects first**, then **multiplicative effects**.
-- A raid captures its effective combat characteristics at launch. Later research does not retroactively alter an active raid.
+- **Improved Weapons**, **Improved Armor**, and **Fury Spell** use the same acquisition, requirement, cost, construction, completion, and XP rules as every other upgrade (§8.2).
+- Different Laboratory upgrades can run concurrently, including alongside Laboratory Tier Unlock and upgrades in other rooms. The same upgrade cannot be started twice while running or after its one-time completion.
+- **Laboratory Tier Unlock** sequentially unlocks eligibility for higher-tier upgrades. Tier is a configured requirement, not a separate research scheduler.
+- Upgrade durations come directly from configuration. Laboratory has no efficiency upgrades or research-speed multiplier.
+- Global stat effects apply on completion. Additive effects are applied before multiplicative effects (§8.3).
+- All upgrades use the common header cards, with their own progress and remaining time. Room parameters show Laboratory tier and active upgrade count.
 
-**Upgrades:**
-
-- **Research Tier Unlock:** sequential purchases unlock the next tier of research.
-- **Research Efficiency:** sequential upgrades shorten research processes started after the improvement becomes active.
-- Research projects and upgrades may have additional configured prerequisites.
-
-Examples of research themes include **Improved Weapons**, **Improved Armor**, and **Fury Spell**. Their exact numerical effects come from configuration.
+**Alchemy** shows two empty input slots and one output slot: **element + element = result**. This is a non-interactive placeholder for future element combination. Recipes, item selection, consumption, and crafting are not implemented.
 
 ### 4.6 Dungeon
 
@@ -380,27 +374,31 @@ All physical items belong to **Storehouse storage** and are represented by item 
 - Item consumption for configured costs, full-value normal sales, upgrades, and other transactions obey resource-availability rules.
 - Gold and Crystals are displayed globally in the HUD and never occupy storage slots.
 
-## 8. Tower Level, Research Effects, and Upgrades
+## 8. Tower Level, Upgrade Effects, and Acquisition
 
 ### 8.1 Tower Experience
 
 The tower has one **Tower Level** derived from cumulative **Tower XP**.
 
 - XP is a **hidden progression score**, not a spendable currency or a separate HUD balance.
-- Configured upgrades and research projects can award specified XP values **on completion**, never on purchase/start.
+- Configured upgrades can award specified XP values **on completion**, never on purchase/start.
 - The `towerXpThresholds` entries are **cumulative total-XP thresholds**, not per-level increments.
 - Reaching a new level **logs a message**. Tower Level itself currently gives **no gameplay unlocks or bonuses**.
 
-### 8.2 Upgrade Timing and Concurrent Work
+### 8.2 Upgrade Acquisition, Requirements, and Concurrent Work
 
-- Every Room has individually configured upgrades with costs, construction durations, prerequisites, and effects.
-- Sequential upgrade series must satisfy configured prerequisites.
-- **Multiple Room upgrade constructions may run concurrently.** This does not override the Laboratory's limit of one active research/improvement process at a time.
-- Upgrades take effect when their construction finishes.
-- An upgrade or research bonus completed while another timed activity is underway does **not retroactively modify** that running activity. New effects apply to subsequently started processes and future stat snapshots.
-- Examples include extra beds, cells, stations, and Storehouse slots; faster sales, treatment, Dungeon processing, and research; training and research-tier unlocks; and War Room intelligence improvements.
+- An upgrade is acquired separately from construction. Upgrade pickups and rewards make its definition available; they do not grant its effect, spend its construction cost, or award XP.
+- Current content starts with every configured upgrade acquired. No current reward table drops upgrades. Future definitions can require acquisition through an item or direct reward.
+- A pickup item identifies the upgrade it unlocks. In raids it participates in normal loot selection and Carry Capacity, then is learned on Claim without occupying Storehouse space. Duplicate pickups do not stack effects or grant XP. Repeatable upgrades stay available for subsequent purchases after one acquisition.
+- Each upgrade defines cost, duration, requirements, and effect. Acquired upgrades still require affordability and all configured conditions before construction can start.
+- Requirements form serializable condition trees: **all**, **any**, and **not** combine completed/acquired upgrades, numeric game-state conditions, named progression flags, successful mission Claims, and held item quantities. Item requirements check possession; they do not consume items. Requirements are checked at start; later changes do not cancel running construction.
+- Supported numeric conditions compare Tower Level, Laboratory tier, Gold, Crystals, or minion count using equality, minimum, or maximum thresholds. New metrics can extend the evaluator without changing the tree structure.
+- **Different upgrades may run concurrently in every room, including Laboratory.** Only duplicate construction of the same upgrade is blocked. Sequential series retain their prerequisites.
+- Effects and configured Tower XP apply on completion. One-time upgrades cannot be rebuilt. Repeatable upgrades increase their level and use their configured next cost/duration.
+- Existing timed processes keep their scheduled end times; newly completed speed upgrades affect future starts.
+- Examples include storage, beds, cells, stations, treatment/sale/Dungeon efficiency, training and Laboratory-tier unlocks, War Room intelligence, and global Attack/Defense bonuses.
 
-### 8.3 Research Effect Combination
+### 8.3 Upgrade Effect Combination
 
 For compatible effects on a statistic, **additive modifiers are applied before multiplicative modifiers**. Exact modifier magnitudes and the statistics to which they apply come from configuration.
 
@@ -425,9 +423,9 @@ For compatible effects on a statistic, **additive modifiers are applied before m
 
 ## 10. Configuration and Runtime Ownership
 
-The Unity game uses designer-authored configuration for Ranks, items, starting balance, missions, World Tiers, upgrades, research, intelligence, Tower XP thresholds, weekly flavor messages, economy, Dungeon outcomes, and global formulas. The accompanying **Configuration Catalog** defines these contracts.
+The Unity game uses designer-authored configuration for Ranks, items, starting balance, missions, World Tiers, upgrades, intelligence, Tower XP thresholds, weekly flavor messages, economy, Dungeon outcomes, and global formulas. The accompanying **Configuration Catalog** defines these contracts.
 
-**Static configuration** defines rules, values, thresholds, and probabilities. **Runtime state** tracks Gold/Crystals, owned minions and their conditions, Quarters/Infirmary bed occupancy and idle-wait times, Storehouse stacks and concurrent sales, Dungeon prisoners, running timers, raids and discoveries, Claims, completed mission checks, upgrades and research, total Tower XP/Level, payday deadline/payment state, current world victory and portal state, and permanent Bankruptcy state.
+**Static configuration** defines rules, values, thresholds, and probabilities. **Runtime state** tracks Gold/Crystals, owned minions and their conditions, Quarters/Infirmary bed occupancy and idle-wait times, Storehouse stacks and concurrent sales, Dungeon prisoners, running timers, raids and discoveries, Claims, completed mission checks, acquired/completed upgrades and requirement flags, total Tower XP/Level, payday deadline/payment state, current world victory and portal state, and permanent Bankruptcy state.
 
 The catalog may require a corresponding update to reflect the new decisions; this revision changes the **game design specification** only.
 
@@ -469,4 +467,4 @@ The following decisions remain unresolved. Decisions settled in v0.7 are incorpo
 - **Scheduler tie-breaking:** Specify order when payday deadlines, raid completion/Claim, upgrade completion, nightfall, bed eligibility, and minion condition changes coincide. Define the exact nightfall trigger hour.
 - **Recovery edge cases:** Clarify how wait time is preserved/reset across changes of condition, bed eligibility, or already-running recovery; the general idle-only deprivation rule and longest-waiting priorities are fixed.
 - **Payday and week flavor:** Define whether “Week of…” messages have gameplay effects or remain flavor only. The announcement/pause and 24-hour deadline are fixed.
-- **Balance and data:** Finalize numerical costs, starting capacity, XP awards/thresholds, research bonuses, raid/carry values, prisoner distributions, training prices, enemy formulas, and initial upgrade availability.
+- **Balance and data:** Finalize numerical costs, starting capacity, XP awards/thresholds, upgrade bonuses, raid/carry values, prisoner distributions, training prices, enemy formulas, and initial upgrade availability.

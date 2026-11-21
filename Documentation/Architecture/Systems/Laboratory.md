@@ -1,31 +1,28 @@
 # System: Laboratory
 
-**Authoritative rules:** [`../../DarkTowerGameDesign.md`](../../DarkTowerGameDesign.md) §4.5, §8.3.
+**Authoritative rules:** [Game design §4.5 and §8](../../DarkTowerGameDesign.md).
+
+Laboratory upgrades use the common [upgrade lifecycle](../Features/Upgrades.md). There is no separate research definition, process type, active-project field, or completion set.
 
 ## Owning files
 
-| File | Role |
+| File | Responsibility |
 |---|---|
-| `src/systems/laboratory.ts` | `availableResearch`, `startResearch`, `completeResearch`. Enforces the single-active-research rule via `state.activeResearchId`. |
-| `src/model/GameState.ts` | `researchTierUnlocked()` (`GameState.ts:181-183`); **`effectiveStat()` / `effectiveAttack()` / `effectiveDefense()`** (`GameState.ts:195-219`) — see boundary note below. |
-| `src/data/config.ts` | `research: ResearchDef[]` (tier, cost, duration, `requires`, `effects: {stat, mode: "add"|"mult", value}`). |
-| `src/ui/screens/laboratory/*` | UI entry point. |
+| `src/data/config.ts` | Laboratory tier upgrades and the Improved Weapons, Improved Armor, and Fury Spell upgrade definitions. |
+| `src/systems/upgrades.ts` | Purchase validation, construction, and one-time completion. |
+| `src/systems/upgradeRequirements.ts` | Shared requirement evaluation and failure explanations. |
+| `src/model/GameState.ts` | Acquired/completed upgrade state, Laboratory tier, and derived Attack/Defense. |
+| `src/ui/screens/laboratory/*` | Shared upgrade-card models, room parameters, and Alchemy placeholder. |
+| `src/ui/components/RoomSummary/*` | Common room image, parameters, and whole-card upgrade pagination. |
 
-## State owned
+## Effects and progression
 
-`GameState.completedResearch: Set<string>` and `activeResearchId: string | null`. No `research`
-effect is retroactive — stats are computed fresh from `completedResearch` on every call, so a raid
-already captured its squad power at launch time and isn't affected by research completing mid-raid
-(design doc §4.5, §8.2).
+`laboratoryTierUnlocked()` derives tier from completed Laboratory-tier upgrades. Fury Spell requires both tier 2 and completed Improved Weapons. Construction can overlap with other Laboratory and room upgrades. Each card displays its own timer.
 
-## Notes for agents
+`effectiveAttack()` and `effectiveDefense()` read completed `minionStat` upgrades. They add flat modifiers before applying multipliers. Existing upgrade IDs (`res_improved_weapons`, `res_improved_armor`, `res_fury_spell`) identify ordinary upgrade definitions; the prefix does not select a separate system.
 
-- **Boundary leak, not a bug:** the additive-then-multiplicative combination of research effects on
-  Attack/Defense (design doc §8.3) is implemented inside `GameState.effectiveStat()`
-  (`GameState.ts:203-219`), not in `laboratory.ts`. If you're changing how research effects
-  combine, that's the method to edit even though it lives in `model/`, not `systems/`. Flagged as
-  worth relocating in [`../ImprovementPlan.md`](../ImprovementPlan.md); not moved by this task.
-- Only one research process may run at a time (`laboratory.ts:17`), independent of Room-upgrade
-  construction, which *can* run concurrently (design doc §8.2) — see
-  [`WarRoom.md`](WarRoom.md)/[`../../DarkTowerGameDesign.md`](../../DarkTowerGameDesign.md)#8.2 for
-  the upgrade-concurrency rule this doesn't share.
+Laboratory has no efficiency upgrade or duration multiplier. The header displays Laboratory tier and active upgrade count.
+
+## Alchemy presentation
+
+The area below the common header is titled **ALCHEMY** and contains **Element 1 + Element 2 = Result**. Slots are non-interactive, with a coming-soon label and an accessible description. There is no crafting state, recipe engine, item consumption, or output production yet.

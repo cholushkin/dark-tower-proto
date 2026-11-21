@@ -38,6 +38,7 @@ definitions.
 | Feature | Doc |
 |---|---|
 | The raid → report → claim lifecycle (spans War Room, Dungeon, Storehouse, Recovery) | [`Architecture/Features/RaidLifecycle.md`](Architecture/Features/RaidLifecycle.md) |
+| Upgrade acquisition, flexible requirements, and concurrent construction | [`Architecture/Features/Upgrades.md`](Architecture/Features/Upgrades.md) |
 | The game clock / scheduler (day-boundary stepping, nightfall, payday triggers) | [`Architecture/Features/GameClockAndScheduler.md`](Architecture/Features/GameClockAndScheduler.md) |
 
 ## 4. Knowledge level — decisions and playtest findings

@@ -67,11 +67,6 @@ export interface SaleProcess extends BaseProcess {
     goldValue: number;
 }
 
-export interface ResearchProcess extends BaseProcess {
-    type: "research";
-    researchId: string;
-}
-
 export interface UpgradeProcess extends BaseProcess {
     type: "upgrade";
     upgradeId: string;
@@ -99,7 +94,6 @@ export type Process =
     | TreatmentProcess
     | TrainingProcess
     | SaleProcess
-    | ResearchProcess
     | UpgradeProcess
     | IncrementalUpgradeProcess
     | DungeonProcess

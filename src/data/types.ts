@@ -20,6 +20,8 @@ export interface ItemDef {
     id: string;
     name: string;
     tags: string[];
+    /** Collecting this item unlocks an upgrade instead of occupying storage. */
+    upgradeId?: string;
     maxStackSize: number;
     baseValueGold: number;
 }
@@ -38,13 +40,24 @@ export type UpgradeEffect =
     | { type: "treatmentBed" }
     | { type: "treatmentEfficiency"; multiplier: number }
     | { type: "trainingUnlock"; fromRank: number }
-    | { type: "researchTier"; tier: number }
-    | { type: "researchEfficiency"; multiplier: number }
+    | { type: "laboratoryTier"; tier: number }
+    | { type: "minionStat"; stat: "attack" | "defense"; mode: "add" | "mult"; value: number }
     | { type: "dungeonCell" }
     | { type: "tortureEfficiency"; multiplier: number }
     | { type: "recruitmentEfficiency"; bonus: number }
     | { type: "enemyIntel"; level: number }
     | { type: "lootIntel"; level: number };
+
+/** Serializable requirements: extend the condition evaluator when adding a new game metric. */
+export type UpgradeRequirement =
+    | { type: "all" | "any"; requirements: UpgradeRequirement[] }
+    | { type: "not"; requirement: UpgradeRequirement }
+    | { type: "upgradeCompleted"; upgradeId: string }
+    | { type: "upgradeAcquired"; upgradeId: string }
+    | { type: "condition"; metric: "towerLevel" | "laboratoryTier" | "gold" | "crystals" | "minionCount"; operator: "gte" | "lte" | "eq"; value: number }
+    | { type: "flag"; flag: string }
+    | { type: "missionCompleted"; missionId: string }
+    | { type: "itemCount"; itemId: string; count: number };
 
 export interface UpgradeDef {
     id: string;
@@ -54,7 +67,9 @@ export interface UpgradeDef {
     costGold: number;
     costCrystals?: number;
     durationHours: number;
-    requires: string[];
+    requirements: UpgradeRequirement;
+    /** Defaults to true; false makes acquisition through a pickup/reward necessary. */
+    availableAtStart?: boolean;
     effect: UpgradeEffect;
     towerXp: number;
 }
@@ -63,6 +78,8 @@ export type IncrementalUpgradeEffect = { type: "bed" } | { type: "treatmentBed" 
 
 /** An infinite, repeatable upgrade whose cost/duration climb by a fixed step each purchase. */
 export interface IncrementalUpgradeDef {
+    requirements?: UpgradeRequirement;
+    availableAtStart?: boolean;
     id: string;
     room: RoomId;
     name: string;
@@ -72,24 +89,6 @@ export interface IncrementalUpgradeDef {
     baseDurationHours: number;
     durationStepHours: number;
     effect: IncrementalUpgradeEffect;
-    towerXp: number;
-}
-
-export interface ResearchEffect {
-    stat: "attack" | "defense";
-    mode: "add" | "mult";
-    value: number;
-}
-
-export interface ResearchDef {
-    id: string;
-    name: string;
-    description: string;
-    tier: number;
-    costGold: number;
-    durationHours: number;
-    requires: string[];
-    effects: ResearchEffect[];
     towerXp: number;
 }
 
@@ -173,7 +172,6 @@ export interface GameConfig {
     worldTiers: WorldTierDef[];
     upgrades: UpgradeDef[];
     incrementalUpgrades: IncrementalUpgradeDef[];
-    research: ResearchDef[];
     trainingTransitions: TrainingTransitionDef[];
     towerXpThresholds: number[];
     startingBalance: StartingBalance;

@@ -26,8 +26,10 @@ export class GameState {
 
     purchasedUpgrades = new Set<string>();
     incrementalLevels = new Map<string, number>();
-    completedResearch = new Set<string>();
-    activeResearchId: string | null = null;
+    acquiredUpgrades = new Set<string>([...CONFIG.upgrades, ...CONFIG.incrementalUpgrades]
+        .filter(def => def.availableAtStart !== false).map(def => def.id));
+    /** Named conditions for quests/events and future progression systems. */
+    progressionFlags = new Set<string>();
 
     unlockedTiers = new Set<number>([1]);
     /** Missions ever successfully claimed (permanent) — drives World Tier unlocks only. */
@@ -159,10 +161,6 @@ export class GameState {
         return this.productEffect(e => (e.type === "treatmentEfficiency" ? e.multiplier : null));
     }
 
-    researchEfficiencyMultiplier(): number {
-        return this.productEffect(e => (e.type === "researchEfficiency" ? e.multiplier : null));
-    }
-
     tortureEfficiencyMultiplier(): number {
         return this.productEffect(e => (e.type === "tortureEfficiency" ? e.multiplier : null));
     }
@@ -179,8 +177,10 @@ export class GameState {
         return this.sumEffect(e => (e.type === "lootIntel" ? 1 : null));
     }
 
-    researchTierUnlocked(): number {
-        return 1 + this.sumEffect(e => (e.type === "researchTier" ? 1 : null));
+    laboratoryTierUnlocked(): number {
+        return CONFIG.upgrades.reduce((tier, upgrade) =>
+            this.purchasedUpgrades.has(upgrade.id) && upgrade.effect.type === "laboratoryTier"
+                ? Math.max(tier, upgrade.effect.tier) : tier, 1);
     }
 
     isTrainingTransitionUnlocked(fromRank: number): boolean {
@@ -204,17 +204,15 @@ export class GameState {
     private effectiveStat(rank: number, stat: "attack" | "defense"): number {
         const base = CONFIG.ranks[rank - 1][stat];
         let value = base;
-        for (const r of CONFIG.research) {
-            if (!this.completedResearch.has(r.id)) continue;
-            for (const eff of r.effects) {
-                if (eff.stat === stat && eff.mode === "add") value += eff.value;
-            }
+        for (const upgrade of CONFIG.upgrades) {
+            if (!this.purchasedUpgrades.has(upgrade.id)) continue;
+            const effect = upgrade.effect;
+            if (effect.type === "minionStat" && effect.stat === stat && effect.mode === "add") value += effect.value;
         }
-        for (const r of CONFIG.research) {
-            if (!this.completedResearch.has(r.id)) continue;
-            for (const eff of r.effects) {
-                if (eff.stat === stat && eff.mode === "mult") value *= eff.value;
-            }
+        for (const upgrade of CONFIG.upgrades) {
+            if (!this.purchasedUpgrades.has(upgrade.id)) continue;
+            const effect = upgrade.effect;
+            if (effect.type === "minionStat" && effect.stat === stat && effect.mode === "mult") value *= effect.value;
         }
         return value;
     }
@@ -241,9 +239,22 @@ export class GameState {
         return this.minions.reduce((sum, m) => sum + CONFIG.ranks[m.rank - 1].salaryGoldPerWeek, 0);
     }
 
+    /** Acquisition never spends resources, starts a timer, grants XP, or applies an effect. */
+    acquireUpgrade(upgradeId: string): boolean {
+        if (![...CONFIG.upgrades, ...CONFIG.incrementalUpgrades].some(def => def.id === upgradeId)) return false;
+        if (this.acquiredUpgrades.has(upgradeId)) return false;
+        this.acquiredUpgrades.add(upgradeId);
+        return true;
+    }
+
     addItems(itemId: string, count: number): number {
         const def = CONFIG.items.find(i => i.id === itemId);
         if (!def || count <= 0) return count;
+        if (def.upgradeId) {
+            if (![...CONFIG.upgrades, ...CONFIG.incrementalUpgrades].some(upgrade => upgrade.id === def.upgradeId)) return count;
+            this.acquireUpgrade(def.upgradeId);
+            return 0; // Upgrade pickups are learned immediately; duplicates are harmless.
+        }
         let remaining = count;
         for (const stack of this.stacks) {
             if (stack.itemId !== itemId || stack.count >= def.maxStackSize) continue;

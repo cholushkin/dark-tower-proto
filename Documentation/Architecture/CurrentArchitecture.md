@@ -45,12 +45,12 @@ boundaries/dependency-cruiser config exists) — see
 All runtime state lives in one class, `GameState` (`src/model/GameState.ts`). It has:
 
 - Plain mutable public fields: `minions`, `prisoners`, `stacks`, `processes`, `gold`, `crystals`,
-  `hours`, `purchasedUpgrades`, `incrementalLevels`, `completedResearch`, `unlockedTiers`,
+  `hours`, `purchasedUpgrades`, `incrementalLevels`, `acquiredUpgrades`, `progressionFlags`, `unlockedTiers`,
   `pendingReports`, etc. (`GameState.ts:12-54`).
 - Derived read-only getters/methods computed from those fields plus `CONFIG`, e.g. `bedCount()`,
   `storageSlots()`, `saleEfficiencyMultiplier()`, `effectiveAttack()`, `towerLevel()`
   (`GameState.ts:91-227`). Nothing caches these — they recompute from `purchasedUpgrades` /
-  `incrementalLevels` / `completedResearch` every call, so there is no derived-state invalidation
+  `incrementalLevels` every call, so there is no derived-state invalidation
   to get wrong.
 
 There is no encapsulation boundary preventing code outside `src/systems/` from mutating these
@@ -84,14 +84,14 @@ full walk-through and [`../Decisions/prototype-defaults-log.md`](../Decisions/pr
 for why this isn't treated as a final answer to that open question.
 
 **b. Dispatching process completions and exposing the action API.** Every timed activity (raid,
-rest, treatment, training, sale, research, room upgrade, incremental upgrade, dungeon processing,
+rest, treatment, training, sale, room upgrade, incremental upgrade, dungeon processing,
 walkback) is a `Process` (`model/types.ts:33-106`) with a `startHour`/`endHour`. `GameEngine`'s
 `dispatchCompletion()` (`GameEngine.ts:79-92`) is a switch over `Process.type` that calls into the
 matching `systems/*` completion function. This switch is the one place that knows about every
 system — see [`ImprovementPlan.md`](ImprovementPlan.md) for the cost of that.
 
 `GameEngine` also exposes a thin **action API** — `buyUpgrade`, `buyIncremental`, `startTraining`,
-`startResearch`, `startNormalSale`, `instantSale`, `launchRaid`, `claimReport`, `payPayroll`
+`acquireUpgrade`, `startNormalSale`, `instantSale`, `launchRaid`, `claimReport`, `payPayroll`
 (`GameEngine.ts:126-162`) — each a one-line pass-through to the matching `systems/*` function. This
 is the *only* sanctioned way to mutate `GameState` from outside `src/systems/`/`src/engine/`; the
 UI layer calls these and nothing else to change state (see §5).
@@ -106,7 +106,7 @@ subtype(s) it schedules:
 | `storehouse.ts` | stacking, selling | `sale` |
 | `recovery.ts` | Quarters + Infirmary bed assignment | `rest`, `treatment` |
 | `trainingHall.ts` | rank training | `training` |
-| `laboratory.ts` | research | `research` |
+| `upgradeRequirements.ts` | Generic upgrade condition evaluation and explanations | none |
 | `dungeon.ts` | prisoner cells, processing outcome | `dungeon` |
 | `world.ts` | raid preview/launch/resolution, squad power | `raid` |
 | `raidReport.ts` | Claim resolution (loot/prisoner intake) | — (acts on `pendingReports`, not a `Process`) |
@@ -123,10 +123,10 @@ needs only that file, `model/GameState.ts` (for the fields it touches), the rele
 the main source of **context locality** in this codebase (see
 [`AIDevelopmentWorkflow.md`](../Workflow/AIDevelopmentWorkflow.md)).
 
-One boundary leak: research-effect application (`effectiveAttack`/`effectiveDefense`, additive-then-
-multiplicative per `DarkTowerGameDesign.md` §8.3) is implemented inside `GameState.effectiveStat()`
-(`GameState.ts:203-219`) rather than in `systems/laboratory.ts`, even though it's Laboratory-owned
-gameplay logic. Noted in [`ImprovementPlan.md`](ImprovementPlan.md); not changed here.
+Global minion-stat effects are derived in `GameState.effectiveStat()` from completed upgrades,
+with additive modifiers before multipliers. Laboratory uses the same upgrade construction and
+completion systems as other rooms. [Upgrade acquisition and requirements](Features/Upgrades.md)
+describes collectible unlocks, serializable conditions, and UI/engine validation.
 
 ## 5. UI: shell, screens, components
 
@@ -176,7 +176,7 @@ index, not stored in `GameState` or `CONFIG`. It is cosmetic only and has no gam
 ## 6. Configuration and content
 
 `src/data/config.ts` (471 lines) is the single `CONFIG: GameConfig` object and the only source of
-tunable values: ranks, items, missions, world tiers, upgrades, incremental upgrades, research,
+tunable values: ranks, items, missions, world tiers, upgrades, incremental upgrades, requirement trees,
 training transitions, starting balance/items, and global constants (`data/types.ts:154-167` defines
 the `GameConfig` shape). Adding a mission, item, or upgrade is a pure data edit to this file; no
 code changes are required unless the new content needs a new `UpgradeEffect`/`Process` type.
@@ -186,7 +186,7 @@ code changes are required unless the new content needs a new `UpgradeEffect`/`Pr
 
 `selftest.ts` (root) is a headless, browser-free smoke test run via `npm run selftest` (`tsx
 selftest.ts`). It drives `GameEngine` directly — no DOM, no UI layer — through 16 scenarios (initial
-state, upgrades, the full raid→claim lifecycle, training, research, dungeon recruitment + its
+state, upgrades, the full raid→claim lifecycle, training, Laboratory upgrades, dungeon recruitment + its
 bed-cap interaction, sales, weekly reset/tier unlock, payroll/bankruptcy, incremental upgrades, an
 infirmary/quarters priority edge case, a minimum-prisoner guarantee, and the walk-back auto-claim
 mechanic). It force-completes processes via `engine.forceCompleteProcess()` and substitutes

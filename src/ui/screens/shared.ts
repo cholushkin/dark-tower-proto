@@ -4,8 +4,8 @@ import type { ItemIcon } from '../components/ItemTile/ItemTile.types';
 import { CONFIG } from '../../data/config';
 import type { RoomId, UpgradeDef, UpgradeEffect } from '../../data/types';
 import type { GameState } from '../../model/GameState';
-import { canPurchaseUpgrade, isUpgradeInProgress } from '../../systems/upgrades';
-import { canPurchaseIncremental, isIncrementalInProgress, nextCost, nextDuration } from '../../systems/incrementalUpgrades';
+import { canPurchaseUpgrade, isUpgradeInProgress, upgradePurchaseFailure } from '../../systems/upgrades';
+import { canPurchaseIncremental, incrementalPurchaseFailure, isIncrementalInProgress, nextCost, nextDuration } from '../../systems/incrementalUpgrades';
 import type { IncrementalUpgradeDef } from '../../data/types';
 import type { UpgradeCardViewModel } from '../components/UpgradeCard/UpgradeCard.types';
 import { asset } from './assets';
@@ -28,8 +28,8 @@ export function effectLabel(effect: UpgradeEffect): string {
     case 'treatmentBed': return '+1 treatment bed';
     case 'treatmentEfficiency': return `${Math.round((1 - effect.multiplier) * 100)}% faster treatment`;
     case 'trainingUnlock': return `Unlocks training from Rank ${effect.fromRank}`;
-    case 'researchTier': return `Unlocks Tier ${effect.tier} research`;
-    case 'researchEfficiency': return `${Math.round((1 - effect.multiplier) * 100)}% faster research`;
+    case 'laboratoryTier': return `Unlocks Tier ${effect.tier} upgrades`;
+    case 'minionStat': return `${effect.mode === 'add' ? '+' + effect.value : '+' + Math.round((effect.value - 1) * 100) + '%'} ${effect.stat}`;
     case 'dungeonCell': return '+1 cell';
     case 'tortureEfficiency': return `${Math.round((1 - effect.multiplier) * 100)}% faster processing`;
     case 'recruitmentEfficiency': return `+${Math.round(effect.bonus * 100)}% recruit chance`;
@@ -41,7 +41,7 @@ export function effectLabel(effect: UpgradeEffect): string {
 
 /**
  * Builds one UpgradeCard ViewModel for a chain of sequential UpgradeDefs (e.g. Storage Shelves
- * I/II/III) that share a `requires` chain. UpgradeCard shows a single current→next transition,
+ * I/II/III) that share a prerequisite chain. UpgradeCard shows a single current→next transition,
  * so this collapses the chain into "current level" vs "next purchasable tier".
  */
 export function buildUpgradeLineViewModel(
@@ -61,8 +61,7 @@ export function buildUpgradeLineViewModel(
   let statusText: string | undefined;
   if (!next) statusText = 'Maxed';
   else if (inProgress) { disabledReason = 'Under construction'; statusText = 'Under construction'; }
-  else if (state.gold < next.costGold) disabledReason = `Need ${next.costGold}g`;
-  else if (!next.requires.every(id => state.purchasedUpgrades.has(id))) disabledReason = 'Requires prior tier';
+  else disabledReason = upgradePurchaseFailure(state, next.id);
 
   return {
     id: family[0].id.replace(/_\d+$/, ''),
@@ -97,7 +96,7 @@ export function buildIncrementalUpgradeViewModel(state: GameState, def: Incremen
   let disabledReason: string | undefined;
   let statusText: string | undefined;
   if (inProgress) { disabledReason = 'Under construction'; statusText = 'Under construction'; }
-  else if (state.gold < cost) disabledReason = `Need ${cost}g`;
+  else disabledReason = incrementalPurchaseFailure(state, def.id);
 
   return {
     id: def.id,

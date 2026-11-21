@@ -5,7 +5,6 @@ import { realSecondsToGameHours } from "./Clock";
 import { completeRest, completeTreatment, assignBeds } from "../systems/recovery";
 import { completeTraining, startTraining as sysStartTraining } from "../systems/trainingHall";
 import { cancelNormalSale, completeSale, startNormalSale as sysStartNormalSale, instantSale as sysInstantSale } from "../systems/storehouse";
-import { completeResearch, startResearch as sysStartResearch } from "../systems/laboratory";
 import { completeUpgrade, purchaseUpgrade as sysPurchaseUpgrade } from "../systems/upgrades";
 import { completeIncrementalUpgrade, purchaseIncremental as sysPurchaseIncremental } from "../systems/incrementalUpgrades";
 import { completeDungeonProcess, assignCells } from "../systems/dungeon";
@@ -82,7 +81,6 @@ export class GameEngine {
             case "treatment": completeTreatment(this.state, process, now); break;
             case "training": completeTraining(this.state, process, now); break;
             case "sale": completeSale(this.state, process); break;
-            case "research": completeResearch(this.state, process); break;
             case "upgrade": completeUpgrade(this.state, process); break;
             case "incrementalUpgrade": completeIncrementalUpgrade(this.state, process); break;
             case "dungeon": completeDungeonProcess(this.state, process, now); break;
@@ -135,8 +133,8 @@ export class GameEngine {
         return sysStartTraining(this.state, minionId, this.state.hours);
     }
 
-    startResearch(researchId: string): boolean {
-        return sysStartResearch(this.state, researchId, this.state.hours);
+    acquireUpgrade(upgradeId: string): boolean {
+        return this.state.acquireUpgrade(upgradeId);
     }
 
     startNormalSale(stackId: string): boolean {

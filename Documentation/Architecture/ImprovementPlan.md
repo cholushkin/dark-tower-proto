@@ -125,13 +125,13 @@ are behavior changes.
 ### U2. Split `src/data/config.ts` into per-domain files
 
 1. **Problem:** `config.ts` is 471 lines and growing (ranks, items, missions, world tiers,
-   upgrades, incremental upgrades, research, training transitions, starting balance, constants —
+   upgrades, incremental upgrades, training transitions, starting balance, constants —
    13 sections in one file). An agent balancing one mission currently loads all of it.
 2. **Motivation:** context locality (the project's own stated priority) degrades as content grows.
    Splitting now, while the file is still readable, is far cheaper than splitting once it has
    doubled.
 3. **Solution:** split into `src/data/config/{ranks,items,missions,worldTiers,upgrades,
-   incrementalUpgrades,research,trainingTransitions,startingBalance,constants}.ts`, each exporting
+   incrementalUpgrades,trainingTransitions,startingBalance,constants}.ts`, each exporting
    its typed slice, re-assembled into the same `CONFIG: GameConfig` object from `src/data/config.ts`
    (kept as the single import path so no consumer needs to change).
 4. **Scope:** `src/data/config.ts` (becomes a thin re-export/assembly file) + new files under
@@ -146,29 +146,9 @@ are behavior changes.
 8. **Acceptance criteria:** `CONFIG` has the exact same runtime shape and values as before; no
    import outside `src/data/` changes.
 
-### U3. Relocate research-effect combination from `GameState` into `systems/laboratory.ts`
+### U3. Extract global upgrade-stat calculation from `GameState`
 
-1. **Problem:** `GameState.effectiveStat()`/`effectiveAttack()`/`effectiveDefense()`
-   (`GameState.ts:195-219`) implement Laboratory-owned gameplay logic (design doc §8.3's
-   additive-then-multiplicative research combination) inside the model class, while every other
-   system's rules live in its own `systems/*.ts` file.
-2. **Motivation:** `Documentation/Architecture/Systems/Laboratory.md` already has to call this out
-   as an exception to the normal ownership pattern. Moving it removes a special case an agent has
-   to remember, and keeps `GameState` itself closer to "data plus simple derived getters."
-3. **Solution:** move `effectiveStat`/`effectiveAttack`/`effectiveDefense` into
-   `systems/laboratory.ts` as exported functions taking `state` as a parameter; have the few
-   callers (`systems/world.ts unitPower()`, `GameState` itself if anything else depends on it)
-   import from there instead.
-4. **Scope:** `src/model/GameState.ts`, `src/systems/laboratory.ts`, `src/systems/world.ts` (import
-   update), and `Documentation/Architecture/Systems/Laboratory.md` (remove the now-resolved
-   "boundary leak" note).
-5. **Implementation:** move the three methods verbatim as functions; update the two call sites;
-   remove the methods from `GameState`.
-6. **Risks:** low — pure code relocation, no logic change.
-7. **Verification:** `npm run build` + `npm run selftest` (scenario 6, "Laboratory," directly
-   asserts `effectiveAttack` output).
-8. **Acceptance criteria:** identical `effectiveAttack`/`effectiveDefense` output for all ranks and
-   research states; `GameState` no longer contains research-combination logic.
+`GameState.effectiveStat()` derives Attack/Defense from completed `minionStat` upgrades, adding flat bonuses before multiplying. If stat modifiers grow to include equipment or temporary buffs, extract this pure calculation into a dedicated stats module rather than a Laboratory-specific system. Preserve `effectiveAttack`/`effectiveDefense` results with the existing upgrade-effect tests. This is an optional architecture improvement, not an unimplemented research system.
 
 ---
 

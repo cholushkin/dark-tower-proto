@@ -10,6 +10,12 @@ import { assignBeds } from "./src/systems/recovery";
 import { nextCost } from "./src/systems/incrementalUpgrades";
 import type { Process, RaidReportDraft } from "./src/model/types";
 
+import { requirementFailure } from "./src/systems/upgradeRequirements";
+import { upgradePurchaseFailure, completeUpgrade } from "./src/systems/upgrades";
+import { buildLaboratoryViewModel } from "./src/ui/screens/laboratory/LaboratoryAdapter";
+import { buildUpgradeLineViewModel } from "./src/ui/screens/shared";
+import type { UpgradeRequirement, UpgradeDef } from "./src/data/types";
+
 let passed = 0;
 function check(condition: boolean, message: string): void {
     if (!condition) throw new Error(`FAILED: ${message}`);
@@ -149,18 +155,124 @@ console.log("\n[5] Training Hall");
     check(engine.state.findMinion(minionId)!.activity.type === "idle", "minion is idle again after resting");
 }
 
-// --- 6. Laboratory: single active research, permanent effect ---
-console.log("\n[6] Laboratory");
+// --- 6. Laboratory upgrades share construction, requirements and effects ---
+console.log("\n[6] Laboratory upgrades");
 {
     const engine = new GameEngine();
-    engine.state.gold += 100; // starting gold is below res_improved_weapons' cost
+    engine.state.gold = 5000;
     const baseAttack = engine.state.effectiveAttack(1);
-    check(engine.startResearch("res_improved_weapons"), "research starts");
-    check(!engine.startResearch("res_improved_armor"), "only one research project can be active at a time");
-    engine.forceCompleteProcess(findProcess(engine, "research").id);
-    check(engine.state.completedResearch.has("res_improved_weapons"), "research marked complete");
-    check(engine.state.effectiveAttack(1) === baseAttack + 3, "completed research permanently boosts effective Attack");
-    check(engine.state.activeResearchId === null, "no active research after completion, ready for the next");
+    const baseDefense = engine.state.effectiveDefense(1);
+    check(engine.buyUpgrade("res_improved_weapons"), "weapons starts as a regular upgrade");
+    check(engine.buyUpgrade("res_improved_armor"), "armor can build alongside weapons");
+    check(engine.buyUpgrade("lab_tier_1"), "laboratory tier can build alongside stat upgrades");
+    check(engine.buyUpgrade("sh_storage_1"), "another room can build concurrently");
+    const gold = engine.state.gold;
+    check(!engine.buyUpgrade("res_improved_weapons") && engine.state.gold === gold, "duplicate construction is rejected without charging");
+    check(!engine.buyUpgrade("res_fury_spell"), "Fury requires completed tier and weapons upgrades");
+    check(engine.state.effectiveAttack(1) === baseAttack, "unfinished upgrades grant no stats");
+    const model = buildLaboratoryViewModel(engine);
+    check(model.upgrades.length === 4 && model.upgrades.filter(card => card.progress !== undefined).length === 3, "laboratory uses shared cards with concurrent progress");
+    check(model.room.stats.some(stat => stat.id === 'active' && stat.value === '3'), "laboratory displays active upgrade count");
+    check(!CONFIG.upgrades.some(def => def.id.startsWith('lab_eff')), "laboratory efficiency upgrades are absent");
+    const weapons = engine.state.processes.find(p => p.type === 'upgrade' && p.upgradeId === 'res_improved_weapons')!;
+    engine.forceCompleteProcess(weapons.id);
+    check(engine.state.purchasedUpgrades.has('res_improved_weapons'), "weapons completion uses purchasedUpgrades");
+    check(engine.state.effectiveAttack(1) === baseAttack + 3, "completed weapons grants permanent attack");
+    check(!engine.buyUpgrade('res_fury_spell'), "completed weapons alone does not bypass the tier requirement");
+    const xp = engine.state.towerXp;
+    if (weapons.type === 'upgrade') completeUpgrade(engine.state, weapons);
+    check(engine.state.towerXp === xp, "repeated completion cannot award XP twice");
+    engine.forceCompleteProcess(engine.state.processes.find(p => p.type === 'upgrade' && p.upgradeId === 'lab_tier_1')!.id);
+    check(engine.buyUpgrade('res_fury_spell'), "Fury unlocks after both requirements complete");
+    engine.forceCompleteProcess(engine.state.processes.find(p => p.type === 'upgrade' && p.upgradeId === 'res_fury_spell')!.id);
+    check(Math.abs(engine.state.effectiveAttack(1) - (baseAttack + 3) * 1.15) < 1e-9, "additive upgrade bonuses apply before multipliers");
+    engine.forceCompleteProcess(engine.state.processes.find(p => p.type === 'upgrade' && p.upgradeId === 'res_improved_armor')!.id);
+    check(engine.state.effectiveDefense(1) === baseDefense + 3, "armor independently grants defense");
+    check(!engine.buyUpgrade('res_fury_spell'), "completed one-time upgrades cannot restart");
+}
+
+{
+    const engine = new GameEngine();
+    engine.state.gold = 1000;
+    engine.buyUpgrade('res_improved_weapons');
+    engine.buyUpgrade('res_improved_armor');
+    engine.tick(CONFIG.constants.dayLengthRealSeconds / 24 * 6);
+    check(engine.state.purchasedUpgrades.has('res_improved_weapons') && engine.state.purchasedUpgrades.has('res_improved_armor'), 'scheduler completes simultaneous Laboratory upgrades without manual completion');
+    check(engine.state.towerXp === 20, 'simultaneous completions each award their own XP');
+}
+
+// Requirement trees are serializable and shared by UI and both upgrade systems.
+{
+    const engine = new GameEngine();
+    const state = engine.state;
+    const requirement: UpgradeRequirement = { type: 'all', requirements: [
+        { type: 'any', requirements: [{ type: 'flag', flag: 'quest_reward' }, { type: 'upgradeCompleted', upgradeId: 'sh_storage_1' }] },
+        { type: 'condition', metric: 'towerLevel', operator: 'gte', value: 1 },
+        { type: 'not', requirement: { type: 'flag', flag: 'blocked' } },
+    ] };
+    check(!!requirementFailure(state, requirement), "nested requirements reject unmet alternatives");
+    state.progressionFlags.add('quest_reward');
+    check(!requirementFailure(state, JSON.parse(JSON.stringify(requirement))), "serialized all/any/not requirements evaluate correctly");
+    state.progressionFlags.add('blocked');
+    check(!!requirementFailure(state, requirement), "not requirement blocks an excluded condition");
+    check(!!requirementFailure(state, { type: 'any', requirements: [] }), "empty any fails closed");
+    check(!requirementFailure(state, { type: 'all', requirements: [] }), "empty all has no prerequisites");
+    check(!requirementFailure(state, { type: 'condition', metric: 'minionCount', operator: 'eq', value: 3 }), "numeric equality checks state");
+    check(!requirementFailure(state, { type: 'condition', metric: 'crystals', operator: 'lte', value: state.crystals }), "numeric upper bound checks state");
+    check(!!requirementFailure(state, { type: 'itemCount', itemId: 'iron_ore', count: 999 }), "item requirements check held quantities");
+    check(!requirementFailure(state, { type: 'itemCount', itemId: 'iron_ore', count: 1 }), "held items satisfy item requirements");
+    const missionId = CONFIG.missions[0].id;
+    check(!!requirementFailure(state, { type: 'missionCompleted', missionId }), "mission requirements reject unclaimed missions");
+    state.everClaimedMissions.add(missionId);
+    check(!requirementFailure(state, { type: 'missionCompleted', missionId }), "mission victory satisfies requirements");
+    const def = CONFIG.upgrades.find(def => def.id === 'sh_storage_2')!;
+    state.gold = 5000;
+    check(buildUpgradeLineViewModel(state, [def], '', def.name).disabledReason === upgradePurchaseFailure(state, def.id), "UI explains the same requirement enforced by purchase");
+    check(!engine.buyUpgrade('unknown') && !engine.buyIncremental('unknown'), "unknown upgrade IDs safely fail");
+}
+
+// Pickup definitions are test fixtures only: shipping reward tables remain unchanged.
+{
+    const definition: UpgradeDef = { id: 'test_pickup_upgrade', room: 'laboratory', name: 'Pickup upgrade', description: 'Test', costGold: 20, durationHours: 1,
+        availableAtStart: false, requirements: { type: 'flag', flag: 'ready' }, effect: { type: 'minionStat', stat: 'attack', mode: 'add', value: 2 }, towerXp: 4 };
+    const incremental = { ...CONFIG.incrementalUpgrades[0], id: 'test_pickup_repeatable', availableAtStart: false, requirements: { type: 'flag' as const, flag: 'ready' } };
+    CONFIG.upgrades.push(definition);
+    CONFIG.incrementalUpgrades.push(incremental);
+    CONFIG.items.push({ id: 'test_blueprint', name: 'Upgrade pickup', tags: ['upgrade'], upgradeId: definition.id, maxStackSize: 1, baseValueGold: 0 });
+    try {
+        const engine = new GameEngine();
+        const state = engine.state;
+        state.gold = 1000;
+        const attack = state.effectiveAttack(1);
+        check(!state.acquiredUpgrades.has(definition.id) && !engine.buyUpgrade(definition.id), "reward-only upgrades require acquisition");
+        check(CONFIG.upgrades.filter(def => def.availableAtStart !== false).every(def => state.acquiredUpgrades.has(def.id)), "existing upgrades remain acquired at game start");
+        check(!engine.acquireUpgrade('unknown'), "unknown pickups cannot unlock upgrades");
+        while (state.stacks.length < state.storageSlots()) state.stacks.push({ id: state.genId('stack'), itemId: 'golden_cup', count: 10 });
+        const slots = state.usedSlots();
+        const missionId = CONFIG.missions[0].id;
+        state.pendingReports.set(missionId, { missionId, success: true, squad: [], goldFound: 0, crystalsFound: 0, lootCopies: ['test_blueprint'], prisonersFound: [], carryLimit: 1, selection: { test_blueprint: 1 }, injuryRolls: {} });
+        check(engine.claimReport(missionId) && state.acquiredUpgrades.has(definition.id), "claiming a selected upgrade pickup acquires it even with full storage");
+        check(state.usedSlots() === slots && state.effectiveAttack(1) === attack && !state.purchasedUpgrades.has(definition.id), "pickup uses no storage and applies no completed effect");
+        check(!engine.buyUpgrade(definition.id), "acquisition does not bypass requirements");
+        state.progressionFlags.add('ready');
+        check(!requirementFailure(state, { type: 'upgradeAcquired', upgradeId: definition.id }), "acquisition is usable as a generic requirement");
+        const xp = state.towerXp;
+        check(state.addItems('test_blueprint', 2) === 0 && state.towerXp === xp, "duplicate pickups are harmless and grant no XP");
+        check(engine.buyUpgrade(definition.id) && state.gold === 980, "acquired upgrades still pay normal construction cost");
+        check(state.effectiveAttack(1) === attack, "pickup upgrade takes effect only on completion");
+        engine.forceCompleteProcess(findProcess(engine, 'upgrade').id);
+        check(state.effectiveAttack(1) === attack + 2 && state.towerXp === xp + 4, "pickup upgrade completes through the normal pipeline");
+        check(!engine.buyIncremental(incremental.id), "repeatable upgrades also require acquisition");
+        check(engine.acquireUpgrade(incremental.id) && !engine.acquireUpgrade(incremental.id), "direct reward acquisition is idempotent");
+        state.progressionFlags.delete('ready');
+        check(!engine.buyIncremental(incremental.id), "repeatable upgrades use generic requirements");
+        state.progressionFlags.add('ready');
+        check(engine.buyIncremental(incremental.id), "acquired repeatable upgrade can be constructed");
+        engine.forceCompleteProcess(findProcess(engine, 'incrementalUpgrade').id);
+        check(engine.buyIncremental(incremental.id), "repeatable upgrade acquisition persists for later levels");
+    } finally {
+        CONFIG.upgrades.pop(); CONFIG.incrementalUpgrades.pop(); CONFIG.items.pop();
+    }
 }
 
 // --- 7. Dungeon: admit, auto-process, recruit outcome ---
