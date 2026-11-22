@@ -10,6 +10,7 @@ export interface StorehouseViewModel {
   readonly filters: Readonly<TagFilterBarViewModel>;
   /** Already filtered by the adapter/controller. One card per item stack. */
   readonly items: readonly ItemComponentViewModel[];
+  readonly vacantSlots: number;
   readonly inventoryLabel: string;
   readonly emptyMessage: string;
   readonly busy?: boolean;

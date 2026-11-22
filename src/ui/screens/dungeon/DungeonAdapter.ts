@@ -2,21 +2,12 @@ import type { GameEngine } from '../../../engine/GameEngine';
 import type { PrisonCellViewModel, PrisonerViewModel } from '../../components/PrisonCell/PrisonCell.types';
 import { asset } from '../assets';
 import { buildUpgradeLineViewModel, fmtHours, groupUpgradeFamilies, roomUpgradeDefs } from '../shared';
-import { nameFor } from '../../minionIdentity';
 import type { DungeonAction, DungeonViewModel } from './DungeonViewModel';
 
 const roomImage = asset('rooms/dungeon.webp');
-const emptyCellImage = asset('empty-cell.webp');
-const PRISONER_PORTRAITS = ['grub-prisoner', 'mork-prisoner', 'skrit-prisoner', 'brakka-prisoner'].map(name => asset(`${name}.webp`));
-
-function hashCode(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i);
-  return h;
-}
-function prisonerPortrait(id: string): PrisonerViewModel['portrait'] {
-  const index = Math.abs(hashCode(id)) % PRISONER_PORTRAITS.length;
-  return { kind: 'texture', src: PRISONER_PORTRAITS[index], alt: `Portrait of ${nameFor(id)}`, fallbackEmoji: '🔗' };
+const emptyCellImage = asset('slots/slot-dungeon-cell.webp');
+function prisonerPortrait(_id: string): PrisonerViewModel['portrait'] {
+  return { kind: 'texture', src: asset('minions/prisoner-avatar.webp'), alt: 'Anonymous hooded prisoner', fallbackEmoji: '👤' };
 }
 
 export function buildDungeonViewModel(engine: GameEngine): DungeonViewModel {
@@ -34,7 +25,7 @@ export function buildDungeonViewModel(engine: GameEngine): DungeonViewModel {
     if (!prisoner || prisoner.processId === null) return { id: `cell-${index}`, label: `Cell ${index + 1}`, emptyArtSrc: emptyCellImage };
     const process = state.processes.find(p => p.id === prisoner.processId);
     if (!process || process.type !== 'dungeon') return { id: `cell-${index}`, label: `Cell ${index + 1}`, emptyArtSrc: emptyCellImage };
-    const name = nameFor(prisoner.id);
+    const name = 'Unknown prisoner';
     return {
       id: `cell-${index}`,
       label: `Cell ${index + 1}`,
@@ -43,7 +34,7 @@ export function buildDungeonViewModel(engine: GameEngine): DungeonViewModel {
         id: prisoner.id,
         name,
         portrait: prisonerPortrait(prisoner.id),
-        processLabel: 'Interrogating…',
+        processLabel: 'Interrogation',
         remainingLabel: fmtHours(Math.max(0, process.endHour - state.hours)),
         remainingTooltip: `${name} is being interrogated`,
         progress: Math.min(1, Math.max(0, (state.hours - process.startHour) / (process.endHour - process.startHour))),

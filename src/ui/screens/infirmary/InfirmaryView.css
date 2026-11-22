@@ -10,7 +10,7 @@
 .dt-infirmary__window-title::before,.dt-infirmary__window-title::after { content:'◆'; font:12px Georgia,serif; color:#ffc44d; vertical-align:6px; margin:0 14px; }
 .dt-infirmary__beds-section { min-height:0; flex:1; display:flex; flex-direction:column; overflow:hidden; }
 .dt-infirmary__beds-topline { flex:0 0 auto; display:flex; justify-content:space-between; padding:2px 17px 10px; font:700 12px/1.1 'Trebuchet MS',sans-serif; text-transform:uppercase; letter-spacing:.15em; color:#d5a8cf; }
-.dt-infirmary__beds-viewport { position:relative; flex:1; min-height:0; overflow:auto hidden; padding:6px 16px 18px; scrollbar-color:#a25495 #342039; scrollbar-width:thin; }
+.dt-infirmary__beds-viewport { position:relative; flex:1; min-height:0; overflow:auto; padding:6px 16px 18px; scrollbar-color:#a25495 #342039; scrollbar-width:thin; }
 .dt-infirmary__beds-viewport::-webkit-scrollbar { width:10px; }.dt-infirmary__beds-viewport::-webkit-scrollbar-track { background:#342039; border-radius:9px; }.dt-infirmary__beds-viewport::-webkit-scrollbar-thumb { background:#925081; border:2px solid #342039; border-radius:9px; }
 .dt-infirmary__beds-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; max-width:1170px; margin:0 auto; align-items:start; }
 .dt-infirmary__bed-slot { min-width:0; }

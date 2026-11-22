@@ -1,6 +1,13 @@
 import type {ItemTileViewModel} from '../../components/ItemTile/ItemTile.types';
 import type {MinionComponentViewModel} from '../../components/MinionComponent/MinionComponent.types';
 
+export interface ReportPrisonerViewModel {
+  readonly id: string;
+  readonly portraitSrc: string;
+  readonly rankLabel: string;
+  readonly rankTooltip: string;
+}
+
 export interface LootChoiceViewModel {
   readonly id: string; // unique copy ID, not item-type ID
   readonly item: Readonly<ItemTileViewModel>;
@@ -24,8 +31,7 @@ export interface RaidReportViewModel {
     capacityLabel: string; // e.g. Carry: 8 · Free slots: 8
     hint: string;
   }>;
-  readonly prisoners: readonly Readonly<MinionComponentViewModel>[];
-  readonly prisonerSummary: string;
+  readonly prisoners: readonly Readonly<ReportPrisonerViewModel>[];
   readonly minions: readonly Readonly<MinionComponentViewModel>[];
   readonly claim: Readonly<{label:string; canClaim:boolean; disabledReason?:string}>;
   readonly pauseLabel: string;

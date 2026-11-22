@@ -1,3 +1,7 @@
+import { buildStorehouseViewModel, createStorehouseUiState } from './src/ui/screens/storehouse/StorehouseAdapter';
+import { buildTrainingHallViewModel, createTrainingHallUiState, handleTrainingHallAction } from './src/ui/screens/training-hall/TrainingHallAdapter';
+import { buildQuartersViewModel } from './src/ui/screens/quarters/QuartersAdapter';
+import { buildInfirmaryViewModel } from './src/ui/screens/infirmary/InfirmaryAdapter';
 /**
  * Headless end-to-end smoke test for the Dark Tower prototype engine (no DOM/browser needed).
  * Run with `npm run selftest`. Throws (non-zero exit) on the first failed assertion.
@@ -557,6 +561,41 @@ console.log("\n[18] Weather improves raid outcomes");
         mission.weather = originalWeather;
     }
     check(CONFIG.missions.every(m => m.description.trim().length > 0), 'every mission has a location description in data');
+}
+
+console.log("\n[19] Room slot presentation and roster training");
+{
+    const engine = new GameEngine();
+    const ui = createStorehouseUiState();
+    const inventory = buildStorehouseViewModel(engine, ui);
+    check(inventory.items.length === 5 && inventory.vacantSlots === 15, 'initial storage shows five item cards and fifteen vacancies');
+    engine.startNormalSale(engine.state.stacks[0].id);
+    check(buildStorehouseViewModel(engine, ui).vacantSlots === 15, 'selling items retain their occupied slots');
+    ui.activeTags.clear();
+    const filtered = buildStorehouseViewModel(engine, ui);
+    check(filtered.items.length === 0 && filtered.vacantSlots === 15, 'filters do not turn hidden items into vacancies');
+    const trainingUi = createTrainingHallUiState();
+    engine.state.gold = 100000;
+    let training = buildTrainingHallViewModel(engine, trainingUi);
+    check(training.roster.length === engine.state.minions.length, 'training roster includes every minion');
+    const minionId = training.roster[0].card.id;
+    handleTrainingHallAction(engine, trainingUi, {type:'trainRequested', minionId});
+    training = buildTrainingHallViewModel(engine, trainingUi);
+    check(training.stations.some(station => station.occupant?.minionId === minionId), 'roster Train action occupies a free station');
+    check(!training.roster.find(entry => entry.card.id === minionId)!.canTrain, 'training minion cannot be assigned twice');
+    for (const entry of training.roster) handleTrainingHallAction(engine, trainingUi, {type:'trainRequested', minionId:entry.card.id});
+    training = buildTrainingHallViewModel(engine, trainingUi);
+    check(training.stations.every(station => station.occupant !== undefined), 'roster training fills available stations');
+    check(training.roster.every(entry => !entry.canTrain), 'no Train button remains enabled when capacity is full');
+    engine.forceCompleteProcess(findProcess(engine, 'training').id);
+    assignBeds(engine.state, engine.state.hours);
+    const resting = buildQuartersViewModel(engine).beds.find(bed => bed.occupant)?.occupant;
+    check(!!resting && resting.card.id === resting.minionId && !!resting.card.description, 'resting beds include the complete minion card');
+    const patient = new GameEngine();
+    patient.state.minions[0].injured = true;
+    assignBeds(patient.state, patient.state.hours);
+    const healing = buildInfirmaryViewModel(patient).beds.find(bed => bed.occupant)?.occupant;
+    check(!!healing && healing.card.conditions.some(condition => condition.id === 'injured'), 'treatment beds retain minion condition information');
 }
 
 console.log(`\n== All ${passed} checks passed ==`);

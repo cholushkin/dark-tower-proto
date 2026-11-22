@@ -1,7 +1,8 @@
-import type { MinionPortrait } from '../MinionComponent/MinionComponent.types';
+import type { MinionComponentViewModel, MinionPortrait } from '../MinionComponent/MinionComponent.types';
 
 /** Read-only UI representation of an automatically assigned bed. */
 export interface BedOccupantViewModel {
+  readonly card: MinionComponentViewModel;
   readonly minionId: string;
   readonly name: string;
   readonly portrait: MinionPortrait;

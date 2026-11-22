@@ -5,6 +5,7 @@ import { mountMinionComponent } from '../../components/MinionComponent/MinionCom
 import type { MinionComponentHandle } from '../../components/MinionComponent/MinionComponent.types';
 import type { QuartersActionHandler, QuartersViewHandle, QuartersViewModel } from './QuartersViewModel';
 import './QuartersView.css';
+import '../../components/RoomSlot.css';
 
 interface Mounted<T> { host: HTMLElement; handle: T }
 /** Screen-only composition. No rest calculations, assignment, upgrades, persistence or timers. */

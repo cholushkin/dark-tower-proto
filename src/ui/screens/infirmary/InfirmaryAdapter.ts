@@ -1,3 +1,4 @@
+import { buildMinionCard } from '../../minionCard';
 import type { GameEngine } from '../../../engine/GameEngine';
 import type { MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
 import { asset } from '../assets';
@@ -6,7 +7,7 @@ import { nameFor, portraitFor } from '../../minionIdentity';
 import type { InfirmaryAction, InfirmaryViewModel } from './InfirmaryViewModel';
 
 const roomImage = asset('rooms/infirmary.webp');
-const bedImage = asset('infirmary-bed.svg');
+const bedImage = asset('slots/slot-infirmary.webp');
 
 export function buildInfirmaryViewModel(engine: GameEngine): InfirmaryViewModel {
   const state = engine.state;
@@ -30,6 +31,7 @@ export function buildInfirmaryViewModel(engine: GameEngine): InfirmaryViewModel 
       bedImageSrc: bedImage,
       occupant: {
         minionId: minion.id,
+        card: buildMinionCard(state, minion),
         name,
         portrait: portraitFor(minion.id),
         remainingLabel: fmtHours(Math.max(0, process.endHour - state.hours)),

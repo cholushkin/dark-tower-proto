@@ -1,0 +1,5 @@
+.dt-storehouse .dt-storehouse__items,.dt-quarters .dt-quarters__beds-grid,.dt-infirmary .dt-infirmary__beds-grid,.dt-training-hall .dt-training-hall__stations-grid,.dt-dungeon .dt-dungeon__cells-grid,.dt-training-hall .dt-training-hall__roster {display:grid;grid-template-columns:repeat(auto-fill,165px);gap:16px 13px;max-width:none;margin:0;align-items:start;justify-content:start;}
+.dt-room-slot,.dt-bed .dt-bed__tile,.dt-training-hall .dt-station__tile,.dt-dungeon .dt-cell__scene {border:1px solid #6a5573;border-radius:14px;box-shadow:inset 0 0 0 3px #ffffff08,0 8px 18px #09050e44;}
+.dt-room-slot {box-sizing:border-box;width:100%;aspect-ratio:1;background:radial-gradient(circle at 50% 40%,#413052,#291d37 52%,#1c1627);}
+.dt-room-slot--vacant {border-style:dashed;}
+@media(max-width:720px) {.dt-storehouse .dt-storehouse__items,.dt-quarters .dt-quarters__beds-grid,.dt-infirmary .dt-infirmary__beds-grid,.dt-training-hall .dt-training-hall__stations-grid,.dt-dungeon .dt-dungeon__cells-grid,.dt-training-hall .dt-training-hall__roster {grid-template-columns:repeat(auto-fill,minmax(130px,165px));gap:13px 8px;}}

@@ -4,6 +4,7 @@ import type { ItemComponentHandle } from '../../components/ItemComponent/ItemCom
 import { mountTagFilterBar } from '../../components/TagFilterBar/TagFilterBar';
 import type { StorehouseActionHandler, StorehouseViewHandle, StorehouseViewModel } from './StorehouseViewModel';
 import './StorehouseView.css';
+import '../../components/RoomSlot.css';
 
 interface MountedCard<T> { host: HTMLElement; handle: T; }
 
@@ -54,6 +55,7 @@ export function mountStorehouseView(
     onAction({ type: 'filterToggled', tag });
   });
   const itemCards = new Map<string, MountedCard<ItemComponentHandle>>();
+  const placeholders: HTMLElement[] = [];
   let disposed = false;
 
   function setModel(model: Readonly<StorehouseViewModel>): void {
@@ -78,13 +80,21 @@ export function mountStorehouseView(
       } else card.handle.setModel(item);
       orderedItemHosts.push(card.host);
     }
+    while (placeholders.length < model.vacantSlots) {
+      const slot = document.createElement('div');
+      slot.className = 'dt-room-slot dt-room-slot--vacant';
+      slot.setAttribute('aria-label', 'Empty storage slot');
+      placeholders.push(slot);
+    }
+    placeholders.length = model.vacantSlots;
+    orderedItemHosts.push(...placeholders);
     const priorScroll = inventoryViewport.scrollTop;
     if (inventoryGrid.childElementCount !== orderedItemHosts.length || orderedItemHosts.some((element, index) => inventoryGrid.children[index] !== element)) {
       inventoryGrid.replaceChildren(...orderedItemHosts);
     }
     inventoryViewport.scrollTop = priorScroll;
     emptyEl.hidden = model.items.length !== 0;
-    inventoryGrid.hidden = model.items.length === 0;
+    inventoryGrid.hidden = orderedItemHosts.length === 0;
   }
   host.replaceChildren(root);
   setModel(initial);

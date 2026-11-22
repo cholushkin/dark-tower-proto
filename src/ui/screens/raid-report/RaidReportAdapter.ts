@@ -1,3 +1,4 @@
+import { asset } from '../assets';
 import { CONFIG } from '../../../data/config';
 import type { GameEngine } from '../../../engine/GameEngine';
 import { adjustSelection, discoveredCounts, selectedSlots } from '../../../systems/raidReport';
@@ -5,7 +6,7 @@ import { missionDef, previewRaid } from '../../../systems/world';
 import type { MinionComponentViewModel, MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
 import { fmtHours, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather } from '../shared';
 import { nameFor, portraitFor } from '../../minionIdentity';
-import type { LootChoiceViewModel, RaidReportAction, RaidReportViewModel } from './RaidReportViewModel';
+import type { LootChoiceViewModel, RaidReportAction, RaidReportViewModel, ReportPrisonerViewModel } from './RaidReportViewModel';
 
 function itemDef(itemId: string) {
   return CONFIG.items.find(i => i.id === itemId)!;
@@ -13,16 +14,13 @@ function itemDef(itemId: string) {
 
 /** Captured prisoners aren't admitted (don't have a Prisoner id) until the report is claimed, so
  * they're displayed with a synthetic per-draft id derived from their position + rank. */
-function prisonerViewModel(rank: number, index: number): MinionComponentViewModel {
+function prisonerViewModel(rank: number, index: number): ReportPrisonerViewModel {
   const rankDef = CONFIG.ranks[rank - 1];
   return {
     id: `found-${index}-${rank}`,
-    name: `Captured ${rankDef.name}`,
-    description: `A Rank ${rank} ${rankDef.name} captured during the raid.`,
-    rank: { label: `${rankDef.name} (R${rank})`, icon: rank === 5 ? '👑' : '⌃' },
-    portrait: portraitFor(`found-${index}-${rank}`),
-    conditions: [],
-    status: { id: 'captured', label: 'Captured', icon: '⛓️' },
+    portraitSrc: asset('minions/prisoner-avatar.webp'),
+    rankLabel: `R${rank}`,
+    rankTooltip: `Rank ${rank}: ${rankDef.name}`,
   };
 }
 
@@ -111,7 +109,6 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
       hint: slots >= draft.carryLimit ? 'Carry limit reached.' : 'Select loot to bring home.',
     },
     prisoners,
-    prisonerSummary: prisoners.length === 0 ? 'No prisoners captured' : `${prisoners.length} captured`,
     minions,
     claim: { label: draft.success ? 'Claim Rewards' : 'Acknowledge', canClaim: true },
     pauseLabel: 'Time is paused while viewing this report',

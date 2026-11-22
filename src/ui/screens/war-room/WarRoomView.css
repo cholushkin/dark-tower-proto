@@ -46,7 +46,6 @@
 .dt-warroom__minion-slot{width:112px;height:112px;flex:none;position:relative;border-radius:12px;cursor:pointer;outline:2px solid transparent;outline-offset:2px}
 .dt-warroom__minion-slot>.dt-minion{height:100%}
 .dt-warroom__minion-slot--selected{outline-color:#ffd76d;box-shadow:0 0 14px #ffba3e75}
-.dt-warroom__minion-slot--selected::after{content:'✓';position:absolute;z-index:16;right:-5px;top:-8px;display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:#ffc745;border:2px solid #8c4e1d;color:#352126;font:900 17px/1 sans-serif;pointer-events:none}
 .dt-warroom__minion-slot--disabled:not(.dt-warroom__minion-slot--selected){opacity:.65;cursor:not-allowed}
 .dt-warroom__minion-slot:focus-visible{outline:2px solid #fff0af}
 .dt-warroom__minion-slot:hover:not(.dt-warroom__minion-slot--disabled){transform:translateY(-2px)}

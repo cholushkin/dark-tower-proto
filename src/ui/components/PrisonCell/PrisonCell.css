@@ -1,21 +1,13 @@
 .dt-cell,.dt-cell *{box-sizing:border-box}
-.dt-cell{position:relative;width:100%;aspect-ratio:1 / 1;display:flex;flex-direction:column;overflow:hidden;border:1px solid #985b82;border-radius:11px;background:linear-gradient(160deg,#312039,#1c1426);box-shadow:inset 0 1px 0 #d395ba24,0 5px 12px #0d091455;color:#fbe8ec}
-.dt-cell__scene{height:71%;min-height:0;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#40223f,#17131e);}
-.dt-cell__scene-image{height:100%;width:100%;object-fit:cover;object-position:50% 48%;display:block}
-.dt-cell__scene-image[hidden]{display:none}
-.dt-cell__scene::after{content:"";position:absolute;inset:70% 0 0;pointer-events:none;background:linear-gradient(transparent,#261729)}
-.dt-cell__portrait-emoji{font-size:clamp(65px,8vw,115px);position:absolute;inset:0;display:grid;place-items:center;text-shadow:0 8px 18px #09050c}
-.dt-cell__portrait-emoji[hidden]{display:none}
-.dt-cell__occupied-detail{height:29%;min-height:0;padding:0 9px 7px;display:flex;flex-direction:column;gap:5px;align-items:stretch}
-.dt-cell__occupied-detail[hidden],.dt-cell__empty-detail[hidden]{display:none}
-.dt-cell__name{text-align:center;display:block;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#fff0d5;font:bold clamp(15px,1.7vw,24px)/1.2 Georgia,serif;text-shadow:0 2px 2px #000b}
-.dt-cell__process{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;gap:3px;padding:5px 7px;border:1px solid #7d4c76;border-radius:7px;background:#39223f94}
-.dt-cell__process-line{display:flex;justify-content:space-between;align-items:center;gap:4px;font-size:clamp(9px,.95vw,13px);line-height:1.2;white-space:nowrap}
-.dt-cell__process-label{min-width:0;overflow:hidden;text-overflow:ellipsis;color:#f2d2e4;font-weight:700}
-.dt-cell__remaining{white-space:nowrap;color:#fbe3ac;font-variant-numeric:tabular-nums;font-weight:750}
-.dt-cell__progress{height:11px;width:100%;border:1px solid #71415d;border-radius:50px;overflow:hidden;background:#21182a;box-shadow:inset 0 2px 4px #09060f}
-.dt-cell__progress-fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(#ffe78d,#f1bd45 50%,#cf7f27);box-shadow:0 0 8px #edae4a70;transition:width .2s linear}
-.dt-cell__empty-detail{height:29%;display:grid;place-items:center;padding:2px 8px 11px;font:700 clamp(12px,1.3vw,17px) Georgia,serif;color:#a98da7}
-.dt-cell--empty .dt-cell__scene{height:71%;opacity:.55;filter:saturate(.7)}
-.dt-cell--empty .dt-cell__scene-image{object-position:50% 35%}
-@media(max-width:700px){.dt-cell__occupied-detail{padding:0 5px 6px;gap:2px}.dt-cell__process{padding:3px 4px;gap:3px}.dt-cell__progress{height:8px}.dt-cell__name{font-size:clamp(14px,3.7vw,19px)}.dt-cell__process-line{font-size:clamp(9px,2.5vw,11px)}}
+.dt-cell{width:100%;min-width:0;color:#f6eedc;font-family:var(--dt-font,'Trebuchet MS',sans-serif)}
+.dt-cell [hidden]{display:none!important}
+.dt-cell__scene{position:relative;width:100%;aspect-ratio:1;overflow:hidden;border:1px solid #6a5573;border-radius:14px;background:#291d37;isolation:isolate}
+.dt-cell__art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:var(--dt-slot-art-opacity,.25)}
+.dt-cell__scene-image{position:absolute;inset:8% 12%;display:block;height:84%;width:76%;object-fit:contain;object-position:center}
+.dt-cell__portrait-emoji{font-size:80px;position:absolute;inset:0;display:grid;place-items:center;text-shadow:0 8px 18px #09050c}
+.dt-cell__occupied-detail{display:grid;gap:5px;margin-top:10px;padding:7px;border:1px solid #dcc5f0;border-radius:9px;background:#bba5d6;color:#30213f;text-align:center;font:800 12px/1.25 var(--dt-font,sans-serif)}
+.dt-cell__process-label{overflow-wrap:anywhere}
+.dt-cell__progress{position:relative;isolation:isolate;width:100%;height:15px;border:1px solid #716183;border-radius:999px;background:#59476d;overflow:hidden;font-variant-numeric:tabular-nums}
+.dt-cell__progress-fill{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:#eee0fc;transition:width .3s linear}
+.dt-cell__remaining{position:absolute;inset:0;color:#fff7ff;text-shadow:0 1px 2px #24162d,0 -1px 2px #24162d,1px 0 2px #24162d;font:800 10px/13px var(--dt-font,sans-serif);white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.dt-cell__progress-fill{transition:none}}

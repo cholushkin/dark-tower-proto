@@ -1,3 +1,4 @@
+import { buildMinionCard } from '../../minionCard';
 import { minionStatus } from '../../minionStatus';
 import { CONFIG } from '../../../data/config';
 import type { GameEngine } from '../../../engine/GameEngine';
@@ -8,7 +9,7 @@ import { nameFor, portraitFor } from '../../minionIdentity';
 import type { QuartersAction, QuartersViewModel } from './QuartersViewModel';
 
 const roomImage = asset('rooms/quarters.webp');
-const bedImage = asset('bed.svg');
+const bedImage = asset('slots/slot-bed.webp');
 
 export function buildQuartersViewModel(engine: GameEngine): QuartersViewModel {
   const state = engine.state;
@@ -32,6 +33,7 @@ export function buildQuartersViewModel(engine: GameEngine): QuartersViewModel {
       bedImageSrc: bedImage,
       occupant: {
         minionId: minion.id,
+        card: buildMinionCard(state, minion),
         name,
         portrait: portraitFor(minion.id),
         remainingLabel: fmtHours(Math.max(0, process.endHour - state.hours)),

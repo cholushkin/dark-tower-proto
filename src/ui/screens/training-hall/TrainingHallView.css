@@ -27,3 +27,11 @@
 .dt-training-hall .dt-bed__empty-word {display:none;}
 .dt-training-hall__picker-host:empty{display:none}
 @media(max-width:720px){.dt-training-hall__stations-grid{gap:9px}}
+
+.dt-training-hall__stations-section{flex:0 0 auto;max-height:45%;min-height:190px}
+.dt-training-hall__stations-viewport{overflow:auto;max-height:290px}
+.dt-training-hall__roster-section{flex:1;min-height:0;overflow:auto;padding:6px 16px 18px}
+.dt-training-hall__roster-section h2{font-size:13px;color:#d9b9d0;margin:0 0 12px}
+.dt-training-hall__train{width:100%;min-height:48px;margin-top:10px;border:1px solid #fff0b1;border-radius:9px;background:#f5c85b;color:#31200e;font:900 14px var(--dt-font,sans-serif);cursor:pointer}
+.dt-training-hall__train:disabled{background:#9180a4;border-color:#a998b9;color:#30273a;cursor:default}
+.dt-training-hall__train:focus-visible{outline:2px solid #fff2b0;outline-offset:3px}

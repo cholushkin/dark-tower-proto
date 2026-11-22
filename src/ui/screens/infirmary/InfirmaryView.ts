@@ -3,6 +3,7 @@ import { mountBedSlot } from '../../components/BedSlot/BedSlot';
 import type { BedSlotHandle } from '../../components/BedSlot/BedSlot.types';
 import type { InfirmaryActionHandler, InfirmaryViewHandle, InfirmaryViewModel } from './InfirmaryViewModel';
 import './InfirmaryView.css';
+import '../../components/RoomSlot.css';
 
 interface Mounted<T> { host: HTMLElement; handle: T }
 /** Screen-only composition. No treatment calculations, assignment, upgrades, persistence or timers. */

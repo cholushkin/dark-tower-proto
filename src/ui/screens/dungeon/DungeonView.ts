@@ -3,6 +3,7 @@ import { mountPrisonCell } from '../../components/PrisonCell/PrisonCell';
 import type { PrisonCellHandle } from '../../components/PrisonCell/PrisonCell.types';
 import type { DungeonActionHandler, DungeonViewHandle, DungeonViewModel } from './DungeonViewModel';
 import './DungeonView.css';
+import '../../components/RoomSlot.css';
 
 interface Mounted<T> { host: HTMLElement; handle: T }
 /** Screen-only composition. Never resolves prisoners, starts timers, buys upgrades or mutates gold. */

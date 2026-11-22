@@ -1,36 +1,13 @@
 .dt-station,.dt-station *{box-sizing:border-box}
-.dt-station{width:100%;aspect-ratio:1;min-width:0;position:relative;overflow:hidden;border:1px solid #a56591;border-radius:13px;background:#2c1d33;color:#ffeddf;box-shadow:inset 0 0 0 1px #ffc9da1c,0 6px 12px #100a1759;isolation:isolate}
-.dt-station__art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;}
-.dt-station__art-tint{position:absolute;inset:0;background:linear-gradient(180deg,#24142a16 0%,transparent 37%,#25122916 57%,#1b1122df 96%);pointer-events:none}
-.dt-station--empty .dt-station__art{opacity:.58;filter:saturate(.76)}
-.dt-station__portrait-wrap{position:absolute;top:20%;left:7%;width:44%;aspect-ratio:1;border-radius:49% 49% 43% 43%;border:3px solid #bb83a1;overflow:hidden;background:#603950;box-shadow:0 2px 0 #20121a,0 8px 18px #0a0814c7}
-.dt-station__portrait-wrap[hidden]{display:none}.dt-station__portrait{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 24%}.dt-station__portrait[hidden]{display:none}.dt-station__top-left{position:absolute;top:9px;left:9px}.dt-station__top-left[hidden],.dt-station__top-right[hidden]{display:none}
-.dt-station__info{display:grid;place-items:center;width:25px;height:25px;border:1px solid #e6acda;border-radius:50%;background:#241829c7;color:#ecc7df;font:italic bold 18px Georgia,serif;pointer-events:auto}
-.dt-station__top-right{position:absolute;top:9px;right:9px;max-width:65%;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
-/* Rank progression is a vertical ascent: destination above, origin below. */
-.dt-station__rank-ladder{position:absolute;z-index:2;top:21%;right:4%;width:45%;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
-.dt-station__rank-ladder[hidden]{display:none}
-.dt-station__rank-next,.dt-station__rank-current{width:100%;border:1px solid #91658c;border-radius:8px;background:#25162cda;color:#f4dce9;text-align:center;padding:6px 3px;font:700 clamp(10px,.92vw,13px)/1.2 'Trebuchet MS',sans-serif;text-shadow:0 2px 3px #000;overflow-wrap:anywhere}
-.dt-station__rank-next{border-color:#e2ab53;background:#56304aeb;color:#ffdf85;box-shadow:0 0 9px #e6a54944}
-.dt-station__rank-arrow{color:#ffc350;font-size:clamp(19px,2.1vw,31px);line-height:1;text-shadow:0 1px 5px #160a1c}
-
-.dt-station__badges{display:flex;gap:4px}.dt-station__badge{border:1px solid #bb716f;border-radius:7px;display:grid;place-items:center;width:29px;height:29px;background:#6a2c46;color:#ffddcb;font-size:19px}
-.dt-station__bottom{position:absolute;bottom:7%;left:6%;right:6%;display:flex;flex-direction:column;align-items:center;gap:7px}.dt-station__bottom[hidden]{display:none}
-.dt-station__name{font:bold clamp(16px,1.8vw,24px) Georgia,serif;color:#fff0dc;text-shadow:0 3px 6px #000,0 0 8px #1a071c}
-.dt-station__progress{position:relative;height:25px;width:100%;border-radius:30px;border:2px solid #8d5e8c;background:#221229;overflow:hidden;box-shadow:0 2px 6px #0008;}
-.dt-station__progress-fill{height:100%;border-radius:30px;background:linear-gradient(90deg,#aa64b0,#dfa4df);transition:width .2s ease}
-.dt-station__timer{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;gap:5px;color:white;text-shadow:0 1px 3px #000,0 0 5px #000;font:800 clamp(11px,1.1vw,15px)/1 'Trebuchet MS',Arial,sans-serif;letter-spacing:.02em;font-variant-numeric:tabular-nums}
-.dt-station__timer>span:first-child{color:#ffcc53;font-size:17px}
-.dt-station__empty-hint{position:absolute;bottom:11%;left:50%;transform:translateX(-50%);padding:5px 9px;border:1px solid #ca9a96;border-radius:7px;background:#2a152cbe;color:#fce5bb;font-size:12px;font-weight:700;white-space:nowrap;opacity:0;transition:opacity .15s ease}
-.dt-station__empty-hint span{font-size:11px}.dt-station--empty:hover:not(.dt-station--disabled) .dt-station__empty-hint,.dt-station__hit:focus-visible~.dt-station__empty-hint{opacity:1}
-.dt-station__hit{position:absolute;inset:0;z-index:3;width:100%;height:100%;background:transparent;border:0;cursor:pointer;color:transparent}
-.dt-station__hit:focus-visible{outline:3px solid #ffca58;outline-offset:-4px}
-.dt-station--empty:hover:not(.dt-station--disabled){border-color:#ffc04c;box-shadow:inset 0 0 0 1px #ffc04c66,0 0 12px #f3b1444f}
-.dt-station__hit:disabled{cursor:default}
-.dt-station--disabled .dt-station__art{opacity:.33;filter:grayscale(.5)}
-@media(max-width:720px){.dt-station__portrait-wrap{border-width:2px;top:19%;width:45%}.dt-station__top-left{top:5px;left:5px}.dt-station__top-right{top:5px;right:5px}.dt-station__rank-ladder{top:19%;right:3%;width:47%;gap:2px}.dt-station__rank-current,.dt-station__rank-next{font-size:10px;padding:4px 2px}.dt-station__rank-arrow{font-size:20px}.dt-station__progress{height:20px}.dt-station__bottom{gap:4px}.dt-station__empty-hint{opacity:1;font-size:10px}.dt-station__empty-hint span{font-size:10px}}
-@media(prefers-reduced-motion:reduce){.dt-station__progress-fill,.dt-station__empty-hint{transition:none}}
-/* A training-in-progress card never displays the empty station assignment hint. */
-.dt-station--occupied .dt-station__empty-hint{display:none}
-.dt-station--occupied .dt-station__hit{pointer-events:none}
-.dt-station__empty-hint{pointer-events:none}
+.dt-station{width:100%;min-width:0;color:#f6eedc;font-family:var(--dt-font,'Trebuchet MS',sans-serif)}
+.dt-station [hidden]{display:none!important}
+.dt-station__tile{position:relative;width:100%;aspect-ratio:1;overflow:hidden;border:1px solid #6a5573;border-radius:14px;background:#291d37;isolation:isolate}
+.dt-station__art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;opacity:var(--dt-slot-art-opacity,.25)}
+.dt-station__portrait-wrap{position:absolute;inset:8% 12%;background:transparent;border:0;box-shadow:none}
+.dt-station__portrait{display:block;width:100%;height:100%;object-fit:contain;object-position:center}
+.dt-station__activity{display:grid;gap:5px;margin-top:10px;padding:7px;border:1px solid #dcc5f0;border-radius:9px;background:#bba5d6;color:#30213f;text-align:center;font:800 12px/1.25 var(--dt-font,sans-serif)}
+.dt-station__process-label{overflow-wrap:anywhere}
+.dt-station__progress{position:relative;isolation:isolate;width:100%;height:15px;border:1px solid #716183;border-radius:999px;background:#59476d;overflow:hidden;font-variant-numeric:tabular-nums}
+.dt-station__progress-fill{position:absolute;inset:0 auto 0 0;border-radius:inherit;background:#eee0fc;transition:width .3s linear}
+.dt-station__time{position:absolute;inset:0;color:#fff7ff;text-shadow:0 1px 2px #24162d,0 -1px 2px #24162d,1px 0 2px #24162d;font:800 10px/13px var(--dt-font,sans-serif);white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.dt-station__progress-fill{transition:none}}

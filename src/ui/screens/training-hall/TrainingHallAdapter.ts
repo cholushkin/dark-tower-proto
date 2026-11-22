@@ -1,3 +1,4 @@
+import { buildMinionCard } from '../../minionCard';
 import { CONFIG } from '../../../data/config';
 import type { GameEngine } from '../../../engine/GameEngine';
 import type { GameState } from '../../../model/GameState';
@@ -10,7 +11,7 @@ import { nameFor, portraitFor } from '../../minionIdentity';
 import type { TrainingHallAction, TrainingHallViewModel } from './TrainingHallViewModel';
 
 const roomImage = asset('rooms/training-hall.webp');
-const STATION_IMAGES = ['station-1', 'station-2', 'station-3', 'station-4'].map(name => asset(`${name}.webp`));
+const stationImage = asset('slots/slot-training-station.webp');
 
 export interface TrainingHallUiState {
   assignmentStationId: string | null;
@@ -42,7 +43,7 @@ export function buildTrainingHallViewModel(engine: GameEngine, ui: TrainingHallU
   const total = state.trainingStationCount();
   const stations: TrainingStationViewModel[] = Array.from({ length: total }, (_, index) => {
     const process = trainingProcesses[index];
-    const artworkSrc = STATION_IMAGES[index % STATION_IMAGES.length];
+    const artworkSrc = stationImage;
     if (!process || process.type !== 'training') {
       const hasEligibleMinion = state.minions.some(m => canTrain(state, m.id));
       return {
@@ -114,6 +115,14 @@ export function buildTrainingHallViewModel(engine: GameEngine, ui: TrainingHallU
     },
     upgrades,
     stations,
+    roster: state.minions.map(minion => {
+      const transition = transitionFor(minion.rank);
+      return { card: buildMinionCard(state, minion),
+        trainLabel: transition ? `Train · ${transition.costGold} 🪙` : 'Max rank',
+        canTrain: canTrain(state, minion.id),
+        disabledReason: candidateDisabledReason(state, minion.id) ?? (occupied >= total ? 'All training stations are occupied' : undefined),
+      };
+    }),
     stationsCaption: 'Training stations',
     countCaption: `${occupied} / ${total}`,
     emptyMessage: 'No training stations built yet.',
@@ -131,6 +140,9 @@ export function handleTrainingHallAction(engine: GameEngine, ui: TrainingHallUiS
       if (next) engine.buyUpgrade(next.id);
       return;
     }
+    case 'trainRequested':
+      engine.startTraining(action.minionId);
+      return;
     case 'stationSelected':
       ui.assignmentStationId = action.stationId;
       return;

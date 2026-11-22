@@ -109,6 +109,7 @@ export function buildStorehouseViewModel(engine: GameEngine, ui: StorehouseUiSta
       ],
     },
     items,
+    vacantSlots: Math.max(0, state.storageSlots() - state.usedSlots()),
     inventoryLabel: `${items.length} stack${items.length === 1 ? '' : 's'}`,
     emptyMessage: allTagsActive ? 'Nothing stored yet. Raid the world map to bring back loot.' : 'No items match the selected filters.',
   };

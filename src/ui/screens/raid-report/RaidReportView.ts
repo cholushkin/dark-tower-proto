@@ -14,7 +14,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
   let destroyed=false;
   const abort=new AbortController();
   const lootNodes=new Map<string,LootEntry>();
-  const prisonerNodes=new Map<string,CharacterEntry>();
+  const prisonerNodes=new Map<string,HTMLElement>();
   const minionNodes=new Map<string,CharacterEntry>();
   const root=document.createElement('main');
   root.className='dt-raid__popup';
@@ -42,8 +42,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
          </section>
          <section class="dt-raid__collection dt-raid__prisoners" aria-labelledby="dt-raid-prisoner-heading">
            <div class="dt-raid__collection-heading"><h3 id="dt-raid-prisoner-heading">⛓ Prisoners</h3><span class="dt-raid__prisoner-count"></span></div>
-           <div class="dt-raid__horizontal-scroll dt-raid__prisoner-list" aria-label="Captured prisoners"></div>
-           <p class="dt-raid__collection-note dt-raid__prisoner-note"></p>
+           <div class="dt-raid__horizontal-scroll dt-raid__prisoner-list" aria-label="Prisoners"></div>
          </section>
        </div>
        <section class="dt-raid__minions" aria-labelledby="dt-raid-minions-heading">
@@ -106,11 +105,36 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
     lootList.replaceChildren(...elements);
     lootList.scrollLeft=scrollLeft;
   }
-  function renderCharacters(kind:'prisoner'|'minion'):void {
-    const isPrisoner=kind==='prisoner';
-    const collection=isPrisoner?model.prisoners:model.minions;
-    const list=isPrisoner?prisonerList:minionList;
-    const store=isPrisoner?prisonerNodes:minionNodes;
+  function renderPrisoners():void {
+    const scrollLeft=prisonerList.scrollLeft;
+    const keep=new Set(model.prisoners.map(prisoner=>prisoner.id));
+    for(const [id,node] of prisonerNodes)if(!keep.has(id)){node.remove();prisonerNodes.delete(id);}
+    const elements:HTMLElement[]=[];
+    for(const prisoner of model.prisoners){
+      let node=prisonerNodes.get(prisoner.id);
+      if(!node){
+        node=document.createElement('div');
+        node.className='dt-raid__tile-slot dt-raid__character dt-raid__character--prisoner';
+        node.innerHTML='<article class="dt-minion"><div class="dt-minion__portrait"><img class="dt-minion__portrait-texture" alt="Anonymous hooded prisoner"></div><span class="dt-minion__rank"></span></article>';
+        prisonerNodes.set(prisoner.id,node);
+      }
+      const portrait=node.querySelector<HTMLImageElement>('img')!;
+      if(portrait.getAttribute('src')!==prisoner.portraitSrc)portrait.src=prisoner.portraitSrc;
+      const rank=node.querySelector<HTMLElement>('.dt-minion__rank')!;
+      rank.textContent=prisoner.rankLabel;
+      rank.title=prisoner.rankTooltip;
+      node.setAttribute('aria-label',`Prisoner, ${prisoner.rankTooltip}`);
+      elements.push(node);
+    }
+    prisonerList.replaceChildren(...elements);
+    prisonerList.scrollLeft=scrollLeft;
+    prisonerList.classList.toggle('dt-raid__horizontal-scroll--empty',elements.length===0);
+    if(!elements.length){const note=document.createElement('p');note.className='dt-raid__empty';note.textContent='No prisoners';prisonerList.append(note);}
+  }
+  function renderMinions():void {
+    const collection=model.minions;
+    const list=minionList;
+    const store=minionNodes;
     const scrollLeft=list.scrollLeft;
     const keep=new Set(collection.map(m=>m.id));
     for(const [key,entry] of store){if(!keep.has(key)){entry.tile.destroy();entry.root.remove();store.delete(key);}}
@@ -119,7 +143,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
       let entry=store.get(character.id);
       if(!entry){
         const wrapper=document.createElement('div');
-        wrapper.className=`dt-raid__tile-slot dt-raid__character dt-raid__character--${kind}`;
+        wrapper.className=`dt-raid__tile-slot dt-raid__character dt-raid__character--minion`;
         const tile=mountMinionComponent(wrapper,character,action=>{if(action.type==='infoRequested')dispatch({type:'characterInfoRequested',characterId:action.minionId});});
         entry={root:wrapper,tile};store.set(character.id,entry);
       }
@@ -129,7 +153,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
     list.replaceChildren(...elements);
     list.scrollLeft=scrollLeft;
     list.classList.toggle('dt-raid__horizontal-scroll--empty',elements.length===0);
-    if(elements.length===0){const note=document.createElement('p');note.className='dt-raid__empty';note.textContent=isPrisoner?'No prisoners captured':'No minions participated';list.append(note);}
+    if(elements.length===0){const note=document.createElement('p');note.className='dt-raid__empty';note.textContent='No minions participated';list.append(note);}
   }
   function setModel(next:Readonly<RaidReportViewModel>):void {
     if(destroyed)return;
@@ -149,7 +173,6 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
     get('.dt-raid__selection-count').textContent=next.selection.selectedCountLabel;
     get('.dt-raid__loot-note').textContent=next.selection.hint;
     get('.dt-raid__prisoner-count').textContent=String(next.prisoners.length);
-    get('.dt-raid__prisoner-note').textContent=next.prisonerSummary;
     get('.dt-raid__minion-count').textContent=String(next.minions.length);
     get('.dt-raid__pause-label').textContent=next.pauseLabel;
     get('.dt-raid__claim-summary').textContent=next.selection.capacityLabel;
@@ -161,11 +184,11 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
       const amount=document.createElement('strong');amount.textContent=currency.amountLabel;
       cell.append(icon,name,amount);return cell;
     }));
-    renderLoot();renderCharacters('prisoner');renderCharacters('minion');
+    renderLoot();renderPrisoners();renderMinions();
     claim.textContent=next.claim.label;
     claim.disabled=!next.claim.canClaim;
     claim.title=next.claim.disabledReason??'';
   }
   host.replaceChildren(root);setModel(initialModel);
-  return {setModel,destroy(){if(destroyed)return;destroyed=true;abort.abort();for(const value of lootNodes.values()){value.tile.destroy();value.abort.abort();}for(const value of [...prisonerNodes.values(),...minionNodes.values()])value.tile.destroy();lootNodes.clear();prisonerNodes.clear();minionNodes.clear();root.remove();}};
+  return {setModel,destroy(){if(destroyed)return;destroyed=true;abort.abort();for(const value of lootNodes.values()){value.tile.destroy();value.abort.abort();}for(const value of minionNodes.values())value.tile.destroy();lootNodes.clear();prisonerNodes.clear();minionNodes.clear();root.remove();}};
 }
