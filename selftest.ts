@@ -1,3 +1,4 @@
+import { buildRaidReportViewModel, handleRaidReportAction } from './src/ui/screens/raid-report/RaidReportAdapter';
 import { buildStorehouseViewModel, createStorehouseUiState } from './src/ui/screens/storehouse/StorehouseAdapter';
 import { buildTrainingHallViewModel, createTrainingHallUiState, handleTrainingHallAction } from './src/ui/screens/training-hall/TrainingHallAdapter';
 import { buildQuartersViewModel } from './src/ui/screens/quarters/QuartersAdapter';
@@ -91,6 +92,7 @@ console.log("\n[3] Raid lifecycle");
     const draft = engine.state.pendingReports.get("t1_millbrook")!;
     check(draft !== undefined, "a raid report draft exists");
     check(draft.success === true, "forced roll produced a successful raid");
+    check(draft.carryLimit === Math.floor(squad.reduce((sum, id) => sum + CONFIG.ranks[engine.state.findMinion(id)!.rank - 1].carryCapacity, 0)), "report carry slots equal the combined squad capacity");
     check(squad.every(id => engine.state.findMinion(id)!.activity.type === "raid"), "squad stays reserved until Claim");
 
     const goldBefore = engine.state.gold;
@@ -124,6 +126,31 @@ console.log("\n[4] Claim resolution — loot stacking and prisoners");
         injuryRolls: { [squad[0]]: 0 },
     };
     engine.state.pendingReports.set("t1_millbrook", draft);
+
+    const report = () => buildRaidReportViewModel(engine, draft.missionId)!;
+    const selectStack = (lootStackId: string, selected: boolean) => handleRaidReportAction(
+        engine, draft.missionId,
+        { type: 'lootSelectionRequested', raidId: draft.missionId, lootStackId, selected },
+        { close() {} },
+    );
+    check(report().loot.length === 3, "report groups six cups and one stone into three stack tiles");
+    check(report().loot.map(x => x.quantity).join(',') === '5,1,1', "loot tiles show full and partial stack quantities");
+    draft.carryLimit = 3;
+    selectStack('golden_cup#0', false);
+    check(draft.selection.golden_cup === 1, "deselecting a full stack removes five cups at once");
+    check(report().loot.find(x => x.id === 'golden_cup#1')!.selected, "partial cup stack remains selected independently");
+    draft.carryLimit = 2;
+    check(!report().loot.find(x => x.id === 'golden_cup#0')!.canToggle, "full carry budget disables another stack");
+    selectStack('golden_cup#0', true);
+    check(draft.selection.golden_cup === 1, "attempt to exceed carry slots leaves selection unchanged");
+    selectStack('cobblestone#0', false);
+    selectStack('golden_cup#0', true);
+    check(draft.selection.golden_cup === 6, "freeing a slot allows taking the full cup stack");
+    selectStack('golden_cup#1', false);
+    check(draft.selection.golden_cup === 5, "partial stack can be left behind without removing the full stack");
+    selectStack('golden_cup#1', true);
+    draft.carryLimit = 3;
+    selectStack('cobblestone#0', true);
 
     const cellsBefore = freeCells(engine.state);
     check(engine.claimReport("t1_millbrook"), "Claim succeeds for the synthetic draft");

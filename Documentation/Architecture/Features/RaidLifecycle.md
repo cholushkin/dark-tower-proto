@@ -41,7 +41,7 @@ documentation philosophy calls out as worth a dedicated Feature page.
 
 `world.ts resolveRaid()` preselects a valid subset of discovered loot within `carryLimit`
 (`preselectWithinBudget()`, `world.ts:136-153`, greedy in discovery order). The player can then
-raise/lower per-item-type counts via `raidReport.ts adjustSelection()`
+toggle whole stacks (including the final partial stack), with quantity badges, via `raidReport.ts adjustSelection()`
 (`raidReport.ts:25-39`), which re-validates the slot budget on every call — it never lets the
 selection exceed `carryLimit`, so Claim (`claimReport`) never needs to re-check it.
 

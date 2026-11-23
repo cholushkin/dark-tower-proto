@@ -53,11 +53,8 @@
 .dt-raid__loot-choice{cursor:pointer;border-radius:11px;transition:filter .15s;}
 .dt-raid__loot-choice>.dt-raid__tile-mount{transition:transform .15s;}
 .dt-raid__loot-choice:hover>.dt-raid__tile-mount{transform:translateY(-2px);}
-.dt-raid__loot-choice--selected .dt-item__tile{border:2px solid #f6c45e;box-shadow:0 0 0 1px #a97834,0 0 15px #e9b04435,inset 0 0 0 2px #fff4ac0c;}
-.dt-raid__loot-choice:not(.dt-raid__loot-choice--selected) .dt-item__tile{filter:saturate(.65);opacity:.77;}
+.dt-raid__currency,.dt-raid__loot-choice--selected .dt-item__tile{border:2px solid #f6c45e;box-shadow:0 0 0 1px #a97834,0 0 15px #e9b04435,inset 0 0 0 2px #fff4ac0c;}
 .dt-raid__loot-choice--disabled{cursor:not-allowed;}
-.dt-raid__loot-check{position:absolute;z-index:5;right:4%;top:4%;width:22%;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;border:2px solid #d3b06c;background:#4a354b;color:#c5b3c8;box-shadow:0 2px 8px #110915c0;font-size:17px;font-weight:900;pointer-events:none;}
-.dt-raid__loot-choice--selected .dt-raid__loot-check{background:#f6c85c;color:#36221d;border-color:#ffeba3;}
 .dt-raid__collection-note{font-size:11px;line-height:1.3;color:#a88eb3;margin:0 3px;min-height:16px;}
 .dt-raid__prisoners .dt-raid__horizontal-scroll{margin-top:4px;}
 .dt-raid__character .dt-minion{height:100%;width:100%;}

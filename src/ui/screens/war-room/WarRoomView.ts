@@ -28,7 +28,6 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
       <div class="dt-warroom__map-coordinates" hidden></div>
     </section>
     <section class="dt-warroom__planning" aria-label="Selected mission and raid planning" hidden>
-      <button class="dt-warroom__close" type="button" aria-label="Close mission planning" title="Close mission planning">×</button>
       <div class="dt-warroom__mission-info">
         <div class="dt-warroom__location">
           <img class="dt-warroom__location-art" alt="" />
@@ -76,7 +75,6 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   mapViewport.addEventListener('scroll', refreshMapCoordinates, { signal: abort.signal, passive: true });
   window.addEventListener('resize', refreshMapCoordinates, { signal: abort.signal });
   const planning = get<HTMLElement>('.dt-warroom__planning');
-  const close = get<HTMLButtonElement>('.dt-warroom__close');
   const missionInfo = get<HTMLElement>('.dt-warroom__mission-info');
   const locationImg = get<HTMLImageElement>('.dt-warroom__location-art');
   const locationName = get<HTMLElement>('.dt-warroom__location-name');
@@ -102,7 +100,6 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
   raidButton.addEventListener('click', () => {
     if (current.selectedMission?.canRaid && current.selectedMissionId) onAction({type:'raidRequested',missionId:current.selectedMissionId});
   }, {signal:abort.signal});
-  close.addEventListener('click', () => onAction({type:'missionClosed'}), {signal:abort.signal});
   root.addEventListener('keydown', event => {
     if (event.key === 'Escape' && current.selectedMissionId) onAction({type:'missionClosed'});
   }, {signal:abort.signal});

@@ -37,7 +37,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
          <section class="dt-raid__collection dt-raid__loot" aria-labelledby="dt-raid-loot-heading">
            <div class="dt-raid__collection-heading"><h3 id="dt-raid-loot-heading">📦 Loot Found</h3><span class="dt-raid__selection-count"></span></div>
            <div class="dt-raid__currencies" aria-label="Automatically collected currency"></div>
-           <div class="dt-raid__horizontal-scroll dt-raid__loot-list" aria-label="Select loot copies"></div>
+           <div class="dt-raid__horizontal-scroll dt-raid__loot-list" aria-label="Select loot stacks"></div>
            <p class="dt-raid__collection-note dt-raid__loot-note"></p>
          </section>
          <section class="dt-raid__collection dt-raid__prisoners" aria-labelledby="dt-raid-prisoner-heading">
@@ -67,10 +67,10 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
   close.addEventListener('click',()=>dispatch({type:'closeRequested',raidId:model.raidId}),{signal:abort.signal});
   locationInfo.addEventListener('click',()=>dispatch({type:'locationInfoRequested',locationId:model.location.id}),{signal:abort.signal});
 
-  function toggle(copyId:string):void {
-    const choice=model.loot.find(x=>x.id===copyId);
+  function toggle(stackId:string):void {
+    const choice=model.loot.find(x=>x.id===stackId);
     if(!choice?.canToggle)return;
-    dispatch({type:'lootSelectionRequested',raidId:model.raidId,lootCopyId:copyId,selected:!choice.selected});
+    dispatch({type:'lootSelectionRequested',raidId:model.raidId,lootStackId:stackId,selected:!choice.selected});
   }
   function renderLoot():void {
     const scrollLeft=lootList.scrollLeft;
@@ -84,7 +84,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
         wrapper.className='dt-raid__tile-slot dt-raid__loot-choice';
         wrapper.tabIndex=0;
         wrapper.setAttribute('role','checkbox');
-        wrapper.innerHTML='<div class="dt-raid__tile-mount"></div><span class="dt-raid__loot-check" aria-hidden="true"></span>';
+        wrapper.innerHTML='<div class="dt-raid__tile-mount"></div>';
         const tile=mountItemTile(wrapper.querySelector<HTMLElement>('.dt-raid__tile-mount')!,choice.item);
         const localAbort=new AbortController();
         wrapper.addEventListener('click',(e)=>{if((e.target as HTMLElement).closest('.dt-item__info'))return;toggle(choice.id);},{signal:localAbort.signal});
@@ -94,12 +94,11 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
       entry.tile.setModel(choice.item);
       entry.root.classList.toggle('dt-raid__loot-choice--selected',choice.selected);
       entry.root.classList.toggle('dt-raid__loot-choice--disabled',!choice.canToggle);
-      entry.root.dataset.lootCopyId=choice.id;
-      entry.root.setAttribute('aria-label',`${choice.item.title}; ${choice.selected?'selected':'not selected'}${choice.disabledReason?`; ${choice.disabledReason}`:''}`);
+      entry.root.dataset.lootStackId=choice.id;
+      entry.root.setAttribute('aria-label',`${choice.item.title}, ${choice.quantity} items, 1 carry slot; ${choice.selected?'selected':'not selected'}${choice.disabledReason?`; ${choice.disabledReason}`:''}`);
       entry.root.setAttribute('aria-checked',String(choice.selected));
       entry.root.setAttribute('aria-disabled',String(!choice.canToggle));
       entry.root.title=choice.disabledReason??(choice.selected?'Click to leave behind':'Click to take');
-      entry.root.querySelector<HTMLElement>('.dt-raid__loot-check')!.textContent=choice.selected?'✓':'+';
       elements.push(entry.root);
     }
     lootList.replaceChildren(...elements);

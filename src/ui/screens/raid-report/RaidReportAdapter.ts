@@ -35,23 +35,30 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
   for (const [itemId, total] of Object.entries(counts)) {
     const def = itemDef(itemId);
     const selectedCount = draft.selection[itemId] ?? 0;
-    const slotsBefore = Math.ceil(selectedCount / def.maxStackSize);
-    const slotsAfter = Math.ceil((selectedCount + 1) / def.maxStackSize);
-    const otherSlots = selectedSlots(draft) - slotsBefore;
-    const canSelectOneMore = otherSlots + slotsAfter <= draft.carryLimit;
-    for (let i = 0; i < total; i++) {
-      const selected = i < selectedCount;
+    const fullSelectedStacks = Math.floor(selectedCount / def.maxStackSize);
+    const selectedRemainder = selectedCount % def.maxStackSize;
+    for (let offset = 0, i = 0; offset < total; offset += def.maxStackSize, i++) {
+      const quantity = Math.min(def.maxStackSize, total - offset);
+      const selected = quantity === def.maxStackSize
+        ? i < fullSelectedStacks
+        : selectedRemainder >= quantity;
+      const nextCount = selectedCount + quantity;
+      const canSelect = selectedSlots(draft) - Math.ceil(selectedCount / def.maxStackSize)
+        + Math.ceil(nextCount / def.maxStackSize) <= draft.carryLimit;
       loot.push({
         id: `${itemId}#${i}`,
+        itemId,
+        quantity,
         item: {
           id: `${itemId}#${i}`,
           title: def.name,
           description: `${def.name} — base value ${def.baseValueGold}g.`,
           icon: itemIconFor(itemId),
+          stack: { label: `× ${quantity}`, tooltip: `${quantity} / ${def.maxStackSize} items · 1 carry slot` },
         },
         selected,
-        canToggle: selected || canSelectOneMore,
-        disabledReason: !selected && !canSelectOneMore ? 'Carry limit reached' : undefined,
+        canToggle: selected || canSelect,
+        disabledReason: !selected && !canSelect ? 'Carry limit reached' : undefined,
       });
     }
   }
@@ -106,7 +113,7 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
     selection: {
       selectedCountLabel: `${slots} / ${draft.carryLimit} slots`,
       capacityLabel: `Carry: ${draft.carryLimit} · Used: ${slots}`,
-      hint: slots >= draft.carryLimit ? 'Carry limit reached.' : 'Select loot to bring home.',
+      hint: slots >= draft.carryLimit ? 'Carry limit reached.' : 'Select stacks to bring home. Each stack uses one carry slot.',
     },
     prisoners,
     minions,
@@ -124,8 +131,10 @@ export function handleRaidReportAction(engine: GameEngine, missionId: string, ac
   switch (action.type) {
     case 'lootSelectionRequested':
       if (draft) {
-        const itemId = action.lootCopyId.replace(/#\d+$/, '');
-        adjustSelection(draft, itemId, action.selected ? 1 : -1);
+        const choice = buildRaidReportViewModel(engine, missionId)?.loot.find(x => x.id === action.lootStackId);
+        if (choice?.canToggle && choice.selected !== action.selected) {
+          adjustSelection(draft, choice.itemId, action.selected ? choice.quantity : -choice.quantity);
+        }
       }
       return;
     case 'claimRequested':

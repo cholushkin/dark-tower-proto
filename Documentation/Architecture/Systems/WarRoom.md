@@ -28,11 +28,11 @@ there's no stored `MissionState` field to go stale.
   Difficulty, duration, success estimate, and carrying capacity appear as icon/value rows with hover
   and keyboard-focus explanations. Weather occupies the second details column. Location descriptions
   and weather are defined in mission data. Rewards use the help cursor.
-- The embedded planning panel is hidden until a mission is selected. Its X button, Escape, or an
+- The embedded planning panel is hidden until a mission is selected. Escape or an
   empty-map click dismisses it and clears the draft squad; map dragging does not dismiss it.
   The minion assignment tray is always visible inside the open panel.
 - Planning is a single horizontal strip sized around a 128px square location image: two-column
-  parameters, compact reward icons, a horizontally scrolling minion box, and the raid action.
+  parameters, compact reward icons, a horizontally scrolling minion box, and a full-height raid action on the right.
   Section headings are omitted; accessible labels and hover explanations retain their meaning.
   Narrow screens scroll the strip horizontally rather than stacking it over the map.
 - Injury risk is hidden from mission planning. Both victory and defeat independently roll each

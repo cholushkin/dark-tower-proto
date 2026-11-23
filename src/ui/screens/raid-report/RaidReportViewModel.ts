@@ -9,7 +9,9 @@ export interface ReportPrisonerViewModel {
 }
 
 export interface LootChoiceViewModel {
-  readonly id: string; // unique copy ID, not item-type ID
+  readonly id: string; // unique stack ID, not item-type ID
+  readonly itemId: string;
+  readonly quantity: number;
   readonly item: Readonly<ItemTileViewModel>;
   readonly selected: boolean;
   readonly canToggle: boolean;
@@ -37,7 +39,7 @@ export interface RaidReportViewModel {
   readonly pauseLabel: string;
 }
 export type RaidReportAction =
-  | Readonly<{type:'lootSelectionRequested'; raidId:string; lootCopyId:string; selected:boolean}>
+  | Readonly<{type:'lootSelectionRequested'; raidId:string; lootStackId:string; selected:boolean}>
   | Readonly<{type:'claimRequested'; raidId:string}>
   | Readonly<{type:'closeRequested'; raidId:string}>
   | Readonly<{type:'locationInfoRequested'; locationId:string}>

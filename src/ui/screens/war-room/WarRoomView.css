@@ -70,7 +70,6 @@
  .dt-warroom__rewards{gap:18px}
  .dt-warroom__reward-icon{font-size:29px}
 }
-/* Raid button is always square, including narrow layouts. */
 
 .dt-warroom__reward-icon img{display:block;width:40px;height:40px;object-fit:contain}
 
@@ -88,9 +87,6 @@
  .dt-warroom__map-viewport{height:100%;min-height:0}
 }
 
-.dt-warroom__close{position:absolute;top:3px;right:0;display:grid;place-items:center;width:26px;height:26px;border:1px solid #946080;border-radius:6px;background:#342039;color:#ffe2bd;font:24px/1 sans-serif;cursor:pointer}
-.dt-warroom__close:hover{background:#68415c;border-color:#ffd16b}
-.dt-warroom__close:focus-visible{outline:2px solid #ffd76d;outline-offset:2px}
 .dt-warroom__parameter{grid-column:1}
 .dt-warroom__parameter[data-parameter-id="weather"]{grid-column:2;grid-row:1;align-self:start}
 .dt-warroom__reward,.dt-warroom__reward *{cursor:help}
@@ -101,8 +97,8 @@
 }
 
 /* One image-height planning strip. The roster gets the remaining width. */
-.dt-warroom__planning{--mission-size:128px;position:relative;flex:0 0 auto;margin-top:8px;padding:8px 34px 0 1px;border-top:1px solid #a65b91}
-.dt-warroom__mission-info{display:grid;grid-template-columns:var(--mission-size) max-content max-content minmax(112px,1fr) 72px;gap:12px;align-items:center;min-height:var(--mission-size)}
+.dt-warroom__planning{--mission-size:128px;position:relative;flex:0 0 auto;margin-top:8px;padding:8px 0 0 1px;border-top:1px solid #a65b91}
+.dt-warroom__mission-info{display:grid;grid-template-columns:var(--mission-size) max-content max-content minmax(112px,1fr) var(--mission-size);gap:12px;align-items:center;min-height:var(--mission-size)}
 .dt-warroom__location{width:var(--mission-size);height:var(--mission-size);min-height:0;align-self:center}
 .dt-warroom__location-name{font-size:18px}
 .dt-warroom__raid-block{padding-left:10px;border-left:1px solid #795374}
@@ -119,13 +115,12 @@
 .dt-warroom__tray-viewport{height:100%;width:100%;overflow-x:auto;overflow-y:hidden;padding:10px 7px 8px;scrollbar-gutter:stable}
 .dt-warroom__minion-track{gap:9px;align-items:center}
 .dt-warroom__minion-slot{width:100px;height:100px}
-.dt-warroom__raid-button{width:72px;height:72px;min-height:72px;align-self:center;font-size:18px;padding:5px;gap:4px;aspect-ratio:1}
+.dt-warroom__raid-button{width:var(--mission-size);height:var(--mission-size);min-height:var(--mission-size);align-self:center;font-size:18px;padding:5px;gap:4px}
 .dt-warroom__raid-icon{font-size:26px}
-.dt-warroom__close{top:8px;right:0}
 .dt-warroom__raid-active{margin-top:6px}
 .dt-warroom__raid-active-label{font-size:12px}
 /* On small screens preserve the single row instead of consuming map height. */
 @media(max-width:1000px){
- .dt-warroom__mission-info{overflow-x:auto;overflow-y:hidden;grid-template-columns:var(--mission-size) max-content max-content minmax(150px,1fr) 72px;padding-bottom:5px;scrollbar-width:thin;scrollbar-color:#a26495 #26152b}
+ .dt-warroom__mission-info{overflow-x:auto;overflow-y:hidden;grid-template-columns:var(--mission-size) max-content max-content minmax(150px,1fr) var(--mission-size);padding-bottom:5px;scrollbar-width:thin;scrollbar-color:#a26495 #26152b}
  .dt-warroom__parameter-tooltip{display:none!important}
 }
