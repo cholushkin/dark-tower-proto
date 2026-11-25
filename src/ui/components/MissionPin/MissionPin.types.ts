@@ -12,6 +12,8 @@ export interface MissionPinViewModel {
   readonly rewards: readonly Readonly<{ icon: ItemIcon; chanceLabel: string; label: string }>[];
   readonly statusLabel: string;
   readonly state: MissionVisualState;
+  readonly completed?: boolean;
+  readonly defendersLabel?: string;
   /** 0..1; supplied by host, displayed only. */
   readonly raidProgress?: number;
   readonly selected?: boolean;

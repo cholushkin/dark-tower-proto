@@ -6,8 +6,8 @@ Guidance for Claude Code sessions working in this repository.
 
 **Dark Tower** is a fantasy time-management/strategy game built as an experiment in AI-agent-driven
 game development (see [`readme.md`](readme.md) §1). This repository currently holds **Phase 1 —
-Gameplay Prototype**: a browser-only TypeScript/Vite implementation with no backend, no save
-system, and no persistence, whose purpose is to validate core mechanics, economy, and UX before a
+Gameplay Prototype**: a browser-only TypeScript/Vite implementation with no backend and local
+browser saves (no offline progression), whose purpose is to validate core mechanics, economy, and UX before a
 Phase 2 Unity vertical slice. Don't bring Unity-era assumptions into this code — the previous
 Unity-based `CLAUDE.md` was deleted (git history: `59e6750`) because it described a different
 project structure (`Unity/Game/`, rMVVM, VContainer) that doesn't exist in this repo.

@@ -1,57 +1,40 @@
 # System: War Room (World Map, Raids, Roster)
 
-**Authoritative rules:** [`../../DarkTowerGameDesign.md`](../../DarkTowerGameDesign.md) §4.7, §5.
+**Authoritative rules:** [`../../DarkTowerGameDesign.md`](../../DarkTowerGameDesign.md) §4.7, §5, §11.
 
 ## Owning files
 
 | File | Role |
 |---|---|
-| `src/systems/world.ts` | `previewRaid`, `canLaunchRaid`, `launchRaid`, `resolveRaid`, `squadPower`/`unitPower` (provisional combat formulas, design doc §11). |
-| `src/systems/raidReport.ts` | Claim-time resolution — see [`../Features/RaidLifecycle.md`](../Features/RaidLifecycle.md), it's documented as a Feature because it spans this system plus Storehouse/Dungeon/Recovery. |
-| `src/model/GameState.ts` | `missionState()` (`GameState.ts:267-274`), `unlockedTiers`, `everClaimedMissions`, `everVisitedMissions`, `missionClaimedWeek`, `missionRunningProcess`, `pendingReports`. |
-| `src/data/config.ts` | World registry, starting world, derived mission catalog, and world tiers. |
-| `src/data/worlds/world-1A.ts` | Starting world image and mission definitions, including editable percentage `mapPosition` coordinates. |
-| `src/ui/screens/war-room/*` | UI entry point — the largest Adapter in the codebase (`WarRoomAdapter.ts`, ~265 lines) because it composes map, mission detail, and roster/squad-picker in one screen. |
+| `src/systems/world.ts` | Village initialization/recovery, probability and injury queries, raid validation, launch snapshots, and resolution. |
+| `src/systems/raidReport.ts` | Claim rewards, conditions, and permanent progression; see [`../Features/RaidLifecycle.md`](../Features/RaidLifecycle.md). |
+| `src/model/GameState.ts` | Village queries, mission availability, tier/visit/completion state, and unresolved raids. |
+| `src/model/types.ts` | Village, raid-snapshot, and report records. |
+| `src/data/config.ts` | World registry, derived mission catalog, and `constants.raid` tuning. |
+| `src/data/worlds/world-1A.ts` | Map image, mission positions, full defender counts, and reward-generation data. |
+| `src/ui/screens/war-room/*` | Map, planning panel, and roster adapters/views. |
+| `src/ui/components/MissionPin/*` | Flags, status markers, and revealed defender counts. |
+| `src/systems/save.ts` | Serialization and backward-compatible defaults. |
 
-## State owned
+## State ownership
 
-Mission progression is tracked by three independent sets/maps rather than one "mission record"
-struct: `unlockedTiers` (tier gating), `everClaimedMissions` (permanent green-checkmark + tier
-unlock trigger), `everVisitedMissions` (cosmetic "raided before" flag), `missionClaimedWeek`
-(weekly cooldown). `missionState()` derives the five-value `MissionState` enum
-(`model/types.ts:108-113`) from these plus `pendingReports`/`missionRunningProcess` on every call —
-there's no stored `MissionState` field to go stale.
+`villages` stores weekly state. `everClaimedMissions` records permanent completion;
+`unlockedTiers` controls progression; `everVisitedMissions` controls visit-based visibility.
+`missionClaimedWeek` records successful claims only. `missionRunningProcess` and `pendingReports`
+reserve each village and squad independently of weekly recovery. `missionState()` derives
+availability from these records rather than storing a redundant enum.
 
-## Notes for agents
+## Presentation and integration
 
-- Mission planning uses a square location image with an info overlay and its name at the bottom.
-  Difficulty, duration, success estimate, and carrying capacity appear as icon/value rows with hover
-  and keyboard-focus explanations. Weather occupies the second details column. Location descriptions
-  and weather are defined in mission data. Rewards use the help cursor.
-- The embedded planning panel is hidden until a mission is selected. Escape or an
-  empty-map click dismisses it and clears the draft squad; map dragging does not dismiss it.
-  The minion assignment tray is always visible inside the open panel.
-- Planning is a single horizontal strip sized around a 128px square location image: two-column
-  parameters, compact reward icons, a horizontally scrolling minion box, and a full-height raid action on the right.
-  Section headings are omitted; accessible labels and hover explanations retain their meaning.
-  Narrow screens scroll the strip horizontally rather than stacking it over the map.
-- Injury risk is hidden from mission planning. Both victory and defeat independently roll each
-  participant's injury using `injuryChanceFor`; defeat no longer automatically injures everyone.
-- Loot Intelligence 0 shows one unidentified box per possible loot type; level 1 reveals item
-  identities; level 2 also reveals drop chances on victory. Boxes do not guarantee quantities.
-
-- `previewRaid()`/`canLaunchRaid()` are pure read-only functions the UI calls directly (not through
-  `GameEngine`) to render success/duration estimates before the player commits — see the
-  read/write split explained in
-  [`../CurrentArchitecture.md`](../CurrentArchitecture.md)#5-ui-shell-screens-components. Only
-  `launchRaid()` (called via `engine.launchRaid()`) mutates state.
-- Each world config owns its map image and missions. The War Room displays `CONFIG.startingWorldId`;
-  world travel/progression is not implemented. Register future worlds in `WORLDS` in `config.ts`
-  and keep mission IDs globally unique. `CONFIG.missions` is derived for existing gameplay lookups.
-- Mission `mapPosition.x` and `.y` are percentages from the map’s top-left (0–100).
-  Reordering missions no longer changes pin positions. Initial coordinates preserve the previous
-  ring layout as editable placeholders. Location art/weather/difficulty flavor remains in `shared.ts`.
-- Weather is configured in `src/data/weather.ts`: clear skies are neutral; fog, rain, and storms
-  multiply squad power by 1.05, 1.10, and 1.15 respectively in both preview and resolution.
-- Combat formulas in `world.ts` (`unitPower`, `failureChance`, `injuryChanceFor`) follow design doc
-  §11 with the weather power multiplier above and are explicitly **provisional**, not final balance.
+- Mission planning includes location art, defenders, duration, probability, carrying capacity,
+  rewards, minion assignment, and the raid action. Hover/focus explanations describe calculations
+  and why unavailable villages cannot be attacked.
+- The map reveals active defenders after a completed visit or Enemy Intelligence; permanent
+  completion indicators remain independent of availability.
+- Injury estimates explain rank/Defense resistance. Weather remains location information and
+  does not alter victory probability.
+- Loot Intelligence continues to reveal item identities and configured drop chances.
+- `previewRaid()` and `canLaunchRaid()` remain read-only queries. Mutations go through engine
+  actions or system functions, following the architecture's read/write split.
+- The War Room displays `CONFIG.startingWorldId`. World travel is not implemented; mission IDs
+  remain unique across the registry.

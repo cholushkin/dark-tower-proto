@@ -50,9 +50,9 @@ export const CONFIG: GameConfig = {
 
     upgrades: [
         // Storehouse
-        { id: "sh_storage_1", room: "storehouse", name: "Storage Shelves I", description: "Add 10 storage slots.", costGold: 100, durationHours: 1, requirements: { type: "all", requirements: [] }, effect: { type: "storageSlots", amount: 10 }, towerXp: 5 },
-        { id: "sh_storage_2", room: "storehouse", name: "Storage Shelves II", description: "Add 20 more storage slots.", costGold: 200, durationHours: 3, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_storage_1" }] }, effect: { type: "storageSlots", amount: 20 }, towerXp: 8 },
-        { id: "sh_storage_3", room: "storehouse", name: "Storage Shelves III", description: "Add 80 more storage slots.", costGold: 500, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_storage_2" }] }, effect: { type: "storageSlots", amount: 80 }, towerXp: 12 },
+        { id: "sh_storage_1", room: "storehouse", name: "Storage Shelves I", description: "Add 2 storage slots.", costGold: 100, durationHours: 1, requirements: { type: "all", requirements: [] }, effect: { type: "storageSlots", amount: 2 }, towerXp: 5 },
+        { id: "sh_storage_2", room: "storehouse", name: "Storage Shelves II", description: "Add 4 more storage slots.", costGold: 200, durationHours: 3, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_storage_1" }] }, effect: { type: "storageSlots", amount: 4 }, towerXp: 8 },
+        { id: "sh_storage_3", room: "storehouse", name: "Storage Shelves III", description: "Add 6 more storage slots.", costGold: 500, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_storage_2" }] }, effect: { type: "storageSlots", amount: 6 }, towerXp: 12 },
         { id: "sh_sale_eff_1", room: "storehouse", name: "Sale Efficiency I", description: "Normal sales take 25% less time.", costGold: 200, durationHours: 2, requirements: { type: "all", requirements: [] }, effect: { type: "saleEfficiency", multiplier: 0.75 }, towerXp: 5 },
         { id: "sh_sale_eff_2", room: "storehouse", name: "Sale Efficiency II", description: "Normal sales take another 25% less time.", costGold: 500, durationHours: 4, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "sh_sale_eff_1" }] }, effect: { type: "saleEfficiency", multiplier: 0.75 }, towerXp: 8 },
 
@@ -82,8 +82,8 @@ export const CONFIG: GameConfig = {
         { id: "dg_recruit_eff_2", room: "dungeon", name: "Recruitment Efficiency II", description: "Increases recruitment chance further.", costGold: 300, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "dg_recruit_eff_1" }] }, effect: { type: "recruitmentEfficiency", bonus: 0.15 }, towerXp: 10 },
 
         // War Room
-        { id: "wr_enemy_intel_1", room: "warRoom", name: "Enemy Intelligence I", description: "Narrower estimated enemy-strength range.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "enemyIntel", level: 1 }, towerXp: 6 },
-        { id: "wr_enemy_intel_2", room: "warRoom", name: "Enemy Intelligence II", description: "Even narrower estimated enemy-strength range.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "wr_enemy_intel_1" }] }, effect: { type: "enemyIntel", level: 2 }, towerXp: 9 },
+        { id: "wr_enemy_intel_1", room: "warRoom", name: "Enemy Intelligence I", description: "Reveals active defenders and exact victory odds for the selected squad.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "enemyIntel", level: 1 }, towerXp: 6 },
+        { id: "wr_enemy_intel_2", room: "warRoom", name: "Enemy Intelligence II", description: "Reveals village rewards alongside enemy intelligence.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "wr_enemy_intel_1" }] }, effect: { type: "enemyIntel", level: 2 }, towerXp: 9 },
         { id: "wr_loot_intel_1", room: "warRoom", name: "Loot Intelligence I", description: "Reveals possible loot types.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "lootIntel", level: 1 }, towerXp: 6 },
         { id: "wr_loot_intel_2", room: "warRoom", name: "Loot Intelligence II", description: "Reveals estimated drop chances.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "wr_loot_intel_1" }] }, effect: { type: "lootIntel", level: 2 }, towerXp: 9 },
     ],
@@ -107,16 +107,16 @@ export const CONFIG: GameConfig = {
         gold: 100,
         crystals: 5,
         minionRanks: [1, 1, 1],
-        storageSlots: 20,
+        storageSlots: 8,
         beds: 3,
         treatmentBeds: 2,
         trainingStations: 1,
-        dungeonCells: 2,
+        dungeonCells: 1,
     },
 
     // Small starting stock so the Storehouse/Inventory/sell flow is immediately exercisable
     // without waiting on a raid. Mixes treasures and ordinary items at different stack fills
-    // (including one full max-size-1 stack) and stays well under startingBalance.storageSlots.
+    // (including one full max-size-1 stack) and leaves three of the eight starting storage slots free.
     startingItems: [
         { itemId: "golden_cup", count: 3 },
         { itemId: "silver_necklace", count: 2 },
@@ -126,6 +126,15 @@ export const CONFIG: GameConfig = {
     ],
 
     constants: {
+        raid: {
+            overwhelmingForceRatio: 4,
+            defenderLossChance: 0.5,
+            injuryChanceOnVictory: 0.4,
+            injuryChanceOnDefeat: 0.8,
+            rankInjuryResistance: 0.02,
+            defenseInjuryResistance: 0.005,
+            injuryDefenseBaseline: 5,
+        },
         dayLengthRealSeconds: 60,
         weekDays: 7,
         restDurationHours: 6,

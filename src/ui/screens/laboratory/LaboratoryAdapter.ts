@@ -4,10 +4,10 @@ import { buildUpgradeLineViewModel, groupUpgradeFamilies, roomUpgradeDefs } from
 import type { LaboratoryAction, LaboratoryViewModel } from './LaboratoryViewModel';
 
 const ICONS: Record<string, string> = {
-  lab_tier: 'icon-tier2.png',
-  res_improved_weapons: 'icon-training.png',
-  res_improved_armor: 'icon-medical.png',
-  res_fury_spell: 'icon-alchemy.png',
+  lab_tier: 'upgrade-icons/icon-tier2.png',
+  res_improved_weapons: 'upgrade-icons/icon-training.png',
+  res_improved_armor: 'upgrade-icons/icon-medical.png',
+  res_fury_spell: 'upgrade-icons/icon-alchemy.png',
 };
 
 export function buildLaboratoryViewModel(engine: GameEngine): LaboratoryViewModel {
@@ -23,7 +23,7 @@ export function buildLaboratoryViewModel(engine: GameEngine): LaboratoryViewMode
     },
     upgrades: groupUpgradeFamilies(definitions).map(family => ({
       ...buildUpgradeLineViewModel(state, family, '', family[0].effect.type === 'laboratoryTier' ? 'Laboratory Tier Unlock' : family[0].name),
-      iconSrc: asset(ICONS[family[0].id.replace(/_\d+$/, '')] ?? 'icon-loot.png'),
+      iconSrc: asset(ICONS[family[0].id.replace(/_\d+$/, '')] ?? 'upgrade-icons/icon-loot.png'),
     })),
   };
 }

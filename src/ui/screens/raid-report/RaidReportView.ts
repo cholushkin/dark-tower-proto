@@ -31,8 +31,9 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
          <div class="dt-raid__location-meta"><h2 class="dt-raid__location-title"></h2><p class="dt-raid__location-description"></p>
            <div class="dt-raid__location-sub"><span class="dt-raid__difficulty"></span><span class="dt-raid__weather"></span></div>
          </div>
-         <div class="dt-raid__result"><div class="dt-raid__result-label"></div><div class="dt-raid__result-stat"><span>⏱ Raid time</span><strong class="dt-raid__duration"></strong></div><div class="dt-raid__result-stat"><span>♟ Squad</span><strong class="dt-raid__squad"></strong></div></div>
+         <div class="dt-raid__result"><div class="dt-raid__result-label"></div><div class="dt-raid__result-stat"><span>⏱ Raid time</span><strong class="dt-raid__duration"></strong></div><div class="dt-raid__result-stat"><span>♟ Squad</span><strong class="dt-raid__squad"></strong></div><div class="dt-raid__result-stat dt-raid__odds-row" hidden><span>🎯 Victory chance</span><strong class="dt-raid__odds"></strong></div></div>
        </section>
+       <section class="dt-raid__village-result" aria-label="Defender losses and village recovery"><strong class="dt-raid__defenders"></strong><p class="dt-raid__recovery"></p></section>
        <div class="dt-raid__collection-row">
          <section class="dt-raid__collection dt-raid__loot" aria-labelledby="dt-raid-loot-heading">
            <div class="dt-raid__collection-heading"><h3 id="dt-raid-loot-heading">📦 Loot Found</h3><span class="dt-raid__selection-count"></span></div>
@@ -47,6 +48,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
        </div>
        <section class="dt-raid__minions" aria-labelledby="dt-raid-minions-heading">
          <div class="dt-raid__collection-heading"><h3 id="dt-raid-minions-heading">♟ Minion Results</h3><span class="dt-raid__minion-count"></span></div>
+         <p class="dt-raid__injury-summary"></p>
          <div class="dt-raid__horizontal-scroll dt-raid__minion-list" aria-label="Raid squad results"></div>
        </section>
      </div>
@@ -169,6 +171,11 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
     get('.dt-raid__result-label').dataset.result=next.location.result;
     get('.dt-raid__duration').textContent=next.location.elapsedLabel;
     get('.dt-raid__squad').textContent=next.location.squadLabel;
+    get('.dt-raid__odds-row').hidden=!next.location.victoryChanceLabel;
+    get('.dt-raid__odds').textContent=next.location.victoryChanceLabel??'';
+    get('.dt-raid__defenders').textContent=next.defenderResultLabel;
+    get('.dt-raid__recovery').textContent=next.recoveryLabel;
+    get('.dt-raid__injury-summary').textContent=next.injurySummary;
     get('.dt-raid__selection-count').textContent=next.selection.selectedCountLabel;
     get('.dt-raid__loot-note').textContent=next.selection.hint;
     get('.dt-raid__prisoner-count').textContent=String(next.prisoners.length);

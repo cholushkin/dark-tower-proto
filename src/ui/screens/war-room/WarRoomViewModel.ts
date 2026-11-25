@@ -28,6 +28,7 @@ export interface MissionDetailViewModel {
   readonly squadSelectionLabel: string;
   readonly state: MissionVisualState;
   readonly statusLabel: string;
+  readonly recoveryLabel: string;
   readonly activeProgress?: number;
   readonly activeRemainingTime?: string;
   readonly canRaid: boolean;

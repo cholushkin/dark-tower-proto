@@ -14,6 +14,7 @@ export function buildNewWeekViewModel(engine: GameEngine): NewWeekViewModel | nu
     weekLabel: `Week ${state.week + 1}`,
     weekName: `${announcement.emoji} ${announcement.title}`,
     message: announcement.flavor,
+    recoveryMessage: 'Village defenders have recovered and rewards have been replenished. Completed missions stay checked. Raids in progress and unclaimed reports are still reserved.',
     paydayTitle: 'Payday has arrived',
     paydayMessage: `Pay your minions' salaries within ${fmtHours(dueIn)} or face bankruptcy.`,
     illustrationSrc: illustration,

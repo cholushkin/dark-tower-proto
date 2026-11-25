@@ -2,10 +2,9 @@ import type { DebugPanelActionHandler, DebugPanelHandle, DebugPanelViewModel } f
 import './DebugPanel.css';
 
 /**
- * Dev-only overlay: force-complete long-running processes and copy the raw game state, so a
+ * Dev-only overlay: start a new game, force-complete processes, and copy the raw game state, so a
  * playtester isn't stuck waiting on real-time timers (1 real minute = 1 in-game day). Pause and
- * speed live on the TimeWidget now; this panel only keeps the force-complete/copy-state escape
- * hatches that widget doesn't cover.
+ * speed live on the TimeWidget; this panel keeps the other playtesting controls.
  */
 export function mountDebugPanel(host: HTMLElement, initial: Readonly<DebugPanelViewModel>, onAction: DebugPanelActionHandler = () => {}): DebugPanelHandle {
   const abort = new AbortController();
@@ -15,6 +14,7 @@ export function mountDebugPanel(host: HTMLElement, initial: Readonly<DebugPanelV
       <div class="dt-debug__panel" hidden>
         <div class="dt-debug__actions">
           <button type="button" data-action="copyState">📋 Copy state</button>
+          <button type="button" data-action="newGame" title="Clear saved progress and start a new game">New Game</button>
         </div>
         <label class="dt-debug__option"><input type="checkbox" data-role="map-coordinates" /> Render percent on the map</label>
         <div class="dt-debug__processes"></div>
@@ -32,6 +32,7 @@ export function mountDebugPanel(host: HTMLElement, initial: Readonly<DebugPanelV
   }, { signal: abort.signal });
 
   host.querySelector('[data-action="copyState"]')!.addEventListener('click', () => onAction({ type: 'copyState' }), { signal: abort.signal });
+  host.querySelector('[data-action="newGame"]')!.addEventListener('click', () => onAction({ type: 'newGame' }), { signal: abort.signal });
 
   function setModel(model: Readonly<DebugPanelViewModel>): void {
     mapCoordinates.checked = model.showMapCoordinates;

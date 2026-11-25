@@ -5,6 +5,7 @@ import { creditCrystals, creditGold } from "./economy";
 import { markWaitingIfIdle } from "./recovery";
 import { admitPrisoner } from "./dungeon";
 import { addTowerXp } from "./tower";
+import { initializeVillages, raidWeekForReport } from "./world";
 
 export function discoveredCounts(draft: RaidReportDraft): Record<string, number> {
     const counts: Record<string, number> = {};
@@ -67,8 +68,23 @@ export function claimReport(state: GameState, missionId: string, now: number): b
         onMissionFirstClaim(state, missionId);
     }
 
+    if (state.worldCompletedAtHour === null && CONFIG.missions.every(mission => state.everClaimedMissions.has(mission.id))) {
+        state.worldCompletedAtHour = now;
+    }
+
     state.everVisitedMissions.add(missionId);
-    state.missionClaimedWeek.set(missionId, state.week);
+    const claimWeek = Math.floor(now / (24 * CONFIG.constants.weekDays));
+    const raidWeek = raidWeekForReport(state, draft, now);
+    if (draft.success && raidWeek === claimWeek) {
+        initializeVillages(state);
+        const village = state.villageState(missionId);
+        if (village.week === raidWeek) {
+            state.missionClaimedWeek.set(missionId, raidWeek);
+            village.raided = true;
+            village.activeDefenders = 0;
+            village.rewards = { gold: 0, crystals: 0, lootCopies: [], prisoners: [] };
+        }
+    }
     state.pendingReports.delete(missionId);
     state.processes = state.processes.filter(p => !(p.type === "walkback" && p.missionId === missionId));
     state.log(draft.success

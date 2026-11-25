@@ -23,8 +23,10 @@ leaves open (§12 "Scheduler tie-breaking"). It doesn't belong to any single Roo
   4. If `stepTo` landed exactly on a day boundary: `onDayBoundary(stepTo)`, then auto-assignment
      again.
   5. A `guard++ < 100000` counter aborts the loop if it somehow never reaches `target`.
-- `onDayBoundary(now)` (`GameEngine.ts:55-62`) runs, **in this fixed order**: `nightfall()` →
-  (if `day % weekDays === 0`) `triggerPaydayDue()` → `checkDepartures()`.
+- `onDayBoundary(now)` runs, **in this fixed order**: `nightfall()` →
+  (if `day % weekDays === 0`) `recoverVillages()` then `triggerPaydayDue()` → `checkDepartures()`.
+  Processes due exactly on the boundary resolve before village recovery; their reports retain
+  the launch-week snapshot. See [`RaidLifecycle.md`](RaidLifecycle.md).
 - After every `advance()` call, `checkBankruptcy()` runs once more (`GameEngine.ts:52`).
 
 ## Why this matters to future changes

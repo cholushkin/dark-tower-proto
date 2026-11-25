@@ -1,4 +1,5 @@
 import { GameEngine } from '../engine/GameEngine';
+import { clearSavedGame, loadGame, saveGame, serializeGame } from '../systems/save';
 import { asset } from './screens/assets';
 import { mountAppShell } from './shell/AppShell';
 import type { AppShellHandle } from './shell/AppShell.types';
@@ -80,7 +81,7 @@ interface ScreenHandle<Model> { setModel(model: Readonly<Model>): void; destroy(
  * open, so nothing changes underneath it; popups only re-render in response to their own actions.
  */
 export class App {
-  private readonly engine = new GameEngine();
+  private readonly engine = new GameEngine(loadGame() ?? undefined);
   private readonly shell: AppShellHandle;
   private readonly timeWidget: TimeWidgetHandle;
   private readonly roomNav: RoomNavHandle;
@@ -96,6 +97,8 @@ export class App {
   private victoryView: VictoryView | null = null;
   private newWeekDismissedForWeek: number | null = null;
   private victoryDismissed = false;
+  private lastSavedAt = 0;
+  private suppressSaving = false;
 
   private readonly storehouseUi = createStorehouseUiState();
   private readonly warRoomUi = createWarRoomUiState();
@@ -134,6 +137,7 @@ export class App {
     debugHost.style.width = '100%';
     this.shell.slots.leftColumn.append(debugHost);
     this.debugPanel = mountDebugPanel(debugHost, { processes: [], showMapCoordinates: this.warRoomUi.showMapCoordinates }, action => {
+      if (action.type === 'newGame') { this.startNewGame(); return; }
       if (action.type === 'forceComplete') this.engine.forceCompleteProcess(action.processId);
       else if (action.type === 'copyState') navigator.clipboard.writeText(this.gameStateToJson());
       else if (action.type === 'setMapCoordinates') this.warRoomUi.showMapCoordinates = action.enabled;
@@ -141,6 +145,11 @@ export class App {
     });
 
     this.refresh();
+
+    window.addEventListener('pagehide', () => this.persist());
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') this.persist();
+    });
 
     let lastTime = performance.now();
     let sinceRefresh = 0;
@@ -151,7 +160,7 @@ export class App {
       sinceRefresh += deltaSeconds;
       if (sinceRefresh >= REFRESH_INTERVAL_SECONDS) {
         sinceRefresh = 0;
-        this.refresh();
+        this.refresh(false);
       }
       requestAnimationFrame(loop);
     };
@@ -303,7 +312,13 @@ export class App {
     if (!model) return;
     const host = document.createElement('div');
     this.showOverlay(host);
-    this.gameOverView = mountGameOverView(host, model, action => handleGameOverAction(action));
+    this.gameOverView = mountGameOverView(host, model, action => {
+      if (action.type === 'retryRequested') {
+        this.startNewGame();
+        return;
+      }
+      handleGameOverAction(action);
+    });
   }
 
   private openVictory(): void {
@@ -354,14 +369,23 @@ export class App {
   }
 
   private gameStateToJson(): string {
-    return JSON.stringify(this.engine.state, (_key, value) => {
-      if (value instanceof Set) return [...value];
-      if (value instanceof Map) return Object.fromEntries(value);
-      return value;
-    }, 2);
+    return serializeGame(this.engine.state);
   }
 
-  private refresh(): void {
+  private startNewGame(): void {
+    // Block periodic and pagehide saves from writing the old session back during reload.
+    this.suppressSaving = true;
+    clearSavedGame();
+    window.location.reload();
+  }
+
+  private persist(): void {
+    if (this.suppressSaving) return;
+    saveGame(this.engine.state);
+    this.lastSavedAt = performance.now();
+  }
+
+  private refresh(saveImmediately = true): void {
     const state = this.engine.state;
     this.shell.setModel({ coins: state.gold, crystals: state.crystals, title: this.screenTitle(), windowOpen: this.screen !== null });
     this.timeWidget.setModel(this.timeWidgetModel());
@@ -385,6 +409,7 @@ export class App {
     else if (this.screen === 'warRoom') (this.screenView as WarRoomViewHandle | null)?.setModel(buildWarRoomViewModel(this.engine, this.warRoomUi));
 
     this.checkEndgamePopups();
+    if (saveImmediately || performance.now() - this.lastSavedAt >= 1000) this.persist();
   }
 
   private screenTitle(): string {

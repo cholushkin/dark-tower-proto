@@ -21,4 +21,7 @@
 .dt-mission-pin__loot{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid #795374;padding-top:6px}
 .dt-mission-pin__loot>span{display:inline-flex;align-items:center;gap:3px}
 .dt-mission-pin__loot img{width:22px;height:22px;object-fit:contain}
+.dt-mission-pin__defenders{position:absolute;top:42px;left:50%;transform:translateX(-50%);min-width:33px;padding:2px 5px;border:1px solid #bb9062;border-radius:6px;background:#201628ed;color:#fff1ce;font:700 12px/1.2 var(--dt-font);white-space:nowrap;box-shadow:0 2px 4px #0008}
+.dt-mission-pin__completion{position:absolute;top:0;right:-5px;display:grid;place-items:center;width:17px;height:17px;border:1px solid #b8df9a;border-radius:50%;background:#244e37;color:#e3f8c9;font:bold 12px/1 sans-serif}
+.dt-mission-pin__defenders[hidden],.dt-mission-pin__completion[hidden]{display:none}
 @media(prefers-reduced-motion:reduce){.dt-mission-pin__marker{transition:none}}

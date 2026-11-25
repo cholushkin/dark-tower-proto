@@ -117,6 +117,8 @@ export interface MissionDef {
     tier: number;
     name: string;
     requiredPower: number;
+    /** Full garrison restored at each weekly recovery. */
+    fullDefenders: number;
     baseDurationHours: number;
     baseInjuryChance: number;
     rewardGoldRange: [number, number];
@@ -149,6 +151,15 @@ export interface StartingItemDef {
 }
 
 export interface Constants {
+    raid: {
+        overwhelmingForceRatio: number;
+        defenderLossChance: number;
+        injuryChanceOnVictory: number;
+        injuryChanceOnDefeat: number;
+        rankInjuryResistance: number;
+        defenseInjuryResistance: number;
+        injuryDefenseBaseline: number;
+    };
     dayLengthRealSeconds: number;
     weekDays: number;
     restDurationHours: number;

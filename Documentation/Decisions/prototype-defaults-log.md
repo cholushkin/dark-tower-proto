@@ -115,6 +115,26 @@ with one implementation-only mechanic discovered during the architecture audit.
 - **Status:** prototype default. Design doc §12 explicitly leaves open whether "Week of…" messages
   have gameplay effects beyond flavor — the prototype gives them none.
 
+### Persistent village casualties and week ownership
+
+- **Context:** raid/recovery needs configurable defender losses and explicit behavior for raids
+  and reports spanning weeks.
+- **Decision:** use the bounded independent casualty trials in design §11. Snapshot launch-week
+  defenders, probability, and reward stock, then compare week ownership before modifying a live
+  village. Weekly recovery replaces village stock independently of those snapshots.
+- **Status:** prototype default. Initial values live in `CONFIG.constants.raid`; tune through
+  playtesting. The formula is documented in the authoritative design §11.
+
+### Local save compatibility
+
+- **Context:** persistent village damage requires a save path; the previous prototype had none.
+- **Decision:** store versioned whole-game JSON in browser local storage. Restore Maps and Sets,
+  default omitted village fields, and preserve generated report rewards during migration. Infer
+  a missing report week from its walkback process where available; otherwise use the saved week
+  because no older timestamp can be recovered. Do not advance offline time.
+- **Status:** prototype default. Reject malformed and unsupported future saves; browser storage
+  availability remains platform-dependent.
+
 ### Raid walk-back / auto-claim (newly identified, not a migrated item)
 
 - **Context:** found during the architecture audit, not in the original "Defaults chosen" list and

@@ -12,6 +12,7 @@ export function mountNewWeekView(host:HTMLElement,model:Readonly<NewWeekViewMode
     frame.body.append(element('p','dt-eyebrow',current.weekLabel),art);
     const title=element('h2','dt-feature-title',current.weekName);frame.body.append(title);
     const text=element('p','dt-week-message',current.message);frame.body.append(text);
+    frame.body.append(element('p','dt-week-recovery',current.recoveryMessage));
     const pay=element('section','dt-payday-notice');
     pay.append(element('span','dt-payday-notice__icon','🪙'));
     const paycopy=element('div');paycopy.append(element('strong','dt-payday-notice__heading',current.paydayTitle),element('span','dt-payday-notice__text',current.paydayMessage));

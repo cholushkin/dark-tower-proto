@@ -8,7 +8,7 @@ import { cancelNormalSale, completeSale, startNormalSale as sysStartNormalSale, 
 import { completeUpgrade, purchaseUpgrade as sysPurchaseUpgrade } from "../systems/upgrades";
 import { completeIncrementalUpgrade, purchaseIncremental as sysPurchaseIncremental } from "../systems/incrementalUpgrades";
 import { completeDungeonProcess, assignCells } from "../systems/dungeon";
-import { launchRaid as sysLaunchRaid, resolveRaid, missionDef } from "../systems/world";
+import { launchRaid as sysLaunchRaid, resolveRaid, missionDef, recoverVillages, ensureRaidSnapshot } from "../systems/world";
 import { claimReport as sysClaimReport } from "../systems/raidReport";
 import { payAll as sysPayAll } from "../systems/payroll";
 import { nightfall, checkDepartures, triggerPaydayDue, checkBankruptcy } from "../systems/lifecycle";
@@ -18,6 +18,10 @@ export class GameEngine {
 
     constructor(state = new GameState()) {
         this.state = state;
+        for (const process of state.processes) {
+            if (process.type === "raid") ensureRaidSnapshot(state, process);
+        }
+        recoverVillages(state);
     }
 
     tick(realDeltaSeconds: number): void {
@@ -55,6 +59,7 @@ export class GameEngine {
         nightfall(this.state, now);
         const day = Math.round(now / 24);
         if (day > 0 && day % CONFIG.constants.weekDays === 0) {
+            recoverVillages(this.state);
             triggerPaydayDue(this.state, now);
         }
         checkDepartures(this.state, now);

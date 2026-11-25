@@ -12,11 +12,13 @@ export function mountMissionPin(host: HTMLElement, initial: Readonly<MissionPinV
   button.innerHTML = `<span class="dt-mission-pin__marker" aria-hidden="true">
     <svg class="dt-mission-pin__flag" viewBox="0 0 40 44"><path d="M10 39V5"/><path d="M11 6C20 0 24 13 34 6V24C24 31 20 18 11 24Z"/></svg>
     <span class="dt-mission-pin__battle" hidden><svg viewBox="0 0 44 44"><circle class="dt-mission-pin__track" cx="22" cy="22" r="19"/><circle class="dt-mission-pin__progress" cx="22" cy="22" r="19" pathLength="1" transform="rotate(-90 22 22)"/></svg><span>⚔️</span></span>
-    </span><span class="dt-mission-pin__tooltip" role="tooltip"></span>`;
+    </span><span class="dt-mission-pin__completion" aria-hidden="true" hidden>✓</span><span class="dt-mission-pin__defenders" aria-hidden="true" hidden></span><span class="dt-mission-pin__tooltip" role="tooltip"></span>`;
   const flag = button.querySelector<SVGElement>('.dt-mission-pin__flag')!;
   const battle = button.querySelector<HTMLElement>('.dt-mission-pin__battle')!;
   const progress = button.querySelector<SVGCircleElement>('.dt-mission-pin__progress')!;
   const tooltip = button.querySelector<HTMLElement>('.dt-mission-pin__tooltip')!;
+  const defenders = button.querySelector<HTMLElement>('.dt-mission-pin__defenders')!;
+  const completion = button.querySelector<HTMLElement>('.dt-mission-pin__completion')!;
   tooltip.id = `mission-tooltip-${initial.id}`;
   button.setAttribute('aria-describedby', tooltip.id);
   button.addEventListener('click', () => { if (!disposed) onSelect(model.id); }, { signal: controller.signal });
@@ -51,10 +53,13 @@ export function mountMissionPin(host: HTMLElement, initial: Readonly<MissionPinV
     const running = next.state === 'inProgress';
     flag.style.display = running ? 'none' : '';
     battle.hidden = !running;
+    defenders.hidden = next.defendersLabel === undefined;
+    defenders.textContent = next.defendersLabel === undefined ? '' : `🛡 ${next.defendersLabel}`;
+    completion.hidden = !next.completed;
     const fraction = Math.max(0, Math.min(1, next.raidProgress ?? 0));
     progress.style.strokeDashoffset = String(1 - fraction);
     const desc = `${next.statusLabel}${running ? `, ${Math.round(fraction * 100)}%` : ''}`;
-    button.setAttribute('aria-label', `${next.name}, tier ${next.tier}, ${desc}`);
+    button.setAttribute('aria-label', `${next.name}, tier ${next.tier}, ${desc}${next.defendersLabel === undefined ? '' : `, ${next.defendersLabel} active defenders`}${next.completed ? ', permanently completed' : ''}`);
     const signature = JSON.stringify([next.name, desc, next.parameters, next.rewards]);
     if (signature !== tooltipSignature) {
       tooltipSignature = signature;

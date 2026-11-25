@@ -58,7 +58,7 @@ The Dark Lord remains present at the tower base. Payday and Game Over have promi
 
 - **One real minute equals one in-game day** at the normal simulation rate; one in-game week is seven days.
 - The world has a day/night cycle, a day counter, and a week counter.
-- Time advances while the game is running. The current design has no save system or offline progression.
+- Time advances while the game is running. The prototype saves locally in the browser; loading resumes the saved game time without offline progression.
 - A shared game-time scheduler handles raids, resting, treatment, training, sales, Dungeon processing, Room upgrades, and payday.
 - The player has no ordinary pause or game-speed controls. The **New Week / Payday Announcement**, **Payroll**, and **Raid Report** popups pause time while open. Ordinary Room views do not.
 - After Bankruptcy, the game remains **permanently paused**; dismissing the Game Over popup does not resume time.
@@ -118,7 +118,7 @@ A completed Training Hall session increases Rank by exactly one, using the targe
 - **`Tired`** prevents starting a raid or training. It may follow raids, training, Dungeon recruitment, and other configured events.
 - **`Injured`** also prevents starting a raid or training. Both conditions may coexist.
 - A successful raid makes every participant `Tired`; each participant has an independent, configured chance of becoming `Injured`.
-- A failed raid makes every participant `Tired`; each participant independently rolls for `Injured` using the same hidden injury-risk formula as a successful raid.
+- A failed raid makes every participant `Tired`; each participant independently rolls for `Injured` at a higher base risk than on victory. Rank and Defense reduce individual injury risk (see §11).
 - Recruited prisoners become `Tired` and have a **50%** chance to become `Injured`.
 - At **nightfall**, all owned minions receive `Tired`.
 - A minion cannot occupy multiple activities simultaneously. A completed raid whose Raid Report has not been Claimed still reserves its squad.
@@ -256,7 +256,7 @@ The **War Room** is the home for **both** the full minion roster and the **World
 
 Two independent upgrade series improve mission information:
 
-- **Enemy Intelligence:** upgrades reveal increasingly precise estimates of enemy strength. Before the first Enemy Intelligence upgrade, mission cards show raid duration as an **approximate rounded value** (`~Xh`); after purchasing the upgrade, the **precise duration** is displayed.
+- **Enemy Intelligence:** the first upgrade reveals active/full defender counts and the selected squad's calculated victory probability, including guaranteed victory. Before this upgrade, duration is an **approximate rounded value** (`~Xh`); afterwards the precise duration is displayed. A first completed visit also reveals defender counts, including beneath the map flag, but does not reveal victory probability without the upgrade. The second upgrade reveals the village's current weekly Gold and Crystal stock.
 - **Loot Intelligence:** upgrades progressively reveal possible loot item types, resources, and estimated drop probability ranges. Early levels may conceal item types entirely.
 
 Intelligence changes what the player **knows**, not the actual strength, loot probabilities, or inherent duration of the mission.
@@ -283,7 +283,7 @@ The War Room map marks each mission's progression and raid status:
 | `AVAILABLE` | Eligible to start a raid |
 | `RUNNING` | Raid active; the mission marker/card shows its progress bar |
 | `COMPLETED_UNCLAIMED` | Raid finished; **Raid Report** awaits Claim |
-| `COOLDOWN` | This mission's current-week raid opportunity has been consumed |
+| `COOLDOWN` | This village was successfully raided this week; it recovers next week |
 | `COMPLETED_ONCE` | Permanent first-success checkmark, shown alongside current raid/availability status |
 
 Opening a mission on the War Room map displays its details, intelligence, duration, and squad/raid controls. The minion roster supplies squad candidates; only eligible minions can be assigned.
@@ -294,40 +294,43 @@ Opening a mission on the War Room map displays its details, intelligence, durati
 - Participants must be available and have neither `Tired` nor `Injured`.
 - Multiple raids may run concurrently on **different missions**.
 - A minion can participate in only one occupied activity at a time.
-- Raid success and duration derive from mission configuration, effective squad characteristics, and balancing formulas.
-- Missions define difficulty/required power, baseline duration, injury chances, rewards, and prisoner distributions.
+- A nonempty squad's victory probability depends only on its size and the village's active defender count (see §11). Rank, Attack, Defense, and weather do not secretly modify victory probability.
+- Missions define full defender count, baseline duration, rewards, and prisoner distributions. Runtime village state tracks the active defenders and this week's reward stock.
+- Rank retains carrying capacity, travel-time benefits, and individual injury resistance. Squad size also affects travel time.
 
-**Success:** generate configured rewards; every participant becomes `Tired` and independently rolls for `Injured`.
+**Success:** defeat all active defenders and reserve the village's configured weekly rewards for Claim; every participant becomes `Tired` and independently rolls for `Injured`.
 
-**Failure:** no rewards are generated; every participant becomes `Tired` and independently rolls for `Injured` using the same hidden injury-risk formula as on success. Failure does not guarantee injury.
+**Failure:** no village rewards are awarded. Some defenders may be incapacitated until the next week, so another attempt can face a weaker village. A failed raid can incapacitate zero defenders and must leave at least one active defender. Casualties cannot exceed the number of attackers. Every participant becomes `Tired` and independently rolls for `Injured` at the defeat rate; failure does not guarantee injury. There are no minion deaths or raid-defeat Game Over conditions.
 
 Returning minions are reserved until the player **Claims** the Raid Report, including after a failed raid.
 
-### 5.4 Weekly Mission Cooldown
-
-Launching a raid consumes that mission's opportunity for the **current in-game week**, regardless of its outcome.
+### 5.4 Repeat Attacks and Weekly Village Recovery
 
 A mission can be launched when all conditions are met:
 
 1. Its World Tier and mission-specific prerequisites permit access.
 2. It has no raid currently `RUNNING` or `COMPLETED_UNCLAIMED`.
-3. Its last launch occurred in an **earlier in-game week**.
+3. It has not been successfully raided in the **current in-game week**.
 
-A mission can be replayed in a later week, even if it was previously completed successfully. This remains true **after the Victory popup**.
+After a failed report is Claimed, the village can be attacked again that week with available minions. There is no retry limit or fee. Raid time, rest, and injury recovery are the costs of failed attacks and dividing the army.
+
+At each new week, every village restores its full defenders and replaces its Gold, Crystals, item, and prisoner reward stock using its existing generation ranges and probabilities. Stock is replenished, not accumulated. Successful villages become available again; permanent completion checks and tier unlocks remain recorded, including after the Victory popup.
+
+A raid keeps a snapshot of its launch week's defenders, victory probability, and rewards. Weekly recovery does not cancel raids, release their squads, or change generated reports. An old-week raid resolves against its snapshot without damaging the new week's village. Claiming its report pays its reserved rewards once and records permanent completion where appropriate, without replacing the new week's defenders, rewards, or availability. Until Claim, its unresolved raid/report still locks that village.
 
 ## 6. War Room Raid Report Popup and Claim
 
 **Raid Report** is a popup opened from the corresponding mission in the **War Room**, and uses the same interface for successful and failed raids.
 
 - A finished raid appears as `COMPLETED_UNCLAIMED` until Claim.
-- The popup displays mission/location information; discovered **items** and **prisoners**; and the participating **minions** with their resulting statuses. Loot and prisoners form adjacent collections, followed by squad information.
+- The popup displays mission/location information; defender losses and remaining defenders; weekly recovery timing; discovered **items** and **prisoners**; and the participating **minions** with their resulting injury statuses. Old-week reports identify their week separately from the village's current state. Loot and prisoners form adjacent collections, followed by squad information.
 - Opening Raid Report **pauses game time**.
 - Closing the popup without Claim does not credit rewards, free minions, or complete the mission.
 - One **Claim** action confirms the entire outcome, even when the raid failed.
 
 ### 6.1 Carrying Capacity and Item Quantity Selection
 
-Rewards are generated from mission configuration, not multiplied by squad size. A larger or stronger squad may perform better and carry more physical loot.
+Weekly rewards are generated from mission configuration, not multiplied by squad size. A larger squad improves victory probability; higher ranks carry more physical loot.
 
 `carry_limit = floor(sum(rank_data[minion.rank].carry_capacity for each squad member))`
 
@@ -356,9 +359,9 @@ On pressing **Claim**:
 3. Sort captured prisoners **highest-to-lowest Rank**, assign them automatically into available Dungeon cells, and discard any excess.
 4. Apply the returning minions' `Tired` / `Injured` conditions and release the entire reserved squad.
 5. On a first successful Claim, permanently mark the mission as completed, unlock the next World Tier when eligible, and trigger the **Victory popup** if every mission on the map has been successfully Claimed.
-6. Preserve that mission's weekly launch cooldown until its next eligible week.
+6. Preserve a successful current-week village's cooldown; a failed Claim permits another attack. An old-week Claim never changes the new week's village state.
 
-On **failure**, Claim still releases the squad and updates mission state, but credits no rewards.
+On **failure**, Claim still releases the squad and updates mission state, but credits no rewards. Defender losses have already been applied when the raid resolved. Repeated Claim attempts cannot award anything twice.
 
 The Storehouse's free-slot count does **not** restrict what the player may select within squad Carry Capacity. A selection can be valid for carrying yet lose overflow at Claim.
 
@@ -431,25 +434,27 @@ The catalog may require a corresponding update to reflect the new decisions; thi
 
 ## 11. Provisional Balancing Formulas
 
-The following combat formulas illustrate a configurable approach. Their coefficients are **not final balance values**.
+The following formulas are initial configurable balance values. The objective is to clear the whole world as quickly as possible by allocating armies efficiently. No separate score formula or direct defeat penalty is introduced.
 
 ```text
-unit_power[i] = (0.65 * Attack[i] + 0.35 * Defense[i])
-                * (1 + 0.10 * (Rank[i] - 1))
-total_power = sum(unit_power[i])
-power_ratio = total_power / mission.required_power
-failure_chance = clamp(2.0 * (1 - power_ratio), 0, 1)
+victory_chance = attackers² / (attackers² + active_defenders²)
+victory_chance = 1 if active_defenders == 0
+                    or attackers >= 4 * active_defenders
+zero attackers cannot launch
+
+failed_defender_loss_trials = min(attackers, active_defenders - 1)
+loss_probability_per_trial = 0.5 * attackers / (attackers + active_defenders)
+failed_defender_losses = count of successful independent loss trials
 
 injury_chance[i] = clamp(
-    mission.base_injury_chance
-    + 0.20 * max(0, 1 - power_ratio)
+    (0.4 on victory, 0.8 on defeat) * (1 - victory_chance)
     - 0.02 * (Rank[i] - 1)
     - 0.005 * max(0, Defense[i] - 5),
-    0.01, 0.90)
+    0, 1)
 
 raid_duration = mission.base_duration
                 * max(0.80,
-                    1 - 0.04 * (squad_size - 1)
+                    1 - 0.04 * max(0, squad_size - 1)
                       - 0.01 * (average_rank - 1))
 ```
 

@@ -5,20 +5,19 @@ import type { VictoryAction, VictoryViewModel } from './VictoryViewModel';
 
 const illustration = asset('victory-tower.webp');
 
-/** No engine-recognized victory state exists yet (only `gameOver: "bankruptcy"`), so this is a
- * UI-layer proxy condition over existing state: every World Tier unlocked. */
 export function hasWonGame(engine: GameEngine): boolean {
   const state = engine.state;
-  return CONFIG.worldTiers.every(t => state.unlockedTiers.has(t.tier));
+  return CONFIG.missions.every(mission => state.everClaimedMissions.has(mission.id));
 }
 
 export function buildVictoryViewModel(engine: GameEngine): VictoryViewModel {
   const state = engine.state;
   return {
     title: 'Victory!',
-    message: 'Every World Tier has fallen before the Dark Tower. Your reign is absolute — for now.',
+    message: 'Every village has fallen before the Dark Tower. The world is conquered.',
     illustrationSrc: illustration,
     stats: [
+      { id: 'completion-time', icon: '⌛', label: 'World completion time', value: `${((state.worldCompletedAtHour ?? state.hours) / 24).toFixed(1)} days` },
       { id: 'week', icon: '📅', label: 'Weeks played', value: `${state.week + 1}` },
       { id: 'tower', icon: '🏰', label: 'Tower level', value: `${state.towerLevel()}` },
       { id: 'gold', icon: '🪙', label: 'Gold banked', value: `${state.gold}` },

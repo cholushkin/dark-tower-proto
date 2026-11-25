@@ -119,6 +119,11 @@
 .dt-warroom__raid-icon{font-size:26px}
 .dt-warroom__raid-active{margin-top:6px}
 .dt-warroom__raid-active-label{font-size:12px}
+.dt-warroom__parameter[data-parameter-id="defenders"]{grid-column:2;grid-row:2}
+.dt-warroom__parameter[data-parameter-id="injuries"]{grid-column:2;grid-row:3}
+.dt-warroom__parameter[data-parameter-id="village-rewards"]{grid-column:2;grid-row:4}
+.dt-warroom__village-status{display:flex;justify-content:space-between;gap:6px 20px;flex-wrap:wrap;padding:8px 1px 0;color:#cbb8ce;font-size:12px;line-height:1.4}
+.dt-warroom__availability{color:#f5d58f}
 /* On small screens preserve the single row instead of consuming map height. */
 @media(max-width:1000px){
  .dt-warroom__mission-info{overflow-x:auto;overflow-y:hidden;grid-template-columns:var(--mission-size) max-content max-content minmax(150px,1fr) var(--mission-size);padding-bottom:5px;scrollbar-width:thin;scrollbar-color:#a26495 #26152b}

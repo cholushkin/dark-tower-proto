@@ -20,7 +20,7 @@
   max-height: 220px;
   overflow-y: auto;
 }
-.dt-debug__actions { display: flex; gap: 8px; margin-bottom: 8px; }
+.dt-debug__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .dt-debug__actions button {
   background: var(--dt-purple-soft);
   color: var(--dt-ink);

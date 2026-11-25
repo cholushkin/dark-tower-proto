@@ -44,6 +44,7 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
         </div>
         <button class="dt-warroom__raid-button" type="button" aria-label="Launch selected raid"><span class="dt-warroom__raid-icon" aria-hidden="true">⚔️</span><strong>Raid!</strong></button>
       </div>
+      <div class="dt-warroom__village-status"><span class="dt-warroom__availability"></span><span class="dt-warroom__recovery"></span></div>
     </section>
   </div>`;
   const get = <T extends Element>(selector: string): T => {
@@ -157,6 +158,8 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
       locationImg.src=mission.locationImageSrc;locationImg.alt=mission.locationImageAlt;
       locationName.textContent=mission.name;
       locationInfo.title=mission.description;
+      get<HTMLElement>('.dt-warroom__availability').textContent=mission.statusLabel;
+      get<HTMLElement>('.dt-warroom__recovery').textContent=mission.recoveryLabel;
       rewardBlock.setAttribute('aria-label', `Reward estimation: ${mission.rewardIntelLabel}`);
       rewardBlock.title=mission.rewardIntelLabel;
       const nextRewardSignature = JSON.stringify(mission.rewards);
@@ -200,9 +203,9 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
       activeBar.style.width=`${Math.max(0,Math.min(100,(mission.activeProgress??0)*100))}%`;
       activeRemaining.textContent=mission.activeRemainingTime??'';
       raidButton.disabled=!mission.canRaid;
-      raidButton.title=mission.canRaid?(readyToClaim?'Open raid report and claim rewards':'Launch raid'):mission.raidDisabledReason??mission.statusLabel;
+      raidButton.title=mission.canRaid?(readyToClaim?'Open raid report and release the squad':'Launch raid'):mission.raidDisabledReason??mission.statusLabel;
       raidButton.classList.toggle('dt-warroom__raid-button--running',ongoing);
-      raidButton.querySelector<HTMLElement>('strong')!.textContent=ongoing?'Active':mission.state==='locked'?'Locked':readyToClaim?'Claim Rewards':mission.state==='completed'?'Claimed':'Raid!';
+      raidButton.querySelector<HTMLElement>('strong')!.textContent=ongoing?'Active':mission.state==='locked'?'Locked':readyToClaim?'View Report':mission.state==='completed'?'Next Week':'Raid!';
       minionTrack.setAttribute('aria-label',`Assign minions: ${mission.squadSelectionLabel}`);
     }
     const activeMinions=new Set(model.minions.map(x=>x.minion.id));

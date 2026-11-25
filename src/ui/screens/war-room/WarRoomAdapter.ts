@@ -2,7 +2,7 @@ import { minionStatus } from '../../minionStatus';
 import { CONFIG } from '../../../data/config';
 import type { GameEngine } from '../../../engine/GameEngine';
 import type { GameState } from '../../../model/GameState';
-import { canLaunchRaid, missionDef, previewRaid } from '../../../systems/world';
+import { canLaunchRaid, injuryResistanceFor, missionDef, previewRaid } from '../../../systems/world';
 import type { MinionComponentViewModel, MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
 import type { MissionPinViewModel, MissionVisualState } from '../../components/MissionPin/MissionPin.types';
 import { asset } from '../assets';
@@ -33,7 +33,7 @@ function minionViewModel(state: GameState, id: string): MinionComponentViewModel
   return {
     id,
     name,
-    description: `${name} is a Rank ${minion.rank} ${rankDef.name} of the Dark Tower.`,
+    description: `${name} is a Rank ${minion.rank} ${rankDef.name}. Carries ${rankDef.carryCapacity} loot slots. Rank and defense reduce this minion's injury risk by ${(injuryResistanceFor(state, id) * 100).toFixed(1)} percentage points, to a minimum of zero.`,
     rank: { label: `${rankDef.name} (R${minion.rank})`, icon: minion.rank === 5 ? '👑' : '⌃', tooltip: `Rank ${minion.rank}: ${rankDef.name}` },
     portrait: portraitFor(id),
     conditions,
@@ -56,8 +56,11 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
   const mission = missionDef(missionId);
   const liveState = state.missionState(missionId);
   const visual = missionPinState(state, missionId);
-  const squad = [...ui.squadSelection];
+  const squad = [...ui.squadSelection].filter(id => state.findMinion(id));
   const scouted = state.enemyIntelLevel() >= 1;
+  const defendersKnown = scouted || state.everVisitedMissions.has(missionId);
+  const village = state.villageState(missionId);
+  const recoveryIn = fmtHours(Math.max(0, (state.week + 1) * CONFIG.constants.weekDays * 24 - state.hours));
   const lootIntel = state.lootIntelLevel();
 
   const rewards: RewardPreviewViewModel[] = mission.loot.map(l => {
@@ -76,8 +79,8 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
       activeRemainingTime = fmtHours(Math.max(0, process.endHour - state.hours));
     }
     statusLabel = 'Raid in progress';
-  } else if (liveState === 'COMPLETED_UNCLAIMED') statusLabel = 'Squad returned — claim rewards';
-  else if (liveState === 'COOLDOWN') statusLabel = 'Already claimed this week';
+  } else if (liveState === 'COMPLETED_UNCLAIMED') statusLabel = 'Report awaiting Claim — squad still reserved';
+  else if (liveState === 'COOLDOWN') statusLabel = 'Village defeated — available next week';
   else if (liveState === 'LOCKED') statusLabel = 'Locked — unlock this World Tier first';
 
   const preview = liveState === 'AVAILABLE' ? previewRaid(state, missionId, squad) : null;
@@ -85,27 +88,36 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
   let raidDisabledReason: string | undefined;
   if (liveState === 'AVAILABLE' && !canRaid) raidDisabledReason = squad.length === 0 ? 'Select at least one minion' : 'Selected minions are unavailable';
   else if (liveState === 'RUNNING') raidDisabledReason = 'Raid already in progress';
-  else if (liveState === 'COOLDOWN') raidDisabledReason = 'Already claimed this week';
+  else if (liveState === 'COOLDOWN') raidDisabledReason = `Village already defeated. Available again in ${recoveryIn}.`;
   else if (liveState === 'LOCKED') raidDisabledReason = 'World Tier locked';
 
   const weather = missionWeather(mission);
   const duration = preview?.durationHours ?? mission.baseDurationHours;
   const parameters: MissionParameterViewModel[] = [
     { id: 'difficulty', icon: missionDifficultyIcons(mission), value: `Tier ${mission.tier}`,
-      description: `Difficulty: Tier ${mission.tier}. Higher tiers contain tougher missions. Your chance of victory depends on the assigned squad.` },
+      description: `Difficulty: Tier ${mission.tier}. Victory depends on the number of assigned minions versus active defenders.` },
     { id: 'duration', icon: '⌛', value: liveState === 'RUNNING' ? `${activeRemainingTime ?? '—'} remaining` : scouted ? `${duration.toFixed(1)}h` : `~${Math.round(duration)}h`,
       description: liveState === 'RUNNING' ? 'Time remaining until this raid resolves, in game hours.' : `${squad.length ? 'Estimated raid duration' : 'Base raid duration'} in game hours. Additional minions and higher average rank reduce the duration by up to 20%. Enemy Intelligence reveals a more precise estimate.` },
   ];
+  parameters.push({ id: 'defenders', icon: '🛡️',
+    value: defendersKnown ? `Defenders: ${village.activeDefenders} · Recovering: ${village.fullDefenders - village.activeDefenders}` : 'Defenders unknown',
+    description: defendersKnown ? `${village.activeDefenders} of ${village.fullDefenders} defenders can fight. Incapacitated defenders recover at the start of the next week, in ${recoveryIn}.` : 'Raid this village once or complete Enemy Intelligence I to reveal active and recovering defenders.' });
   if (preview) {
     parameters.push(
-      { id: 'success', icon: '🎯', value: !scouted ? 'Success unknown' : squad.length ? `${pct(1 - preview.failureChance)} success` : 'Assign minions',
-        description: !scouted ? 'Success chance is hidden. Upgrade Enemy Intelligence to estimate it for your assigned squad.' : 'Chance of winning and receiving rewards. Calculated from combined squad power versus mission strength. Attack, defense, rank, upgrades and favorable weather improve squad power.' },
+      { id: 'success', icon: '🎯', value: !scouted ? 'Victory chance hidden' : squad.length ? preview.guaranteedVictory ? 'Guaranteed victory' : `${pct(preview.victoryChance)} victory` : 'Assign minions',
+        description: !scouted ? 'Complete Enemy Intelligence I to reveal the exact victory calculation for your selected squad.' : `Victory chance is attackers² / (attackers² + active defenders²). At least ${CONFIG.constants.raid.overwhelmingForceRatio} attackers per active defender guarantees victory, as does an undefended village. Rank and weather do not change these odds.` },
       { id: 'capacity', icon: '🎒', value: `${squad.reduce((sum, id) => sum + CONFIG.ranks[state.findMinion(id)!.rank - 1].carryCapacity, 0)} loot slots`,
         description: 'Carrying capacity: total item-stack slots your assigned minions can bring back. Higher-rank minions carry more. Items of the same type can share a stack.' },
     );
+    if (scouted && squad.length) parameters.push({ id: 'injuries', icon: '🩹',
+      value: `Injury: ${pct(preview.injuryChanceOnVictory)} win · ${pct(preview.injuryChanceOnDefeat)} loss`,
+      description: `Average injury risk per selected minion. Victory starts at ${pct(CONFIG.constants.raid.injuryChanceOnVictory)} × failure chance; defeat at ${pct(CONFIG.constants.raid.injuryChanceOnDefeat)} × failure chance. Rank and defense subtract individual resistance, shown in each minion's information. Injured minions need Infirmary treatment before raiding again.` });
   }
 
   parameters.push({ id: 'weather', icon: weather.icon, value: weather.label, description: weather.description });
+  if (state.enemyIntelLevel() >= 2) parameters.push({ id: 'village-rewards', icon: '🪙',
+    value: `${village.rewards.gold} gold · ${village.rewards.crystals} crystals`,
+    description: 'This week\'s village currency stock. Only a successful raid earns these rewards. Uncollected stock is replaced at the start of next week.' });
 
   return {
     id: missionId,
@@ -119,6 +131,7 @@ function buildMissionDetail(engine: GameEngine, ui: WarRoomUiState, missionId: s
     squadSelectionLabel: `${squad.length} selected`,
     state: visual,
     statusLabel,
+    recoveryLabel: `Village recovery in ${recoveryIn} · defenders and rewards replenish weekly`,
     activeProgress,
     activeRemainingTime,
     canRaid,
@@ -154,6 +167,9 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
       rewards: detail.rewards,
       statusLabel: detail.statusLabel,
       state: visual,
+      completed: state.everClaimedMissions.has(mission.id),
+      defendersLabel: state.enemyIntelLevel() >= 1 || state.everVisitedMissions.has(mission.id)
+        ? String(state.villageState(mission.id).activeDefenders) : undefined,
       raidProgress: process ? Math.min(1, Math.max(0, (state.hours - process.startHour) / (process.endHour - process.startHour))) : undefined,
       selected: mission.id === ui.selectedMissionId,
     };
@@ -169,7 +185,7 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
       minion: minionViewModel(state, m.id),
       selected,
       selectable: canEditSquad && (idle || selected),
-      unavailableReason: idle || !canEditSquad ? undefined : `${nameFor(m.id)} is unavailable`,
+      unavailableReason: idle || !canEditSquad ? undefined : m.activity.type === 'raid' ? 'Reserved until the raid report is Claimed' : m.injured ? 'Injured — needs Infirmary treatment' : m.tired ? 'Tired — needs rest' : 'Busy with another activity',
     };
   });
 
@@ -177,7 +193,7 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
     title: 'War Room',
     worldName: world.name,
     showMapCoordinates: ui.showMapCoordinates,
-    mapImageSrc: `${import.meta.env.BASE_URL}${world.mapImage}`,
+    mapImageSrc: `${import.meta.env?.BASE_URL ?? '/'}${world.mapImage}`,
     mapImageAlt: `${world.name} map`,
     room: {
       id: 'warRoom',

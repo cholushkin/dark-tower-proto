@@ -40,6 +40,27 @@ export interface RaidProcess extends BaseProcess {
     type: "raid";
     missionId: string;
     squad: string[];
+    /** Launch snapshots isolate ongoing raids from weekly recovery. Optional for old saves. */
+    raidWeek?: number;
+    activeDefenders?: number;
+    fullDefenders?: number;
+    victoryChance?: number;
+    rewards?: VillageRewards;
+}
+
+export interface VillageRewards {
+    gold: number;
+    crystals: number;
+    lootCopies: string[];
+    prisoners: number[];
+}
+
+export interface VillageState {
+    week: number;
+    fullDefenders: number;
+    activeDefenders: number;
+    rewards: VillageRewards;
+    raided: boolean;
 }
 
 export interface RestProcess extends BaseProcess {
@@ -124,4 +145,11 @@ export interface RaidReportDraft {
     /** Player's current selection, itemId -> copies selected. Preselected to a valid subset. */
     selection: Record<string, number>;
     injuryRolls: Record<string, number>;
+    raidWeek?: number;
+    defendersBefore?: number;
+    defenderLosses?: number;
+    defendersRemaining?: number;
+    durationHours?: number;
+    fullDefenders?: number;
+    victoryChance?: number;
 }

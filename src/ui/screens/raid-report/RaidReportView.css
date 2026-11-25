@@ -34,6 +34,10 @@
 .dt-raid__result-label[data-result='defeat']::before{content:'☠ ';}
 .dt-raid__result-stat{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#baa6c3;}
 .dt-raid__result-stat strong{color:#faeccc;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.dt-raid__odds-row[hidden]{display:none}
+.dt-raid__village-result{padding:10px 12px;border:1px solid #76516c;border-radius:8px;background:#21172c;color:#efd28f;font-size:13px;line-height:1.45}
+.dt-raid__recovery{margin:3px 0 0;color:#cfbace;font-size:12px}
+.dt-raid__injury-summary{margin:0;color:#cfbace;font-size:12px;line-height:1.4}
 .dt-raid__collection-row{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(0,1fr);gap:12px;min-height:0;}
 .dt-raid__collection,.dt-raid__minions{min-width:0;border:1px solid #71446d;border-radius:10px;padding:11px 11px 8px;background:linear-gradient(155deg,#2c2036,#211729);}
 .dt-raid__collection{display:flex;flex-direction:column;gap:8px;}

@@ -11,7 +11,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_millbrook", tier: 1, name: "Millbrook Village",
             description: "A sleepy riverside village built around an old watermill. Grain stores and modest treasures lie behind its timber palisade.", weather: "clear",
             mapPosition: { x: 41.0, y: 38.0 },
-            requiredPower: 18, baseDurationHours: 6, baseInjuryChance: 0.05,
+            requiredPower: 18, fullDefenders: 3, baseDurationHours: 6, baseInjuryChance: 0.05,
             rewardGoldRange: [20, 50], rewardCrystalsRange: [0, 2],
             loot: [
                 { itemId: "golden_cup", chance: 0.5, min: 1, max: 2 },
@@ -24,7 +24,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_stonebridge", tier: 1, name: "Stonebridge Hamlet",
             description: "A stone bridge binds this hamlet to the trade road. Merchants shelter here under the watch of a small local militia.", weather: "rain",
             mapPosition: { x: 59.0, y: 40.0 },
-            requiredPower: 25, baseDurationHours: 8, baseInjuryChance: 0.07,
+            requiredPower: 25, fullDefenders: 5, baseDurationHours: 8, baseInjuryChance: 0.07,
             rewardGoldRange: [30, 70], rewardCrystalsRange: [0, 3],
             loot: [
                 { itemId: "iron_ore", chance: 0.8, min: 2, max: 6 },
@@ -37,7 +37,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_fallowcreek", tier: 1, name: "Fallow Creek Farms",
             description: "Golden fields surround scattered farmsteads. Full granaries and livestock make tempting prizes for raiders.", weather: "fog",
             mapPosition: { x: 42.5, y: 48.5 },
-            requiredPower: 22, baseDurationHours: 7, baseInjuryChance: 0.06,
+            requiredPower: 22, fullDefenders: 4, baseDurationHours: 7, baseInjuryChance: 0.06,
             rewardGoldRange: [25, 60], rewardCrystalsRange: [0, 2],
             loot: [
                 { itemId: "wheat_sack", chance: 0.9, min: 3, max: 8 },
@@ -50,7 +50,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_oakhollow", tier: 1, name: "Oakhollow Outpost",
             description: "A lonely watchtower guards the oak-lined border road. Its disciplined garrison keeps supplies ready for a siege.", weather: "storm",
             mapPosition: { x: 59.0, y: 51.0 },
-            requiredPower: 32, baseDurationHours: 10, baseInjuryChance: 0.09,
+            requiredPower: 32, fullDefenders: 6, baseDurationHours: 10, baseInjuryChance: 0.09,
             rewardGoldRange: [40, 90], rewardCrystalsRange: [1, 4],
             loot: [
                 { itemId: "enchanted_gem", chance: 0.15, min: 1, max: 1 },
@@ -63,7 +63,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_duskhollow", tier: 1, name: "Duskhollow Mill",
             description: "An aging mill stands beside a dark woodland stream. Flour carts and poorly guarded storehouses crowd its muddy yard.", weather: "clear",
             mapPosition: { x: 63.52, y: 63.96 },
-            requiredPower: 20, baseDurationHours: 6, baseInjuryChance: 0.055,
+            requiredPower: 20, fullDefenders: 4, baseDurationHours: 6, baseInjuryChance: 0.055,
             rewardGoldRange: [22, 55], rewardCrystalsRange: [0, 2],
             loot: [
                 { itemId: "wheat_sack", chance: 0.8, min: 2, max: 6 },
@@ -76,7 +76,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_cinderford", tier: 1, name: "Cinderford Crossing",
             description: "A busy ford cuts through a bed of volcanic ash. Caravans pause here to repair wagons and trade supplies.", weather: "rain",
             mapPosition: { x: 50.0, y: 67.25 },
-            requiredPower: 27, baseDurationHours: 8, baseInjuryChance: 0.075,
+            requiredPower: 27, fullDefenders: 5, baseDurationHours: 8, baseInjuryChance: 0.075,
             rewardGoldRange: [32, 68], rewardCrystalsRange: [0, 3],
             loot: [
                 { itemId: "iron_ore", chance: 0.7, min: 2, max: 5 },
@@ -89,7 +89,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_wrenhaven", tier: 1, name: "Wrenhaven Watch",
             description: "A hilltop watchpost overlooks the valley. Signal fires and keen-eyed sentries protect the stores within.", weather: "fog",
             mapPosition: { x: 36.48, y: 63.96 },
-            requiredPower: 29, baseDurationHours: 9, baseInjuryChance: 0.08,
+            requiredPower: 29, fullDefenders: 5, baseDurationHours: 9, baseInjuryChance: 0.08,
             rewardGoldRange: [35, 75], rewardCrystalsRange: [1, 3],
             loot: [
                 { itemId: "silver_necklace", chance: 0.45, min: 1, max: 2 },
@@ -102,7 +102,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_greyshore", tier: 1, name: "Greyshore Landing",
             description: "Fishing boats gather below grey coastal cliffs. Salt-worn warehouses hold the spoils of distant trade.", weather: "storm",
             mapPosition: { x: 28.13, y: 55.33 },
-            requiredPower: 34, baseDurationHours: 10, baseInjuryChance: 0.095,
+            requiredPower: 34, fullDefenders: 6, baseDurationHours: 10, baseInjuryChance: 0.095,
             rewardGoldRange: [42, 95], rewardCrystalsRange: [1, 4],
             loot: [
                 { itemId: "golden_cup", chance: 0.45, min: 1, max: 2 },
@@ -115,7 +115,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_ashford", tier: 1, name: "Ashford Crossroads",
             description: "Trade routes meet beneath ancient ash trees. Travellers bring coin, provisions, and stories of the tower.", weather: "clear",
             mapPosition: { x: 28.13, y: 44.67 },
-            requiredPower: 24, baseDurationHours: 7, baseInjuryChance: 0.065,
+            requiredPower: 24, fullDefenders: 4, baseDurationHours: 7, baseInjuryChance: 0.065,
             rewardGoldRange: [28, 62], rewardCrystalsRange: [0, 2],
             loot: [
                 { itemId: "cow", chance: 0.5, min: 1, max: 1 },
@@ -128,7 +128,7 @@ export const WORLD_1A: WorldDef = {
             id: "t1_foxglen", tier: 1, name: "Foxglen Thicket",
             description: "A tangled woodland hides a small frontier settlement. Narrow paths lead to concealed caches and hunting lodges.", weather: "rain",
             mapPosition: { x: 36.48, y: 36.04 },
-            requiredPower: 31, baseDurationHours: 9, baseInjuryChance: 0.085,
+            requiredPower: 31, fullDefenders: 6, baseDurationHours: 9, baseInjuryChance: 0.085,
             rewardGoldRange: [38, 80], rewardCrystalsRange: [1, 3],
             loot: [
                 { itemId: "golden_cup", chance: 0.35, min: 1, max: 1 },
@@ -141,7 +141,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_ravenswood", tier: 2, name: "Ravenswood Keep",
             description: "A fortified keep rises above a forest of black pines. Its wealthy lord keeps treasure behind layers of stone.", weather: "fog",
             mapPosition: { x: 50.0, y: 24.5 },
-            requiredPower: 55, baseDurationHours: 16, baseInjuryChance: 0.12,
+            requiredPower: 55, fullDefenders: 10, baseDurationHours: 16, baseInjuryChance: 0.12,
             rewardGoldRange: [80, 160], rewardCrystalsRange: [3, 8],
             loot: [
                 { itemId: "ancient_crown", chance: 0.2, min: 1, max: 1 },
@@ -154,7 +154,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_thornwall", tier: 2, name: "Thornwall Garrison",
             description: "Thorn-covered walls enclose a hardened military camp. Armed patrols guard its weapons and supply wagons.", weather: "storm",
             mapPosition: { x: 69.98, y: 29.37 },
-            requiredPower: 68, baseDurationHours: 10, baseInjuryChance: 0.15,
+            requiredPower: 68, fullDefenders: 12, baseDurationHours: 10, baseInjuryChance: 0.15,
             rewardGoldRange: [100, 200], rewardCrystalsRange: [4, 10],
             loot: [
                 { itemId: "iron_ore", chance: 0.9, min: 4, max: 10 },
@@ -167,7 +167,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_blackmire", tier: 2, name: "Blackmire Citadel",
             description: "A sunken citadel looms over stagnant marshes. Valuable relics wait beyond treacherous causeways and guarded gates.", weather: "clear",
             mapPosition: { x: 82.34, y: 42.12 },
-            requiredPower: 85, baseDurationHours: 14, baseInjuryChance: 0.18,
+            requiredPower: 85, fullDefenders: 15, baseDurationHours: 14, baseInjuryChance: 0.18,
             rewardGoldRange: [150, 300], rewardCrystalsRange: [6, 15],
             loot: [
                 { itemId: "ancient_crown", chance: 0.3, min: 1, max: 2 },
@@ -180,7 +180,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_hollowfen", tier: 2, name: "Hollowfen Marsh",
             description: "Reed-covered ruins shelter a remote garrison. Misty channels conceal both forgotten riches and watchful defenders.", weather: "rain",
             mapPosition: { x: 82.34, y: 57.88 },
-            requiredPower: 60, baseDurationHours: 9, baseInjuryChance: 0.13,
+            requiredPower: 60, fullDefenders: 10, baseDurationHours: 9, baseInjuryChance: 0.13,
             rewardGoldRange: [90, 180], rewardCrystalsRange: [3, 9],
             loot: [
                 { itemId: "silver_necklace", chance: 0.6, min: 2, max: 4 },
@@ -193,7 +193,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_ironspire", tier: 2, name: "Ironspire Bastion",
             description: "An iron-clad fortress towers above the mountain pass. Its vaults hold tribute collected from every passing caravan.", weather: "fog",
             mapPosition: { x: 69.98, y: 70.63 },
-            requiredPower: 75, baseDurationHours: 12, baseInjuryChance: 0.16,
+            requiredPower: 75, fullDefenders: 13, baseDurationHours: 12, baseInjuryChance: 0.16,
             rewardGoldRange: [120, 230], rewardCrystalsRange: [5, 12],
             loot: [
                 { itemId: "golden_cup", chance: 0.55, min: 1, max: 3 },
@@ -206,7 +206,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_wyrmscar", tier: 2, name: "Wyrmscar Hold",
             description: "A deep scar splits the ancient hills. Warriors guard the old ruins and the treasures buried beneath them.", weather: "storm",
             mapPosition: { x: 50.0, y: 75.5 },
-            requiredPower: 90, baseDurationHours: 15, baseInjuryChance: 0.19,
+            requiredPower: 90, fullDefenders: 15, baseDurationHours: 15, baseInjuryChance: 0.19,
             rewardGoldRange: [160, 320], rewardCrystalsRange: [7, 16],
             loot: [
                 { itemId: "ancient_crown", chance: 0.32, min: 1, max: 2 },
@@ -219,7 +219,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_stormgate", tier: 2, name: "Stormgate Watch",
             description: "A massive gate commands the windswept coast. Its defenders keep rare goods safe behind storm-battered walls.", weather: "clear",
             mapPosition: { x: 30.02, y: 70.63 },
-            requiredPower: 62, baseDurationHours: 11, baseInjuryChance: 0.14,
+            requiredPower: 62, fullDefenders: 11, baseDurationHours: 11, baseInjuryChance: 0.14,
             rewardGoldRange: [95, 190], rewardCrystalsRange: [4, 9],
             loot: [
                 { itemId: "ruby_amulet", chance: 0.3, min: 1, max: 1 },
@@ -232,7 +232,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_direwood", tier: 2, name: "Direwood Thicket",
             description: "A dark forest surrounds a fortified refuge. Winding tracks hide well-stocked camps beneath the canopy.", weather: "rain",
             mapPosition: { x: 17.66, y: 57.88 },
-            requiredPower: 70, baseDurationHours: 13, baseInjuryChance: 0.155,
+            requiredPower: 70, fullDefenders: 12, baseDurationHours: 13, baseInjuryChance: 0.155,
             rewardGoldRange: [105, 210], rewardCrystalsRange: [4, 10],
             loot: [
                 { itemId: "mithril_ingot", chance: 0.4, min: 1, max: 2 },
@@ -245,7 +245,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_cragmoor", tier: 2, name: "Cragmoor Reach",
             description: "A stone stronghold clings to jagged highland cliffs. Narrow approaches protect rich stores and captured relics.", weather: "fog",
             mapPosition: { x: 17.66, y: 42.12 },
-            requiredPower: 80, baseDurationHours: 13, baseInjuryChance: 0.17,
+            requiredPower: 80, fullDefenders: 14, baseDurationHours: 13, baseInjuryChance: 0.17,
             rewardGoldRange: [130, 260], rewardCrystalsRange: [5, 13],
             loot: [
                 { itemId: "ancient_crown", chance: 0.25, min: 1, max: 1 },
@@ -258,7 +258,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_saltmere", tier: 2, name: "Saltmere Shoals",
             description: "Tidal flats surround a wealthy coastal outpost. Supply barges unload precious cargo along its salt-crusted docks.", weather: "storm",
             mapPosition: { x: 30.02, y: 29.37 },
-            requiredPower: 92, baseDurationHours: 16, baseInjuryChance: 0.195,
+            requiredPower: 92, fullDefenders: 16, baseDurationHours: 16, baseInjuryChance: 0.195,
             rewardGoldRange: [165, 330], rewardCrystalsRange: [7, 17],
             loot: [
                 { itemId: "jeweled_scepter", chance: 0.15, min: 1, max: 1 },
@@ -271,7 +271,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_duskfall_spire", tier: 3, name: "Duskfall Spire",
             description: "A towering spire catches the last light above the valley. Elite guardians defend the treasures of its upper halls.", weather: "clear",
             mapPosition: { x: 50.0, y: 16.25 },
-            requiredPower: 100, baseDurationHours: 14, baseInjuryChance: 0.18,
+            requiredPower: 100, fullDefenders: 17, baseDurationHours: 14, baseInjuryChance: 0.18,
             rewardGoldRange: [200, 380], rewardCrystalsRange: [8, 16],
             loot: [
                 { itemId: "jeweled_scepter", chance: 0.15, min: 1, max: 1 },
@@ -284,7 +284,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_ironvault_depths", tier: 3, name: "Ironvault Depths",
             description: "Armored doors seal a labyrinth beneath the mountains. Deep vaults hold rare metals and royal offerings.", weather: "rain",
             mapPosition: { x: 76.45, y: 22.7 },
-            requiredPower: 108, baseDurationHours: 15, baseInjuryChance: 0.2,
+            requiredPower: 108, fullDefenders: 18, baseDurationHours: 15, baseInjuryChance: 0.2,
             rewardGoldRange: [215, 400], rewardCrystalsRange: [9, 17],
             loot: [
                 { itemId: "ancient_crown", chance: 0.25, min: 1, max: 1 },
@@ -297,7 +297,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_crimson_hollow", tier: 3, name: "Crimson Hollow",
             description: "A red-stone ravine shelters an ancient sanctuary. Its defenders protect ceremonial treasures in hidden chambers.", weather: "fog",
             mapPosition: { x: 92.8, y: 39.57 },
-            requiredPower: 115, baseDurationHours: 16, baseInjuryChance: 0.21,
+            requiredPower: 115, fullDefenders: 20, baseDurationHours: 16, baseInjuryChance: 0.21,
             rewardGoldRange: [230, 420], rewardCrystalsRange: [10, 18],
             loot: [
                 { itemId: "silver_chalice", chance: 0.5, min: 1, max: 3 },
@@ -310,7 +310,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_wraithmoor", tier: 3, name: "Wraithmoor",
             description: "Broken towers rise from a haunted moor. Resolute sentries patrol the ruins despite the whispers in the mist.", weather: "storm",
             mapPosition: { x: 92.8, y: 60.43 },
-            requiredPower: 122, baseDurationHours: 17, baseInjuryChance: 0.23,
+            requiredPower: 122, fullDefenders: 21, baseDurationHours: 17, baseInjuryChance: 0.23,
             rewardGoldRange: [245, 440], rewardCrystalsRange: [10, 19],
             loot: [
                 { itemId: "jeweled_scepter", chance: 0.2, min: 1, max: 1 },
@@ -323,7 +323,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_cindermaw_pit", tier: 3, name: "Cindermaw Pit",
             description: "A vast volcanic pit glows beneath an ash-black fortress. Forged weapons and rare minerals fill its storerooms.", weather: "clear",
             mapPosition: { x: 76.45, y: 77.3 },
-            requiredPower: 129, baseDurationHours: 18, baseInjuryChance: 0.24,
+            requiredPower: 129, fullDefenders: 22, baseDurationHours: 18, baseInjuryChance: 0.24,
             rewardGoldRange: [260, 460], rewardCrystalsRange: [11, 20],
             loot: [
                 { itemId: "ruby_amulet", chance: 0.45, min: 1, max: 2 },
@@ -336,7 +336,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_thornspire_keep", tier: 3, name: "Thornspire Keep",
             description: "Cruel thorn hedges surround a towering keep. Veteran soldiers guard the nobles and their hoarded riches.", weather: "rain",
             mapPosition: { x: 50.0, y: 83.75 },
-            requiredPower: 136, baseDurationHours: 19, baseInjuryChance: 0.26,
+            requiredPower: 136, fullDefenders: 23, baseDurationHours: 19, baseInjuryChance: 0.26,
             rewardGoldRange: [275, 480], rewardCrystalsRange: [12, 21],
             loot: [
                 { itemId: "ancient_crown", chance: 0.3, min: 1, max: 1 },
@@ -349,7 +349,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_frostfang_citadel", tier: 3, name: "Frostfang Citadel",
             description: "An icy citadel stands above a frozen mountain road. Its battle-hardened defenders protect the northern tribute.", weather: "fog",
             mapPosition: { x: 23.55, y: 77.3 },
-            requiredPower: 143, baseDurationHours: 20, baseInjuryChance: 0.27,
+            requiredPower: 143, fullDefenders: 24, baseDurationHours: 20, baseInjuryChance: 0.27,
             rewardGoldRange: [290, 500], rewardCrystalsRange: [13, 22],
             loot: [
                 { itemId: "jeweled_scepter", chance: 0.25, min: 1, max: 1 },
@@ -362,7 +362,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_blightwater_sanctum", tier: 3, name: "Blightwater Sanctum",
             description: "A flooded sanctuary rests among poisoned waterways. Sacred relics lie behind guarded bridges and sealed shrines.", weather: "storm",
             mapPosition: { x: 7.2, y: 60.43 },
-            requiredPower: 150, baseDurationHours: 21, baseInjuryChance: 0.29,
+            requiredPower: 150, fullDefenders: 25, baseDurationHours: 21, baseInjuryChance: 0.29,
             rewardGoldRange: [305, 520], rewardCrystalsRange: [14, 23],
             loot: [
                 { itemId: "ruby_amulet", chance: 0.5, min: 1, max: 2 },
@@ -375,7 +375,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_voidscar_abyss", tier: 3, name: "Voidscar Abyss",
             description: "A yawning abyss opens beneath shattered ruins. The strongest guardians watch over treasures at its edge.", weather: "clear",
             mapPosition: { x: 7.2, y: 39.57 },
-            requiredPower: 157, baseDurationHours: 22, baseInjuryChance: 0.3,
+            requiredPower: 157, fullDefenders: 27, baseDurationHours: 22, baseInjuryChance: 0.3,
             rewardGoldRange: [320, 540], rewardCrystalsRange: [15, 24],
             loot: [
                 { itemId: "ancient_crown", chance: 0.35, min: 1, max: 2 },
@@ -388,7 +388,7 @@ export const WORLD_1A: WorldDef = {
             id: "t3_the_shattered_throne", tier: 3, name: "The Shattered Throne",
             description: "The ruins of a fallen royal court crown the highest ridge. Its remaining champions guard the last wealth of the kingdom.", weather: "rain",
             mapPosition: { x: 23.55, y: 22.7 },
-            requiredPower: 164, baseDurationHours: 23, baseInjuryChance: 0.32,
+            requiredPower: 164, fullDefenders: 28, baseDurationHours: 23, baseInjuryChance: 0.32,
             rewardGoldRange: [340, 570], rewardCrystalsRange: [16, 26],
             loot: [
                 { itemId: "jeweled_scepter", chance: 0.35, min: 1, max: 1 },

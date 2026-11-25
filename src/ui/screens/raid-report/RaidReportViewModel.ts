@@ -25,7 +25,11 @@ export interface RaidReportViewModel {
     weatherIcon: string; weatherLabel: string;
     result: 'victory'|'defeat'; resultLabel: string;
     elapsedLabel: string; squadLabel: string;
+    victoryChanceLabel?: string;
   }>;
+  readonly defenderResultLabel: string;
+  readonly recoveryLabel: string;
+  readonly injurySummary: string;
   readonly currencies: ReadonlyArray<Readonly<{id:string; icon:string; label:string; amountLabel:string}>>;
   readonly loot: readonly Readonly<LootChoiceViewModel>[];
   readonly selection: Readonly<{

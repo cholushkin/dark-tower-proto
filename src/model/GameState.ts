@@ -7,6 +7,7 @@ import type {
     Process,
     MissionState,
     RaidReportDraft,
+    VillageState,
 } from "./types";
 
 export class GameState {
@@ -36,14 +37,16 @@ export class GameState {
     everClaimedMissions = new Set<string>();
     /** Missions ever raided (success or failure), for the World Map "raided before" flag. */
     everVisitedMissions = new Set<string>();
-    /** Week a mission was last claimed (success or failure) — drives weekly re-availability. */
+    /** Week of the last successful raid, independent of permanent completion. */
     missionClaimedWeek = new Map<string, number>();
+    villages = new Map<string, VillageState>();
     missionRunningProcess = new Map<string, string>();
     pendingReports = new Map<string, RaidReportDraft>();
 
     towerXp = 0;
 
     raidsLaunched = 0;
+    worldCompletedAtHour: number | null = null;
 
     paydayPending = false;
     paydayDueAtHour: number | null = null;
@@ -74,6 +77,12 @@ export class GameState {
 
     genId(prefix: string): string {
         return `${prefix}_${this.nextSeq++}`;
+    }
+
+    get nextSequence(): number { return this.nextSeq; }
+
+    restoreNextSequence(nextSeq: number): void {
+        this.nextSeq = Math.max(this.nextSeq, Math.floor(nextSeq));
     }
 
     log(message: string): void {
@@ -276,11 +285,24 @@ export class GameState {
         this.stacks = this.stacks.filter(s => s.id !== stackId);
     }
 
+    villageState(missionId: string): VillageState {
+        const existing = this.villages.get(missionId);
+        if (existing) return existing;
+        const fullDefenders = CONFIG.missions.find(m => m.id === missionId)?.fullDefenders ?? 0;
+        return {
+            week: this.week, fullDefenders, activeDefenders: fullDefenders, raided: false,
+            rewards: { gold: 0, crystals: 0, lootCopies: [], prisoners: [] },
+        };
+    }
+
     missionState(missionId: string): MissionState {
-        const mission = CONFIG.missions.find(m => m.id === missionId)!;
+        const mission = CONFIG.missions.find(m => m.id === missionId);
+        if (!mission) return "LOCKED";
         if (!this.unlockedTiers.has(mission.tier)) return "LOCKED";
         if (this.pendingReports.has(missionId)) return "COMPLETED_UNCLAIMED";
         if (this.missionRunningProcess.has(missionId)) return "RUNNING";
+        const village = this.villages.get(missionId);
+        if (village?.week === this.week && village.raided) return "COOLDOWN";
         if (this.missionClaimedWeek.get(missionId) === this.week) return "COOLDOWN";
         return "AVAILABLE";
     }

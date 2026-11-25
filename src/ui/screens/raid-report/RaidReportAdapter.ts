@@ -4,7 +4,7 @@ import type { GameEngine } from '../../../engine/GameEngine';
 import { adjustSelection, discoveredCounts, selectedSlots } from '../../../systems/raidReport';
 import { missionDef, previewRaid } from '../../../systems/world';
 import type { MinionComponentViewModel, MinionConditionDisplay } from '../../components/MinionComponent/MinionComponent.types';
-import { fmtHours, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather } from '../shared';
+import { fmtHours, itemIconFor, missionDifficultyIcons, missionLocationImage, missionWeather, pct } from '../shared';
 import { nameFor, portraitFor } from '../../minionIdentity';
 import type { LootChoiceViewModel, RaidReportAction, RaidReportViewModel, ReportPrisonerViewModel } from './RaidReportViewModel';
 
@@ -88,6 +88,20 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
 
   const preview = previewRaid(state, missionId, draft.squad);
   const slots = selectedSlots(draft);
+  const raidWeek = draft.raidWeek ?? state.week;
+  const oldWeek = raidWeek < state.week;
+  const village = state.villageState(missionId);
+  const defendersKnown = draft.defendersBefore !== undefined && draft.defenderLosses !== undefined && draft.defendersRemaining !== undefined;
+  const recoveryIn = fmtHours(Math.max(0, (state.week + 1) * CONFIG.constants.weekDays * 24 - state.hours));
+  const injuredCount = draft.squad.filter(id => (draft.injuryRolls[id] ?? 0) > 0).length;
+  const defenderResultLabel = defendersKnown
+    ? `Defenders incapacitated: ${draft.defenderLosses} · Remaining: ${draft.defendersRemaining} of ${draft.fullDefenders ?? mission.fullDefenders}`
+    : 'Defender results were not recorded in this older report.';
+  const recoveryLabel = oldWeek
+    ? `Week ${raidWeek + 1} report. This village has already recovered for the current week (${village.activeDefenders}/${village.fullDefenders} defenders). Claim releases this squad; the new week's village is unchanged.`
+    : draft.success
+      ? `Village defeated for this week. Defenders and rewards recover in ${recoveryIn}. Completion stays recorded after Claim.`
+      : `Claim to release this squad and attack again. Defender losses last until weekly recovery in ${recoveryIn}. No village rewards on defeat.`;
 
   return {
     raidId: missionId,
@@ -95,16 +109,21 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
       id: missionId,
       title: mission.name,
       imageUrl: missionLocationImage(mission),
-      description: `A Tier ${mission.tier} mission. Required power ${mission.requiredPower}.`,
+      description: mission.description,
       difficultyIcon: missionDifficultyIcons(mission),
       difficultyLabel: `Tier ${mission.tier}`,
       weatherIcon: missionWeather(mission).icon,
       weatherLabel: missionWeather(mission).label,
       result: draft.success ? 'victory' : 'defeat',
       resultLabel: draft.success ? 'Victory!' : 'Defeat',
-      elapsedLabel: fmtHours(preview.durationHours),
+      elapsedLabel: fmtHours(draft.durationHours ?? preview.durationHours),
       squadLabel: `${draft.squad.length} minion${draft.squad.length === 1 ? '' : 's'}`,
+      victoryChanceLabel: state.enemyIntelLevel() >= 1 && draft.victoryChance !== undefined
+        ? draft.victoryChance === 1 ? 'Guaranteed' : pct(draft.victoryChance) : undefined,
     },
+    defenderResultLabel,
+    recoveryLabel,
+    injurySummary: `${injuredCount} injured · ${draft.squad.length} tired. Injured minions need Infirmary treatment before raiding again.`,
     currencies: [
       { id: 'gold', icon: '🪙', label: 'Gold', amountLabel: `${draft.goldFound}` },
       { id: 'crystals', icon: '💎', label: 'Crystals', amountLabel: `${draft.crystalsFound}` },
@@ -113,11 +132,11 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
     selection: {
       selectedCountLabel: `${slots} / ${draft.carryLimit} slots`,
       capacityLabel: `Carry: ${draft.carryLimit} · Used: ${slots}`,
-      hint: slots >= draft.carryLimit ? 'Carry limit reached.' : 'Select stacks to bring home. Each stack uses one carry slot.',
+      hint: !draft.success ? 'No village loot on defeat. Claim releases the squad.' : slots >= draft.carryLimit ? 'Carry limit reached.' : 'Select stacks to bring home. Each stack uses one carry slot.',
     },
     prisoners,
     minions,
-    claim: { label: draft.success ? 'Claim Rewards' : 'Acknowledge', canClaim: true },
+    claim: { label: draft.success ? 'Claim Rewards' : 'Claim Report', canClaim: true },
     pauseLabel: 'Time is paused while viewing this report',
   };
 }

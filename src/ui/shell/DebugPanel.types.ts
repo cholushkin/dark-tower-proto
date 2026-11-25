@@ -11,6 +11,7 @@ export interface DebugPanelViewModel {
 export type DebugPanelAction =
   | Readonly<{ type: 'setMapCoordinates'; enabled: boolean }>
   | Readonly<{ type: 'forceComplete'; processId: string }>
+  | Readonly<{ type: 'newGame' }>
   | Readonly<{ type: 'copyState' }>;
 export type DebugPanelActionHandler = (action: DebugPanelAction) => void;
 export interface DebugPanelHandle {

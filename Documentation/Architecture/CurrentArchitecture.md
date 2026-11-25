@@ -6,8 +6,11 @@ implemented. This document supersedes the old root-level `Architecture.md` (its 
 "Defaults chosen" content now lives here and in
 [`../Decisions/prototype-defaults-log.md`](../Decisions/prototype-defaults-log.md) respectively).
 
-This is a browser-only, single-player, client-side prototype: no backend, no persistence, no save
-system. The entire game lives in one in-memory `GameState` object for the life of a browser tab.
+This is a browser-only, single-player prototype with no backend. The live game uses one
+`GameState`; `systems/save.ts` serializes it to a versioned browser-local save. Loading restores
+the saved game time without offline progression. The App autosaves and clears the save on restart.
+Debug's **New Game** button and the Game Over retry share the same restart path, suppressing
+autosaves before clearing stored progress and reloading.
 
 ## 1. Module map and dependency direction
 
@@ -184,15 +187,12 @@ code changes are required unless the new content needs a new `UpgradeEffect`/`Pr
 
 ## 7. Testing
 
-`selftest.ts` (root) is a headless, browser-free smoke test run via `npm run selftest` (`tsx
-selftest.ts`). It drives `GameEngine` directly — no DOM, no UI layer — through 16 scenarios (initial
-state, upgrades, the full raid→claim lifecycle, training, Laboratory upgrades, dungeon recruitment + its
-bed-cap interaction, sales, weekly reset/tier unlock, payroll/bankruptcy, incremental upgrades, an
-infirmary/quarters priority edge case, a minimum-prisoner guarantee, and the walk-back auto-claim
-mechanic). It force-completes processes via `engine.forceCompleteProcess()` and substitutes
-`state.rng` to make outcomes deterministic. There are no UI-layer tests (no Adapter/ViewModel
-assertions) and no test framework/runner beyond this one script with hand-rolled `check()`
-assertions — see [`ImprovementPlan.md`](ImprovementPlan.md).
+`selftest.ts` (root) is a headless, browser-free test run via `npm run selftest` (`tsx selftest.ts`).
+It exercises engine/system behavior and selected Adapter/ViewModel output, including raid
+snapshots, retries, defender/minion recovery, concurrent raids, week-boundary claims, and save
+migration. It uses scheduler ticks and force-completion with deterministic `state.rng` fixtures.
+There is no DOM/layout verification or separate test framework; browser checks remain required
+for visible UI changes.
 
 ## 8. Build and deployment
 
