@@ -1,12 +1,13 @@
 .dt-mission-pin{position:absolute;z-index:3;display:grid;place-items:center;width:44px;height:44px;transform:translate(-50%,-50%);padding:0;border:0;background:transparent;color:#fff4d9;cursor:pointer}
-.dt-mission-pin[hidden],.dt-mission-pin__battle[hidden]{display:none}
+.dt-mission-pin[hidden],.dt-mission-pin__activity[hidden]{display:none}
 .dt-mission-pin__marker{display:block;width:44px;height:44px;filter:drop-shadow(0 2px 3px #10071b);transition:transform .16s}
 .dt-mission-pin__flag{width:40px;height:44px;fill:#e7b652;stroke:#fff1be;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .dt-mission-pin__flag path:first-child{stroke-width:3}
 .dt-mission-pin[data-state='completed'] .dt-mission-pin__flag{fill:#538e62;stroke:#c4e9b2}
-.dt-mission-pin__battle{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#21162ce8}
-.dt-mission-pin__battle svg{position:absolute;inset:0;width:44px;height:44px;fill:none;stroke-width:3}
-.dt-mission-pin__battle>span{font-size:23px;line-height:1}
+.dt-mission-pin__activity{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:#21162ce8}
+.dt-mission-pin__activity svg{position:absolute;inset:0;width:44px;height:44px;fill:none;stroke-width:3}
+.dt-mission-pin__activity-symbol{font-size:23px;line-height:1}
+.dt-mission-pin[data-state='reportReady'] .dt-mission-pin__activity-symbol{color:#ffd475;font-weight:800}
 .dt-mission-pin__track{stroke:#6b536b}
 .dt-mission-pin__progress{stroke:#ffd475;stroke-dasharray:1;stroke-linecap:round}
 .dt-mission-pin--selected .dt-mission-pin__marker{filter:drop-shadow(0 0 5px #ffd475);transform:scale(1.12)}

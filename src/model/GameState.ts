@@ -1,5 +1,5 @@
 import { CONFIG } from "../data/config";
-import type { UpgradeEffect } from "../data/types";
+import type { MissionDef, UpgradeEffect } from "../data/types";
 import type {
     Minion,
     Prisoner,
@@ -10,11 +10,31 @@ import type {
     VillageState,
 } from "./types";
 
+export function pickMissionIds(rng: () => number, preferredIds: readonly string[] = []): Set<string> {
+    const world = CONFIG.worlds.find(entry => entry.id === CONFIG.startingWorldId)!;
+    const groups = new Map<string, MissionDef[]>();
+    for (const mission of world.missions) {
+        if (!mission.enabled) continue;
+        const group = groups.get(mission.groupId) ?? [];
+        group.push(mission);
+        groups.set(mission.groupId, group);
+    }
+
+    const chosen = new Set<string>();
+    for (const group of groups.values()) {
+        const preferred = preferredIds.find(id => group.some(mission => mission.id === id));
+        chosen.add(preferred ?? (group.length === 1
+            ? group[0].id
+            : group[Math.min(group.length - 1, Math.floor(rng() * group.length))].id));
+    }
+    return chosen;
+}
+
 export class GameState {
     hours = 0;
     speed = 1;
     paused = false;
-    rng: () => number = Math.random;
+    rng: () => number;
 
     gold = CONFIG.startingBalance.gold;
     crystals = CONFIG.startingBalance.crystals;
@@ -32,7 +52,8 @@ export class GameState {
     /** Named conditions for quests/events and future progression systems. */
     progressionFlags = new Set<string>();
 
-    unlockedTiers = new Set<number>([1]);
+    selectedMissionIds: Set<string>;
+    unlockedTiers = new Set<number>();
     /** Missions ever successfully claimed (permanent) — drives World Tier unlocks only. */
     everClaimedMissions = new Set<string>();
     /** Missions ever raided (success or failure), for the World Map "raided before" flag. */
@@ -58,7 +79,11 @@ export class GameState {
     logLines: string[] = [];
     departureNotices: string[] = [];
 
-    constructor() {
+    constructor(rng: () => number = Math.random) {
+        this.rng = rng;
+        this.selectedMissionIds = pickMissionIds(rng);
+        const firstTier = Math.min(...this.activeMissions().map(mission => mission.tier));
+        if (Number.isFinite(firstTier)) this.unlockedTiers.add(firstTier);
         for (const rank of CONFIG.startingBalance.minionRanks) {
             this.minions.push({
                 id: this.genId("minion"),
@@ -211,19 +236,8 @@ export class GameState {
     }
 
     private effectiveStat(rank: number, stat: "attack" | "defense"): number {
-        const base = CONFIG.ranks[rank - 1][stat];
-        let value = base;
-        for (const upgrade of CONFIG.upgrades) {
-            if (!this.purchasedUpgrades.has(upgrade.id)) continue;
-            const effect = upgrade.effect;
-            if (effect.type === "minionStat" && effect.stat === stat && effect.mode === "add") value += effect.value;
-        }
-        for (const upgrade of CONFIG.upgrades) {
-            if (!this.purchasedUpgrades.has(upgrade.id)) continue;
-            const effect = upgrade.effect;
-            if (effect.type === "minionStat" && effect.stat === stat && effect.mode === "mult") value *= effect.value;
-        }
-        return value;
+        return CONFIG.ranks[rank - 1][stat]
+            + this.sumEffect(effect => effect.type === "minionStat" && effect.stat === stat ? effect.value : null);
     }
 
     towerLevel(): number {
@@ -285,12 +299,20 @@ export class GameState {
         this.stacks = this.stacks.filter(s => s.id !== stackId);
     }
 
+    activeMissions(): MissionDef[] {
+        return CONFIG.missions.filter(mission => this.selectedMissionIds.has(mission.id));
+    }
+
+    hasCompletedWorld(): boolean {
+        return this.selectedMissionIds.size > 0 && [...this.selectedMissionIds].every(id => this.everClaimedMissions.has(id));
+    }
+
     villageState(missionId: string): VillageState {
         const existing = this.villages.get(missionId);
         if (existing) return existing;
-        const fullDefenders = CONFIG.missions.find(m => m.id === missionId)?.fullDefenders ?? 0;
+        const defenderRanks = CONFIG.missions.find(m => m.id === missionId)?.defenderRanks ?? [];
         return {
-            week: this.week, fullDefenders, activeDefenders: fullDefenders, raided: false,
+            week: this.week, activeDefenderRanks: [...defenderRanks], raided: false,
             rewards: { gold: 0, crystals: 0, lootCopies: [], prisoners: [] },
         };
     }
@@ -298,9 +320,9 @@ export class GameState {
     missionState(missionId: string): MissionState {
         const mission = CONFIG.missions.find(m => m.id === missionId);
         if (!mission) return "LOCKED";
-        if (!this.unlockedTiers.has(mission.tier)) return "LOCKED";
         if (this.pendingReports.has(missionId)) return "COMPLETED_UNCLAIMED";
         if (this.missionRunningProcess.has(missionId)) return "RUNNING";
+        if (!this.selectedMissionIds.has(missionId) || !this.unlockedTiers.has(mission.tier)) return "LOCKED";
         const village = this.villages.get(missionId);
         if (village?.week === this.week && village.raided) return "COOLDOWN";
         if (this.missionClaimedWeek.get(missionId) === this.week) return "COOLDOWN";

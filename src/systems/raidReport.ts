@@ -5,38 +5,12 @@ import { creditCrystals, creditGold } from "./economy";
 import { markWaitingIfIdle } from "./recovery";
 import { admitPrisoner } from "./dungeon";
 import { addTowerXp } from "./tower";
-import { initializeVillages, raidWeekForReport } from "./world";
+import { initializeVillages, raidWeekForReport, updateMissionProgression } from "./world";
 
 export function discoveredCounts(draft: RaidReportDraft): Record<string, number> {
     const counts: Record<string, number> = {};
     for (const itemId of draft.lootCopies) counts[itemId] = (counts[itemId] ?? 0) + 1;
     return counts;
-}
-
-export function selectedSlots(draft: RaidReportDraft): number {
-    let slots = 0;
-    for (const [itemId, count] of Object.entries(draft.selection)) {
-        if (count <= 0) continue;
-        const def = CONFIG.items.find(i => i.id === itemId)!;
-        slots += Math.ceil(count / def.maxStackSize);
-    }
-    return slots;
-}
-
-export function adjustSelection(draft: RaidReportDraft, itemId: string, delta: number): boolean {
-    const total = discoveredCounts(draft)[itemId] ?? 0;
-    const current = draft.selection[itemId] ?? 0;
-    const next = current + delta;
-    if (next < 0 || next > total) return false;
-
-    const def = CONFIG.items.find(i => i.id === itemId)!;
-    const slotsBefore = Math.ceil(current / def.maxStackSize);
-    const slotsAfter = Math.ceil(next / def.maxStackSize);
-    const otherSlots = selectedSlots(draft) - slotsBefore;
-    if (otherSlots + slotsAfter > draft.carryLimit) return false;
-
-    draft.selection[itemId] = next;
-    return true;
 }
 
 export function claimReport(state: GameState, missionId: string, now: number): boolean {
@@ -46,9 +20,7 @@ export function claimReport(state: GameState, missionId: string, now: number): b
     if (draft.success) {
         creditGold(state, draft.goldFound);
         creditCrystals(state, draft.crystalsFound);
-        for (const [itemId, count] of Object.entries(draft.selection)) {
-            if (count > 0) state.addItems(itemId, count);
-        }
+        for (const [itemId, count] of Object.entries(discoveredCounts(draft))) state.addItems(itemId, count);
         const sortedPrisoners = [...draft.prisonersFound].sort((a, b) => b - a);
         for (const rank of sortedPrisoners) admitPrisoner(state, rank);
     }
@@ -57,7 +29,7 @@ export function claimReport(state: GameState, missionId: string, now: number): b
         const minion = state.findMinion(minionId);
         if (!minion) continue;
         minion.tired = true;
-        minion.injured = (draft.injuryRolls[minionId] ?? 0) > 0;
+        minion.injured = draft.injuredMinionIds.includes(minionId);
         minion.activity = { type: "idle" };
         markWaitingIfIdle(state, minion, now);
     }
@@ -65,23 +37,22 @@ export function claimReport(state: GameState, missionId: string, now: number): b
     if (draft.success && !state.everClaimedMissions.has(missionId)) {
         state.everClaimedMissions.add(missionId);
         addTowerXp(state, 5);
-        onMissionFirstClaim(state, missionId);
-    }
-
-    if (state.worldCompletedAtHour === null && CONFIG.missions.every(mission => state.everClaimedMissions.has(mission.id))) {
-        state.worldCompletedAtHour = now;
+        updateMissionProgression(state, now);
     }
 
     state.everVisitedMissions.add(missionId);
     const claimWeek = Math.floor(now / (24 * CONFIG.constants.weekDays));
     const raidWeek = raidWeekForReport(state, draft, now);
-    if (draft.success && raidWeek === claimWeek) {
+    if (!state.selectedMissionIds.has(missionId)) {
+        state.villages.delete(missionId);
+        state.missionClaimedWeek.delete(missionId);
+    } else if (draft.success && raidWeek === claimWeek) {
         initializeVillages(state);
         const village = state.villageState(missionId);
         if (village.week === raidWeek) {
             state.missionClaimedWeek.set(missionId, raidWeek);
             village.raided = true;
-            village.activeDefenders = 0;
+            village.activeDefenderRanks = [];
             village.rewards = { gold: 0, crystals: 0, lootCopies: [], prisoners: [] };
         }
     }
@@ -91,18 +62,4 @@ export function claimReport(state: GameState, missionId: string, now: number): b
         ? `Claimed raid report for ${missionId}: success.`
         : `Claimed raid report for ${missionId}: failed, no loot.`);
     return true;
-}
-
-function onMissionFirstClaim(state: GameState, missionId: string): void {
-    const mission = CONFIG.missions.find(m => m.id === missionId)!;
-    const tierMissions = CONFIG.missions.filter(m => m.tier === mission.tier);
-    const tierFullyClaimed = tierMissions.every(m => state.everClaimedMissions.has(m.id));
-    if (tierFullyClaimed) {
-        const nextTier = mission.tier + 1;
-        const hasNextTier = CONFIG.worldTiers.some(t => t.tier === nextTier);
-        if (hasNextTier) {
-            state.unlockedTiers.add(nextTier);
-            state.log(`World Tier ${nextTier} unlocked!`);
-        }
-    }
 }

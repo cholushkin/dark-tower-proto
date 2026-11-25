@@ -101,7 +101,7 @@ Normal purchases require sufficient resources and cannot create negative currenc
 
 ### 3.1 Ranks
 
-Each minion has a Rank from **1 to 5**. Rank determines baseline Attack, Defense, Salary, and Carry Capacity. Completed Laboratory upgrades can modify effective characteristics.
+Each minion has a Rank from **1 to 5**. Rank defines weekly salary and the base combat stats `Health`, `Attack`, and `Defense`. The game UI keeps all three combat stats hidden.
 
 | Rank | Name |
 | --- | --- |
@@ -117,8 +117,7 @@ A completed Training Hall session increases Rank by exactly one, using the targe
 
 - **`Tired`** prevents starting a raid or training. It may follow raids, training, Dungeon recruitment, and other configured events.
 - **`Injured`** also prevents starting a raid or training. Both conditions may coexist.
-- A successful raid makes every participant `Tired`; each participant has an independent, configured chance of becoming `Injured`.
-- A failed raid makes every participant `Tired`; each participant independently rolls for `Injured` at a higher base risk than on victory. Rank and Defense reduce individual injury risk (see §11).
+- Every raid participant becomes `Tired` on Claim. Minions defeated in the battle also become `Injured` (see §5.3).
 - Recruited prisoners become `Tired` and have a **50%** chance to become `Injured`.
 - At **nightfall**, all owned minions receive `Tired`.
 - A minion cannot occupy multiple activities simultaneously. A completed raid whose Raid Report has not been Claimed still reserves its squad.
@@ -214,7 +213,7 @@ Laboratory provides ordinary upgrades with **permanent, global** effects and an 
 - Different Laboratory upgrades can run concurrently, including alongside Laboratory Tier Unlock and upgrades in other rooms. The same upgrade cannot be started twice while running or after its one-time completion.
 - **Laboratory Tier Unlock** sequentially unlocks eligibility for higher-tier upgrades. Tier is a configured requirement, not a separate research scheduler.
 - Upgrade durations come directly from configuration. Laboratory has no efficiency upgrades or research-speed multiplier.
-- Global stat effects apply on completion. Additive effects are applied before multiplicative effects (§8.3).
+- Combat upgrades grant additive bonuses to all minions on completion (§8.3).
 - All upgrades use the common header cards, with their own progress and remaining time. Room parameters show Laboratory tier and active upgrade count.
 
 **Alchemy** shows two empty input slots and one output slot: **element + element = result**. This is a non-interactive placeholder for future element combination. Recipes, item selection, consumption, and crafting are not implemented.
@@ -225,7 +224,6 @@ Dungeon holds prisoners captured during raids and processes them automatically.
 
 - One prisoner occupies one **Cell**.
 - Prisoners enter the Dungeon on Raid Report **Claim**, sorted by **descending Rank (highest first)** before assigning free cells. Excess prisoners are lost.
-- Prisoners consume **no squad Carry Capacity**.
 - Processing/torture starts automatically when a prisoner enters a cell.
 - Higher-Rank prisoners require longer processing; **Torture Efficiency** reduces processing duration.
 
@@ -256,10 +254,10 @@ The **War Room** is the home for **both** the full minion roster and the **World
 
 Two independent upgrade series improve mission information:
 
-- **Enemy Intelligence:** the first upgrade reveals active/full defender counts and the selected squad's calculated victory probability, including guaranteed victory. Before this upgrade, duration is an **approximate rounded value** (`~Xh`); afterwards the precise duration is displayed. A first completed visit also reveals defender counts, including beneath the map flag, but does not reveal victory probability without the upgrade. The second upgrade reveals the village's current weekly Gold and Crystal stock.
+- **Enemy Intelligence** I reveals defender counts and the rank breakdown of the active garrison. A first completed visit also reveals defender counts, including beneath the map flag. Enemy Intelligence II reveals the village's current weekly Gold and Crystal stock.
 - **Loot Intelligence:** upgrades progressively reveal possible loot item types, resources, and estimated drop probability ranges. Early levels may conceal item types entirely.
 
-Intelligence changes what the player **knows**, not the actual strength, loot probabilities, or inherent duration of the mission.
+The War Room always displays the configured raid duration.
 
 ## 5. War Room World Map, Mission Progression, and Raids
 
@@ -267,10 +265,11 @@ Intelligence changes what the player **knows**, not the actual strength, loot pr
 
 - The World Map appears **inside the War Room**.
 - The current presentation lists **World Tiers as grouped sections**, with their individual missions. Literal concentric rings are **not required**; the grouped layout is a presentation simplification that changes no gameplay rules.
-- The first World Tier is available from the start.
-- A tier unlocks when **every individual mission in the preceding tier** has been successfully **Claimed** at least once.
+- Each game randomly picks one enabled mission per configured group in the current world. Groups with no enabled missions are skipped. The picks are saved with the game and persist through weekly recovery.
+- The first populated World Tier is available from the start.
+- A tier unlocks when **every selected mission in the preceding populated tier** has been successfully **Claimed** at least once.
 - A mission's first successful Claim adds a permanent **green checkmark**.
-- The player wins the current world after every mission on its map has been successfully Claimed at least once.
+- The player wins the current world after every selected mission has been successfully Claimed at least once.
 - Dungeon secrets may reveal or unlock particular map locations and influence configured events.
 
 ### 5.2 Mission Selection and Visibility
@@ -294,13 +293,27 @@ Opening a mission on the War Room map displays its details, intelligence, durati
 - Participants must be available and have neither `Tired` nor `Injured`.
 - Multiple raids may run concurrently on **different missions**.
 - A minion can participate in only one occupied activity at a time.
-- A nonempty squad's victory probability depends only on its size and the village's active defender count (see §11). Rank, Attack, Defense, and weather do not secretly modify victory probability.
-- Missions define full defender count, baseline duration, rewards, and prisoner distributions. Runtime village state tracks the active defenders and this week's reward stock.
-- Rank retains carrying capacity, travel-time benefits, and individual injury resistance. Squad size also affects travel time.
+- Each mission defines `defenderRanks`, with one rank per defender. For example, `[1, 1, 1]` is a garrison of three Rank 1 defenders. Runtime village state tracks the surviving ranks and the current week's rewards.
+- Each mission's `durationHours` is fixed. The battle resolves when that timer ends, regardless of squad size, ranks, upgrades, or the number of turns. Weather is location flavor.
 
-**Success:** defeat all active defenders and reserve the village's configured weekly rewards for Claim; every participant becomes `Tired` and independently rolls for `Injured`.
+#### Battle simulation
 
-**Failure:** no village rewards are awarded. Some defenders may be incapacitated until the next week, so another attempt can face a weaker village. A failed raid can incapacitate zero defenders and must leave at least one active defender. Casualties cannot exceed the number of attackers. Every participant becomes `Tired` and independently rolls for `Injured` at the defeat rate; failure does not guarantee injury. There are no minion deaths or raid-defeat Game Over conditions.
+Each unit starts at its rank's full `Health`. Both sides use their rank's configured `Attack` and `Defense`. The attackers also receive their completed Laboratory bonuses when the battle begins.
+
+1. Every unit alive at the start of the turn independently picks a random living opponent. Multiple units can pick the same target.
+2. Each hit deals `max(1, attacker.Attack - target.Defense)` damage.
+3. Sum each unit's incoming damage and subtract it from that unit's `Health` simultaneously.
+4. Eliminate units at `Health <= 0`. They still attack on the turn they are defeated and take no part in subsequent turns.
+
+The attackers win as soon as every defender is defeated, including if both sides are wiped out on the same turn. The defenders win if every attacker is defeated and at least one defender survives. An undefended village gives a nonempty squad an immediate victory when the raid timer ends.
+
+For example, Rank 1 units with `Health = 5`, `Attack = 5`, and `Defense = 5` deal 1 damage per hit. If three attackers pick the same defender and the three defenders each pick a different attacker, the targeted defender falls to 2 Health and each attacker falls to 4. All six units act in the second turn.
+
+#### Raid outcome
+
+Victory reserves the entire launch-week reward stock for Claim. Defeat awards no rewards and leaves the surviving defender ranks eligible for another battle. Surviving defenders begin each new battle at full Health. Defeated defenders rejoin the garrison at weekly recovery.
+
+On Claim, all participating minions return to the tower. Defeated minions need Infirmary treatment and the rest need recovery from fatigue.
 
 Returning minions are reserved until the player **Claims** the Raid Report, including after a failed raid.
 
@@ -314,56 +327,36 @@ A mission can be launched when all conditions are met:
 
 After a failed report is Claimed, the village can be attacked again that week with available minions. There is no retry limit or fee. Raid time, rest, and injury recovery are the costs of failed attacks and dividing the army.
 
-At each new week, every village restores its full defenders and replaces its Gold, Crystals, item, and prisoner reward stock using its existing generation ranges and probabilities. Stock is replenished, not accumulated. Successful villages become available again; permanent completion checks and tier unlocks remain recorded, including after the Victory popup.
+At each new week, every village restores its configured defender ranks and rolls a fresh stock of Gold, Crystals, items, and prisoners. Successful villages become available again. Permanent completion checks and tier unlocks remain recorded, including after the Victory popup.
 
-A raid keeps a snapshot of its launch week's defenders, victory probability, and rewards. Weekly recovery does not cancel raids, release their squads, or change generated reports. An old-week raid resolves against its snapshot without damaging the new week's village. Claiming its report pays its reserved rewards once and records permanent completion where appropriate, without replacing the new week's defenders, rewards, or availability. Until Claim, its unresolved raid/report still locks that village.
+A raid snapshots the launch week's active defender ranks and rewards. An old-week raid resolves against this snapshot. Claim processes the reserved rewards and records permanent completion on victory. The new week's village keeps its own defenders, rewards, and cooldown. An unresolved raid or report reserves its squad and village through weekly recovery until Claim.
 
 ## 6. War Room Raid Report Popup and Claim
 
 **Raid Report** is a popup opened from the corresponding mission in the **War Room**, and uses the same interface for successful and failed raids.
 
 - A finished raid appears as `COMPLETED_UNCLAIMED` until Claim.
-- The popup displays mission/location information; defender losses and remaining defenders; weekly recovery timing; discovered **items** and **prisoners**; and the participating **minions** with their resulting injury statuses. Old-week reports identify their week separately from the village's current state. Loot and prisoners form adjacent collections, followed by squad information.
+- The popup displays mission information, defender losses, weekly recovery timing, rewards found, and the participating minions' conditions. Old-week reports identify their week separately from the village's current state. Loot and prisoners form adjacent collections, followed by squad information.
 - Opening Raid Report **pauses game time**.
 - Closing the popup without Claim does not credit rewards, free minions, or complete the mission.
 - One **Claim** action confirms the entire outcome, even when the raid failed.
 
-### 6.1 Carrying Capacity and Item Quantity Selection
+### 6.1 Rewards Found
 
-Weekly rewards are generated from mission configuration, not multiplied by squad size. A larger squad improves victory probability; higher ranks carry more physical loot.
-
-`carry_limit = floor(sum(rank_data[minion.rank].carry_capacity for each squad member))`
-
-Carry Capacity is measured in **stack slots**. The Raid Report presents discovered physical items by **item type**, with **`+` / `−` controls** to select how many copies of each type to keep. This is equivalent to per-copy selection, but simpler to display.
-
-For each item type:
-
-`carry_slots_for_type = ceil(selected_copy_count / max_stack_size)`
-
-`total_carry_slots = sum(carry_slots_for_type over selected item types)`
-
-- The combined selected slot cost cannot exceed `carry_limit`.
-- The game initially preselects a **valid subset** of discovered copies within the carry budget.
-- The player may freely raise or lower the selected quantity of each type while respecting that budget.
-- **Gold and Crystals** are always taken in full and use no Carry Capacity.
-- **Prisoners** use no Carry Capacity.
-
-**Example:** three minions carrying `1.5` each provide `floor(4.5) = 4` slots. Six Golden Cups with `max_stack_size = 5` consume two slots when all six are selected (`5 + 1`).
+Weekly rewards come from mission configuration. The report groups discovered items by type and shows the full quantity of each. On victory, all generated currencies, items, and prisoners go through Claim.
 
 ### 6.2 Claim Resolution
 
 On pressing **Claim**:
 
 1. Credit discovered **Gold and Crystals** if the raid succeeded.
-2. Transfer selected physical item copies into the **Storehouse** in the player's **selection order**. Fill matching partial stacks and use free Storehouse slots as needed. If storage runs out, accept copies that can still fit and **silently discard any surplus**, preserving selection order.
+2. Transfer all discovered physical items into the **Storehouse**, grouped by item type in discovery order. Fill matching partial stacks and use free Storehouse slots as needed. Silently discard any copies that cannot fit.
 3. Sort captured prisoners **highest-to-lowest Rank**, assign them automatically into available Dungeon cells, and discard any excess.
 4. Apply the returning minions' `Tired` / `Injured` conditions and release the entire reserved squad.
 5. On a first successful Claim, permanently mark the mission as completed, unlock the next World Tier when eligible, and trigger the **Victory popup** if every mission on the map has been successfully Claimed.
-6. Preserve a successful current-week village's cooldown; a failed Claim permits another attack. An old-week Claim never changes the new week's village state.
+6. Preserve a successful current-week village's cooldown. A failed Claim permits another raid.
 
 On **failure**, Claim still releases the squad and updates mission state, but credits no rewards. Defender losses have already been applied when the raid resolved. Repeated Claim attempts cannot award anything twice.
-
-The Storehouse's free-slot count does **not** restrict what the player may select within squad Carry Capacity. A selection can be valid for carrying yet lose overflow at Claim.
 
 ## 7. Physical Items and Economy
 
@@ -372,7 +365,6 @@ All physical items belong to **Storehouse storage** and are represented by item 
 - **Treasures** are items bearing the `treasure` tag, not a separate resource class.
 - **Items** and **Treasures** are Storehouse filters that share the same stack capacity.
 - Each stack uses one Storehouse slot; `max_stack_size` controls the number of copies in it.
-- Raid Carry Capacity also counts stacks/slots, but is calculated independently from free Storehouse capacity.
 - Selling removes/reserves the full chosen stack at sale start. Concurrent timed sales are permitted, and instant sales receive the rounded-down half-value immediately.
 - Item consumption for configured costs, full-value normal sales, upgrades, and other transactions obey resource-availability rules.
 - Gold and Crystals are displayed globally in the HUD and never occupy storage slots.
@@ -392,7 +384,7 @@ The tower has one **Tower Level** derived from cumulative **Tower XP**.
 
 - An upgrade is acquired separately from construction. Upgrade pickups and rewards make its definition available; they do not grant its effect, spend its construction cost, or award XP.
 - Current content starts with every configured upgrade acquired. No current reward table drops upgrades. Future definitions can require acquisition through an item or direct reward.
-- A pickup item identifies the upgrade it unlocks. In raids it participates in normal loot selection and Carry Capacity, then is learned on Claim without occupying Storehouse space. Duplicate pickups do not stack effects or grant XP. Repeatable upgrades stay available for subsequent purchases after one acquisition.
+- A pickup item identifies the upgrade it unlocks. Claim learns discovered pickups directly without occupying Storehouse space. Duplicate pickups do not stack effects or grant XP. Repeatable upgrades stay available for subsequent purchases after one acquisition.
 - Each upgrade defines cost, duration, requirements, and effect. Acquired upgrades still require affordability and all configured conditions before construction can start.
 - Requirements form serializable condition trees: **all**, **any**, and **not** combine completed/acquired upgrades, numeric game-state conditions, named progression flags, successful mission Claims, and held item quantities. Item requirements check possession; they do not consume items. Requirements are checked at start; later changes do not cancel running construction.
 - Supported numeric conditions compare Tower Level, Laboratory tier, Gold, Crystals, or minion count using equality, minimum, or maximum thresholds. New metrics can extend the evaluator without changing the tree structure.
@@ -403,7 +395,7 @@ The tower has one **Tower Level** derived from cumulative **Tower XP**.
 
 ### 8.3 Upgrade Effect Combination
 
-For compatible effects on a statistic, **additive modifiers are applied before multiplicative modifiers**. Exact modifier magnitudes and the statistics to which they apply come from configuration.
+Each completed combat upgrade adds its configured modifier to the corresponding minion stat. Bonuses to the same stat add together.
 
 ## 9. Victory, Portal, and Bankruptcy
 
@@ -434,30 +426,6 @@ The catalog may require a corresponding update to reflect the new decisions; thi
 
 ## 11. Provisional Balancing Formulas
 
-The following formulas are initial configurable balance values. The objective is to clear the whole world as quickly as possible by allocating armies efficiently. No separate score formula or direct defeat penalty is introduced.
-
-```text
-victory_chance = attackers² / (attackers² + active_defenders²)
-victory_chance = 1 if active_defenders == 0
-                    or attackers >= 4 * active_defenders
-zero attackers cannot launch
-
-failed_defender_loss_trials = min(attackers, active_defenders - 1)
-loss_probability_per_trial = 0.5 * attackers / (attackers + active_defenders)
-failed_defender_losses = count of successful independent loss trials
-
-injury_chance[i] = clamp(
-    (0.4 on victory, 0.8 on defeat) * (1 - victory_chance)
-    - 0.02 * (Rank[i] - 1)
-    - 0.005 * max(0, Defense[i] - 5),
-    0, 1)
-
-raid_duration = mission.base_duration
-                * max(0.80,
-                    1 - 0.04 * max(0, squad_size - 1)
-                      - 0.01 * (average_rank - 1))
-```
-
 Dungeon outcome probabilities start at **Recruitment 60% / Interrogation 15% / Death 25%**, then change with prisoner Rank and Recruitment Efficiency. Processing duration increases with Rank and decreases with Torture Efficiency. Precise formulas and resulting probability normalization are still balancing decisions.
 
 ## 12. Open Design Decisions
@@ -472,4 +440,4 @@ The following decisions remain unresolved. Decisions settled in v0.7 are incorpo
 - **Scheduler tie-breaking:** Specify order when payday deadlines, raid completion/Claim, upgrade completion, nightfall, bed eligibility, and minion condition changes coincide. Define the exact nightfall trigger hour.
 - **Recovery edge cases:** Clarify how wait time is preserved/reset across changes of condition, bed eligibility, or already-running recovery; the general idle-only deprivation rule and longest-waiting priorities are fixed.
 - **Payday and week flavor:** Define whether “Week of…” messages have gameplay effects or remain flavor only. The announcement/pause and 24-hour deadline are fixed.
-- **Balance and data:** Finalize numerical costs, starting capacity, XP awards/thresholds, upgrade bonuses, raid/carry values, prisoner distributions, training prices, enemy formulas, and initial upgrade availability.
+- **Balance and data:** Finalize numerical costs, starting capacities, XP awards and thresholds, rank stats, garrison composition, raid durations, upgrade bonuses, prisoner distributions, training prices, and initial upgrade availability.

@@ -10,10 +10,10 @@ export type RoomId =
 export interface RankDef {
     rank: number;
     name: string;
+    health: number;
     attack: number;
     defense: number;
     salaryGoldPerWeek: number;
-    carryCapacity: number;
 }
 
 export interface ItemDef {
@@ -41,7 +41,7 @@ export type UpgradeEffect =
     | { type: "treatmentEfficiency"; multiplier: number }
     | { type: "trainingUnlock"; fromRank: number }
     | { type: "laboratoryTier"; tier: number }
-    | { type: "minionStat"; stat: "attack" | "defense"; mode: "add" | "mult"; value: number }
+    | { type: "minionStat"; stat: "attack" | "defense"; value: number }
     | { type: "dungeonCell" }
     | { type: "tortureEfficiency"; multiplier: number }
     | { type: "recruitmentEfficiency"; bonus: number }
@@ -116,11 +116,12 @@ export interface MissionDef {
     id: string;
     tier: number;
     name: string;
-    requiredPower: number;
-    /** Full garrison restored at each weekly recovery. */
-    fullDefenders: number;
-    baseDurationHours: number;
-    baseInjuryChance: number;
+    enabled: boolean;
+    /** One enabled mission is picked per group in this world. */
+    groupId: string;
+    /** One rank per defender, restored at each weekly recovery. */
+    defenderRanks: number[];
+    durationHours: number;
     rewardGoldRange: [number, number];
     rewardCrystalsRange: [number, number];
     loot: MissionLootDef[];
@@ -151,15 +152,6 @@ export interface StartingItemDef {
 }
 
 export interface Constants {
-    raid: {
-        overwhelmingForceRatio: number;
-        defenderLossChance: number;
-        injuryChanceOnVictory: number;
-        injuryChanceOnDefeat: number;
-        rankInjuryResistance: number;
-        defenseInjuryResistance: number;
-        injuryDefenseBaseline: number;
-    };
     dayLengthRealSeconds: number;
     weekDays: number;
     restDurationHours: number;

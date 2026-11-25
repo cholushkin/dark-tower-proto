@@ -1,6 +1,6 @@
 import type { ItemIcon } from '../ItemTile/ItemTile.types';
 /** Map coordinates are percentages of the authored world-map canvas, not screen pixels. */
-export type MissionVisualState = 'available' | 'inProgress' | 'completed' | 'locked';
+export type MissionVisualState = 'available' | 'inProgress' | 'reportReady' | 'completed' | 'locked';
 
 export interface MissionPinViewModel {
   readonly id: string;
@@ -15,7 +15,7 @@ export interface MissionPinViewModel {
   readonly completed?: boolean;
   readonly defendersLabel?: string;
   /** 0..1; supplied by host, displayed only. */
-  readonly raidProgress?: number;
+  readonly progress?: number;
   readonly selected?: boolean;
 }
 export type MissionPinHandle = { setModel(value: Readonly<MissionPinViewModel>): void; destroy(): void };

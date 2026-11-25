@@ -42,9 +42,7 @@ export interface RaidProcess extends BaseProcess {
     squad: string[];
     /** Launch snapshots isolate ongoing raids from weekly recovery. Optional for old saves. */
     raidWeek?: number;
-    activeDefenders?: number;
-    fullDefenders?: number;
-    victoryChance?: number;
+    defenderRanks?: number[];
     rewards?: VillageRewards;
 }
 
@@ -57,8 +55,7 @@ export interface VillageRewards {
 
 export interface VillageState {
     week: number;
-    fullDefenders: number;
-    activeDefenders: number;
+    activeDefenderRanks: number[];
     rewards: VillageRewards;
     raided: boolean;
 }
@@ -127,9 +124,27 @@ export type MissionState =
     | "COMPLETED_UNCLAIMED"
     | "COOLDOWN";
 
-export interface SelectedLootEntry {
-    itemId: string;
-    count: number;
+export interface BattleReplayUnit {
+    readonly id: string;
+    readonly rank: number;
+    readonly health: number;
+}
+
+export interface BattleReplayHit {
+    readonly attackerId: string;
+    readonly targetId: string;
+    readonly damage: number;
+}
+
+export interface BattleReplayRound {
+    readonly hits: readonly BattleReplayHit[];
+    readonly endHealth: readonly { readonly unitId: string; readonly health: number }[];
+}
+
+export interface BattleReplay {
+    readonly attackers: readonly BattleReplayUnit[];
+    readonly defenders: readonly BattleReplayUnit[];
+    readonly rounds: readonly BattleReplayRound[];
 }
 
 export interface RaidReportDraft {
@@ -138,18 +153,14 @@ export interface RaidReportDraft {
     squad: string[];
     goldFound: number;
     crystalsFound: number;
-    /** One entry per discovered physical item copy, per §6.1. */
+    /** One entry per discovered physical item copy. */
     lootCopies: string[];
     prisonersFound: number[];
-    carryLimit: number;
-    /** Player's current selection, itemId -> copies selected. Preselected to a valid subset. */
-    selection: Record<string, number>;
-    injuryRolls: Record<string, number>;
+    injuredMinionIds: string[];
     raidWeek?: number;
     defendersBefore?: number;
     defenderLosses?: number;
     defendersRemaining?: number;
     durationHours?: number;
-    fullDefenders?: number;
-    victoryChance?: number;
+    battleReplay?: BattleReplay;
 }

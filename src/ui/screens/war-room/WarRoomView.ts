@@ -197,15 +197,16 @@ export function mountWarRoomView(host: HTMLElement, initial: Readonly<WarRoomVie
         row.querySelector('.dt-warroom__parameter-tooltip')!.textContent=parameter.description;
       }
       const ongoing=mission.state==='inProgress';
-      const readyToClaim=mission.state==='completed'&&mission.canRaid;
+      const reportReady=mission.state==='reportReady';
       activeProgress.hidden=!ongoing;
       activeLabel.textContent=mission.statusLabel;
       activeBar.style.width=`${Math.max(0,Math.min(100,(mission.activeProgress??0)*100))}%`;
       activeRemaining.textContent=mission.activeRemainingTime??'';
       raidButton.disabled=!mission.canRaid;
-      raidButton.title=mission.canRaid?(readyToClaim?'Open raid report and release the squad':'Launch raid'):mission.raidDisabledReason??mission.statusLabel;
+      raidButton.setAttribute('aria-label',reportReady?'View Report':'Launch selected raid');
+      raidButton.title=mission.canRaid?(reportReady?'Open raid report':'Launch raid'):mission.raidDisabledReason??mission.statusLabel;
       raidButton.classList.toggle('dt-warroom__raid-button--running',ongoing);
-      raidButton.querySelector<HTMLElement>('strong')!.textContent=ongoing?'Active':mission.state==='locked'?'Locked':readyToClaim?'View Report':mission.state==='completed'?'Next Week':'Raid!';
+      raidButton.querySelector<HTMLElement>('strong')!.textContent=ongoing?'Active':mission.state==='locked'?'Locked':reportReady?'View Report':mission.state==='completed'?'Next Week':'Raid!';
       minionTrack.setAttribute('aria-label',`Assign minions: ${mission.squadSelectionLabel}`);
     }
     const activeMinions=new Set(model.minions.map(x=>x.minion.id));

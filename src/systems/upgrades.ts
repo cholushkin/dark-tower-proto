@@ -4,6 +4,7 @@ import type { UpgradeProcess } from "../model/types";
 import { spend } from "./economy";
 import { addTowerXp } from "./tower";
 import { requirementFailure } from "./upgradeRequirements";
+import { logUpgrade } from "./upgradeLog";
 
 export function isUpgradeInProgress(state: GameState, upgradeId: string): boolean {
     return state.processes.some(p => p.type === "upgrade" && p.upgradeId === upgradeId);
@@ -35,7 +36,7 @@ export function purchaseUpgrade(state: GameState, upgradeId: string, now: number
         startHour: now, endHour: now + def.durationHours, upgradeId,
     };
     state.processes.push(process);
-    state.log(`Construction started: ${def.name}.`);
+    logUpgrade(state, "starts", def);
     return true;
 }
 
@@ -44,5 +45,5 @@ export function completeUpgrade(state: GameState, process: UpgradeProcess): void
     if (!def || state.purchasedUpgrades.has(def.id)) return;
     state.purchasedUpgrades.add(def.id);
     addTowerXp(state, def.towerXp);
-    state.log(`Upgrade complete: ${def.name}.`);
+    logUpgrade(state, "ends", def);
 }

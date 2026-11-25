@@ -29,7 +29,7 @@ export function effectLabel(effect: UpgradeEffect): string {
     case 'treatmentEfficiency': return `${Math.round((1 - effect.multiplier) * 100)}% faster treatment`;
     case 'trainingUnlock': return `Unlocks training from Rank ${effect.fromRank}`;
     case 'laboratoryTier': return `Unlocks Tier ${effect.tier} upgrades`;
-    case 'minionStat': return `${effect.mode === 'add' ? '+' + effect.value : '+' + Math.round((effect.value - 1) * 100) + '%'} ${effect.stat}`;
+    case 'minionStat': return effect.stat === 'attack' ? 'Stronger strikes' : 'Better protection';
     case 'dungeonCell': return '+1 cell';
     case 'tortureEfficiency': return `${Math.round((1 - effect.multiplier) * 100)}% faster processing`;
     case 'recruitmentEfficiency': return `+${Math.round(effect.bonus * 100)}% recruit chance`;

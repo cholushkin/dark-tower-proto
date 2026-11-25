@@ -1,4 +1,3 @@
-import { CONFIG } from '../../../data/config';
 import type { GameEngine } from '../../../engine/GameEngine';
 import { asset } from '../assets';
 import type { VictoryAction, VictoryViewModel } from './VictoryViewModel';
@@ -6,8 +5,7 @@ import type { VictoryAction, VictoryViewModel } from './VictoryViewModel';
 const illustration = asset('victory-tower.webp');
 
 export function hasWonGame(engine: GameEngine): boolean {
-  const state = engine.state;
-  return CONFIG.missions.every(mission => state.everClaimedMissions.has(mission.id));
+  return engine.state.hasCompletedWorld();
 }
 
 export function buildVictoryViewModel(engine: GameEngine): VictoryViewModel {

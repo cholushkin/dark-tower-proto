@@ -16,6 +16,19 @@ export function transitionFor(rank: number) {
     return CONFIG.trainingTransitions.find(t => t.fromRank === rank);
 }
 
+function logTraining(state: GameState, phase: "starts" | "ends", process: TrainingProcess): void {
+    const from = CONFIG.ranks[process.fromRank - 1];
+    const to = CONFIG.ranks[process.toRank - 1];
+    const delta = (value: number) => `${value >= 0 ? "+" : ""}${value}`;
+    const changes = [
+        `${delta(to.health - from.health)} health`,
+        `${delta(to.attack - from.attack)} attack`,
+        `${delta(to.defense - from.defense)} defense`,
+        `${delta(to.salaryGoldPerWeek - from.salaryGoldPerWeek)} gold weekly salary`,
+    ];
+    state.log(`Training Hall ${phase} training: ${process.minionId}, Rank ${from.rank} ${from.name} → ${to.rank} ${to.name} (${changes.join(", ")}).`);
+}
+
 export function canTrain(state: GameState, minionId: string): boolean {
     const minion = state.findMinion(minionId);
     if (!minion || minion.activity.type !== "idle" || minion.tired || minion.injured) return false;
@@ -38,7 +51,7 @@ export function startTraining(state: GameState, minionId: string, now: number): 
     };
     state.processes.push(process);
     minion.activity = { type: "training", processId: process.id };
-    state.log(`Training started: Rank ${transition.fromRank} → ${transition.toRank}.`);
+    logTraining(state, "starts", process);
     return true;
 }
 
@@ -49,5 +62,5 @@ export function completeTraining(state: GameState, process: TrainingProcess, now
     minion.tired = true;
     minion.activity = { type: "idle" };
     markWaitingIfIdle(state, minion, now);
-    state.log(`A minion completed training and is now Rank ${process.toRank}.`);
+    logTraining(state, "ends", process);
 }

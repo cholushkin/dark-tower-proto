@@ -1,4 +1,4 @@
-/** Shared presentation of a single item or stack; selling and loot selection live in parents. */
+/** Shared presentation of an item and its quantity. */
 export type ItemIcon =
   | Readonly<{kind: 'emoji'; value: string}>
   | Readonly<{kind: 'texture'; src: string; alt: string; fallbackEmoji?: string}>;

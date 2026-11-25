@@ -60,25 +60,11 @@ with one implementation-only mechanic discovered during the architecture audit.
 - **Status:** prototype default — design doc §11/§12 explicitly says the exact adjustment
   functions and normalization are not final balancing values.
 
-### Research stacking order
-
-- **Decision:** additive effects apply first, then multiplicative effects.
-- **Status:** prototype default, matches design doc §8.3's explicit rule (not actually an open
-  question, just confirming the implementation — see `GameState.effectiveStat()`).
-
 ### Payday window
 
 - **Decision:** once payday becomes due, the player has 24 in-game hours to open Payroll and Pay
   All before Bankruptcy.
 - **Status:** prototype default, matches design doc §2.1/§9.2's explicit rule.
-
-### Raid Report item selection UI model
-
-- **Decision:** modeled as "how many copies of each discovered item type to keep," with slot cost
-  `ceil(count / max_stack_size)` per type — equivalent to the doc's per-copy description but
-  simpler to present as +/- controls. The game preselects a valid subset within the carry budget.
-- **Status:** prototype default, a presentation simplification of design doc §6.1 that changes no
-  gameplay rule.
 
 ### World Map layout
 
@@ -102,11 +88,16 @@ with one implementation-only mechanic discovered during the architecture audit.
   when the design doc resolves whether to keep a hard cap or rely solely on the two-day
   bed-deprivation/attrition mechanic.
 
-### Raid duration precision gating
+### Initial battle balance
 
-- **Decision:** mission cards show an approximate duration (`~Xh`, rounded) until the War Room's
-  Enemy Intelligence upgrade is purchased, after which the precise figure is shown.
-- **Status:** prototype default, matches design doc §4.7.
+- **Context** Ranked combat needs starting values for Health and defender composition. Design
+  §12 leaves final balance open.
+- **Decision** Keep the existing garrison sizes and configured raid times. Use Rank 1 defenders
+  in the starting villages and introduce higher ranks at tougher missions. Set Health for Ranks 1–5
+  to 5, 8, 12, 17, and 23. Improved Weapons and Improved Armor add one point each. Fury Spell
+  adds two to Attack.
+- **Status** Prototype default. Tune the rank definitions, upgrades, and mission rosters after
+  playtesting the new combat system.
 
 ### Payday popup and weekly flavor
 
@@ -115,23 +106,16 @@ with one implementation-only mechanic discovered during the architecture audit.
 - **Status:** prototype default. Design doc §12 explicitly leaves open whether "Week of…" messages
   have gameplay effects beyond flavor — the prototype gives them none.
 
-### Persistent village casualties and week ownership
-
-- **Context:** raid/recovery needs configurable defender losses and explicit behavior for raids
-  and reports spanning weeks.
-- **Decision:** use the bounded independent casualty trials in design §11. Snapshot launch-week
-  defenders, probability, and reward stock, then compare week ownership before modifying a live
-  village. Weekly recovery replaces village stock independently of those snapshots.
-- **Status:** prototype default. Initial values live in `CONFIG.constants.raid`; tune through
-  playtesting. The formula is documented in the authoritative design §11.
-
 ### Local save compatibility
 
 - **Context:** persistent village damage requires a save path; the previous prototype had none.
-- **Decision:** store versioned whole-game JSON in browser local storage. Restore Maps and Sets,
-  default omitted village fields, and preserve generated report rewards during migration. Infer
-  a missing report week from its walkback process where available; otherwise use the saved week
-  because no older timestamp can be recovered. Do not advance offline time.
+- **Decision** Store versioned whole-game JSON in browser local storage. Restore Maps and Sets,
+  default omitted village fields, and preserve generated report rewards and recorded injuries.
+  Migrate older defender counts by taking that many ranks from the start of the configured list.
+  Keep scheduled raid timers already in flight. Infer a missing report week from its walkback
+  process when available and use the saved week otherwise. Resume at the saved game time.
+  For saves without a mission roster, prefer pending or running raids and then completed missions
+  when picking eligible candidates. Allow excluded raids already in progress to finish and be claimed.
 - **Status:** prototype default. Reject malformed and unsupported future saves; browser storage
   availability remains platform-dependent.
 

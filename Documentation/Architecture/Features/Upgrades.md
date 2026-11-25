@@ -6,7 +6,7 @@
 
 1. `GameState.acquiredUpgrades` records available upgrade definitions. Both fixed and repeatable definitions default `availableAtStart` to true, preserving current availability. Set it to false for future pickup-only content.
 2. `GameEngine.acquireUpgrade(id)` is the direct reward entry point. Unknown IDs and duplicate acquisition return false without changing state. Acquisition grants no XP/effect and starts no process.
-3. An `ItemDef` can specify `upgradeId`. Existing item reward/loot selection works normally, including carry slots. `GameState.addItems()` learns selected upgrade pickups on Claim instead of storing them, even when storage is full. Duplicates are consumed harmlessly. An invalid target leaves the item count unaccepted. No shipping items or loot tables currently use this field.
+3. An `ItemDef` can specify `upgradeId`. `GameState.addItems()` learns discovered upgrade pickups on Claim without requiring Storehouse space. Duplicates are consumed harmlessly. An invalid target leaves the item count unaccepted. No shipping items or loot tables currently use this field.
 4. `buyUpgrade` or `buyIncremental` checks acquisition, requirements, affordability, and whether that same upgrade is running. Different upgrades may build concurrently.
 5. `upgrade` / `incrementalUpgrade` processes retain their start/end times. Completion records `purchasedUpgrades` or increments `incrementalLevels`, then awards configured XP. Fixed completion is idempotent.
 
@@ -47,7 +47,9 @@ For example, a definition can require both a previous upgrade and either a Tower
 
 ## Effects and UI
 
-`UpgradeEffect.minionStat` supports Attack/Defense with `add` or `mult` modes. `GameState.effectiveStat()` adds flat bonuses first and then multiplies; only completed upgrades contribute. Laboratory tier uses the `laboratoryTier` effect.
+`GameState.effectiveStat()` applies completed `UpgradeEffect.minionStat` bonuses. See design §8.3 for combat modifier rules. Laboratory tier uses the `laboratoryTier` effect.
+
+`upgradeLog.ts` describes the effect of fixed and repeatable upgrades in the start and completion logs. Training Hall logs identify the minion and show the rank, stat, and salary changes.
 
 All seven rooms use `RoomSummary` and `UpgradeCard`. Fixed numeric-suffix series are grouped into a current-to-next card; independent upgrades have separate cards. Unacquired upgrades remain visible but disabled with an acquisition explanation. Requirements can lock an acquired card. Each running card has its own progress indicator.
 

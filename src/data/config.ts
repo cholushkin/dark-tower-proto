@@ -9,11 +9,11 @@ const WORLDS: WorldDef[] = [WORLD_1A];
 
 export const CONFIG: GameConfig = {
     ranks: [
-        { rank: 1, name: "Rookie", attack: 5, defense: 5, salaryGoldPerWeek: 50, carryCapacity: 1.0 },
-        { rank: 2, name: "Grunt", attack: 8, defense: 7, salaryGoldPerWeek: 80, carryCapacity: 2 },
-        { rank: 3, name: "Raider", attack: 12, defense: 10, salaryGoldPerWeek: 100, carryCapacity: 3 },
-        { rank: 4, name: "Veteran", attack: 17, defense: 14, salaryGoldPerWeek: 150, carryCapacity: 4 },
-        { rank: 5, name: "Captain", attack: 23, defense: 19, salaryGoldPerWeek: 250, carryCapacity: 5 },
+        { rank: 1, name: "Rookie", health: 5, attack: 5, defense: 5, salaryGoldPerWeek: 50 },
+        { rank: 2, name: "Grunt", health: 8, attack: 8, defense: 7, salaryGoldPerWeek: 80 },
+        { rank: 3, name: "Raider", health: 12, attack: 12, defense: 10, salaryGoldPerWeek: 100 },
+        { rank: 4, name: "Veteran", health: 17, attack: 17, defense: 14, salaryGoldPerWeek: 150 },
+        { rank: 5, name: "Captain", health: 23, attack: 23, defense: 19, salaryGoldPerWeek: 250 },
     ],
 
     items: [
@@ -69,9 +69,9 @@ export const CONFIG: GameConfig = {
         { id: "lab_tier_1", room: "laboratory", name: "Laboratory Tier Unlock I", description: "Unlocks Tier 2 laboratory upgrades.", costGold: 200, durationHours: 5, requirements: { type: "all", requirements: [] }, effect: { type: "laboratoryTier", tier: 2 }, towerXp: 10 },
         { id: "lab_tier_2", room: "laboratory", name: "Laboratory Tier Unlock II", description: "Unlocks Tier 3 laboratory upgrades.", costGold: 500, durationHours: 9, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "lab_tier_1" }] }, effect: { type: "laboratoryTier", tier: 3 }, towerXp: 14 },
 
-        { id: "res_improved_weapons", room: "laboratory", name: "Improved Weapons", description: "+3 Attack for all minions.", costGold: 150, durationHours: 6, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 1 }] }, effect: { type: "minionStat", stat: "attack", mode: "add", value: 3 }, towerXp: 10 },
-        { id: "res_improved_armor", room: "laboratory", name: "Improved Armor", description: "+3 Defense for all minions.", costGold: 150, durationHours: 6, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 1 }] }, effect: { type: "minionStat", stat: "defense", mode: "add", value: 3 }, towerXp: 10 },
-        { id: "res_fury_spell", room: "laboratory", name: "Fury Spell", description: "+15% Attack for all minions.", costGold: 400, durationHours: 10, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 2 }, { type: "upgradeCompleted", upgradeId: "res_improved_weapons" }] }, effect: { type: "minionStat", stat: "attack", mode: "mult", value: 1.15 }, towerXp: 16 },
+        { id: "res_improved_weapons", room: "laboratory", name: "Improved Weapons", description: "Equip all minions with sturdier weapons.", costGold: 150, durationHours: 6, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 1 }] }, effect: { type: "minionStat", stat: "attack", value: 1 }, towerXp: 10 },
+        { id: "res_improved_armor", room: "laboratory", name: "Improved Armor", description: "Protect all minions with reinforced armor.", costGold: 150, durationHours: 6, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 1 }] }, effect: { type: "minionStat", stat: "defense", value: 1 }, towerXp: 10 },
+        { id: "res_fury_spell", room: "laboratory", name: "Fury Spell", description: "Enchant all minions to strike harder in battle.", costGold: 400, durationHours: 10, requirements: { type: "all", requirements: [{ type: "condition", metric: "laboratoryTier", operator: "gte", value: 2 }, { type: "upgradeCompleted", upgradeId: "res_improved_weapons" }] }, effect: { type: "minionStat", stat: "attack", value: 2 }, towerXp: 16 },
 
         // Dungeon
         { id: "dg_cell_1", room: "dungeon", name: "Extra Cell I", description: "Add one prisoner cell.", costGold: 50, durationHours: 1, requirements: { type: "all", requirements: [] }, effect: { type: "dungeonCell" }, towerXp: 4 },
@@ -82,7 +82,7 @@ export const CONFIG: GameConfig = {
         { id: "dg_recruit_eff_2", room: "dungeon", name: "Recruitment Efficiency II", description: "Increases recruitment chance further.", costGold: 300, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "dg_recruit_eff_1" }] }, effect: { type: "recruitmentEfficiency", bonus: 0.15 }, towerXp: 10 },
 
         // War Room
-        { id: "wr_enemy_intel_1", room: "warRoom", name: "Enemy Intelligence I", description: "Reveals active defenders and exact victory odds for the selected squad.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "enemyIntel", level: 1 }, towerXp: 6 },
+        { id: "wr_enemy_intel_1", room: "warRoom", name: "Enemy Intelligence I", description: "Reveals the number and ranks of active defenders.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "enemyIntel", level: 1 }, towerXp: 6 },
         { id: "wr_enemy_intel_2", room: "warRoom", name: "Enemy Intelligence II", description: "Reveals village rewards alongside enemy intelligence.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "wr_enemy_intel_1" }] }, effect: { type: "enemyIntel", level: 2 }, towerXp: 9 },
         { id: "wr_loot_intel_1", room: "warRoom", name: "Loot Intelligence I", description: "Reveals possible loot types.", costGold: 100, durationHours: 3, requirements: { type: "all", requirements: [] }, effect: { type: "lootIntel", level: 1 }, towerXp: 6 },
         { id: "wr_loot_intel_2", room: "warRoom", name: "Loot Intelligence II", description: "Reveals estimated drop chances.", costGold: 250, durationHours: 6, requirements: { type: "all", requirements: [{ type: "upgradeCompleted", upgradeId: "wr_loot_intel_1" }] }, effect: { type: "lootIntel", level: 2 }, towerXp: 9 },
@@ -126,15 +126,6 @@ export const CONFIG: GameConfig = {
     ],
 
     constants: {
-        raid: {
-            overwhelmingForceRatio: 4,
-            defenderLossChance: 0.5,
-            injuryChanceOnVictory: 0.4,
-            injuryChanceOnDefeat: 0.8,
-            rankInjuryResistance: 0.02,
-            defenseInjuryResistance: 0.005,
-            injuryDefenseBaseline: 5,
-        },
         dayLengthRealSeconds: 60,
         weekDays: 7,
         restDurationHours: 6,

@@ -5,6 +5,7 @@ import type { IncrementalUpgradeProcess } from "../model/types";
 import { canAfford, spend } from "./economy";
 import { addTowerXp } from "./tower";
 import { requirementFailure } from "./upgradeRequirements";
+import { logUpgrade } from "./upgradeLog";
 
 function def(upgradeId: string): IncrementalUpgradeDef {
     return CONFIG.incrementalUpgrades.find(u => u.id === upgradeId)!;
@@ -48,7 +49,7 @@ export function purchaseIncremental(state: GameState, upgradeId: string, now: nu
         startHour: now, endHour: now + nextDuration(upgradeId, level), upgradeId,
     };
     state.processes.push(process);
-    state.log(`Construction started: ${def(upgradeId).name}.`);
+    logUpgrade(state, "starts", def(upgradeId));
     return true;
 }
 
@@ -57,5 +58,5 @@ export function completeIncrementalUpgrade(state: GameState, process: Incrementa
     const level = state.incrementalLevel(process.upgradeId);
     state.incrementalLevels.set(process.upgradeId, level + 1);
     addTowerXp(state, d.towerXp);
-    state.log(`Upgrade complete: ${d.name}.`);
+    logUpgrade(state, "ends", d);
 }

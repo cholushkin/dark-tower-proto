@@ -52,7 +52,7 @@ src/data/    → src/model/   → src/systems/  → src/engine/   → src/ui/
 Dependencies point only downward in this chain. All state mutation outside `src/ui/` goes through
 `src/systems/*.ts` functions or `GameEngine`'s action-API methods (`buyUpgrade`, `launchRaid`,
 `claimReport`, etc.); UI code never assigns into `GameState` fields directly, though it *may* call
-pure read-only `systems/*` query functions (e.g. `previewRaid`, `canLaunchRaid`) directly to build
+pure read-only `systems/*` query functions (e.g. `canLaunchRaid`) directly to build
 a ViewModel. See `Documentation/Architecture/CurrentArchitecture.md` for the full map.
 
 ## Build, run, and test commands

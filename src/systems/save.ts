@@ -1,9 +1,10 @@
 import { CONFIG } from '../data/config';
-import { GameState } from '../model/GameState';
-import { ensureRaidSnapshot, initializeVillages, raidWeekForReport, recoverVillages } from './world';
+import { GameState, pickMissionIds } from '../model/GameState';
+import type { BattleReplay, BattleReplayUnit, RaidProcess, RaidReportDraft, VillageRewards, VillageState } from '../model/types';
+import { ensureRaidSnapshot, initializeVillages, missionDef, raidWeekForReport, recoverVillages, updateMissionProgression } from './world';
 
 export const SAVE_KEY = 'dark-tower-save';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 3;
 
 type JsonRecord = Record<string, unknown>;
 const record = (value: unknown): value is JsonRecord =>
@@ -13,8 +14,10 @@ const nonnegative = (value: unknown): value is number => finite(value) && value 
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(v => typeof v === 'string');
 const itemIds = (value: unknown): value is string[] => strings(value)
     && value.every(id => CONFIG.items.some(item => item.id === id));
-const optionalCount = (value: unknown): boolean => value === undefined || (nonnegative(value) && Number.isInteger(value));
-const optionalChance = (value: unknown): boolean => value === undefined || (nonnegative(value) && value <= 1);
+const count = (value: unknown): value is number => nonnegative(value) && Number.isInteger(value);
+const optionalCount = (value: unknown): value is number | undefined => value === undefined || count(value);
+const rank = (value: unknown): value is number => count(value) && value >= 1 && value <= CONFIG.ranks.length;
+const ranks = (value: unknown): value is number[] => Array.isArray(value) && value.every(rank);
 
 /** Uses the same readable map/set representation as the prototype's debug export. */
 export function serializeGame(state: GameState): string {
@@ -40,11 +43,11 @@ function validProcess(value: unknown): boolean {
     switch (value.type) {
         case 'raid': return typeof value.missionId === 'string' && strings(value.squad) && value.squad.length > 0
             && new Set(value.squad).size === value.squad.length && optionalCount(value.raidWeek)
-            && optionalCount(value.activeDefenders) && optionalCount(value.fullDefenders)
-            && optionalChance(value.victoryChance) && (value.rewards === undefined || validRewards(value.rewards));
+            && (value.defenderRanks === undefined ? optionalCount(value.activeDefenders) : ranks(value.defenderRanks))
+            && (value.rewards === undefined || validRewards(value.rewards));
         case 'walkback': return typeof value.missionId === 'string';
         case 'rest': case 'treatment': return typeof value.minionId === 'string';
-        case 'training': return typeof value.minionId === 'string' && nonnegative(value.fromRank) && nonnegative(value.toRank);
+        case 'training': return typeof value.minionId === 'string' && rank(value.fromRank) && rank(value.toRank);
         case 'sale': return typeof value.stackId === 'string' && typeof value.itemId === 'string'
             && nonnegative(value.count) && nonnegative(value.goldValue);
         case 'upgrade': case 'incrementalUpgrade': return typeof value.upgradeId === 'string';
@@ -53,22 +56,88 @@ function validProcess(value: unknown): boolean {
     }
 }
 
-function validRewards(value: unknown): boolean {
+function validRewards(value: unknown): value is VillageRewards {
     return record(value) && nonnegative(value.gold) && nonnegative(value.crystals) && itemIds(value.lootCopies)
-        && Array.isArray(value.prisoners) && value.prisoners.every(rank => Number.isInteger(rank) && rank >= 1 && rank <= CONFIG.ranks.length);
+        && ranks(value.prisoners);
 }
 
-function validReport(value: unknown): boolean {
-    return record(value) && typeof value.missionId === 'string' && typeof value.success === 'boolean'
-        && strings(value.squad) && new Set(value.squad).size === value.squad.length
-        && nonnegative(value.goldFound) && nonnegative(value.crystalsFound)
-        && itemIds(value.lootCopies) && Array.isArray(value.prisonersFound)
-        && value.prisonersFound.every(rank => Number.isInteger(rank) && rank >= 1 && rank <= CONFIG.ranks.length)
-        && nonnegative(value.carryLimit) && record(value.selection) && Object.values(value.selection).every(nonnegative)
-        && Object.keys(value.selection).every(id => CONFIG.items.some(item => item.id === id))
-        && record(value.injuryRolls) && Object.values(value.injuryRolls).every(nonnegative)
-        && ['raidWeek', 'fullDefenders', 'defendersBefore', 'defenderLosses', 'defendersRemaining'].every(key => optionalCount(value[key]))
-        && optionalChance(value.victoryChance);
+function restoreRaidProcess(process: RaidProcess & { activeDefenders?: number }): RaidProcess {
+    const { id, type, startHour, endHour, missionId, squad, raidWeek, defenderRanks, rewards, activeDefenders } = process;
+    return {
+        id, type, startHour, endHour, missionId, squad, raidWeek,
+        defenderRanks: defenderRanks ?? (activeDefenders === undefined ? undefined : missionDef(missionId).defenderRanks.slice(0, activeDefenders)),
+        rewards,
+    };
+}
+
+function restoreVillage(missionId: string, value: unknown): VillageState | null {
+    if (!record(value) || !count(value.week) || typeof value.raided !== 'boolean' || !validRewards(value.rewards)) return null;
+    let activeDefenderRanks = value.activeDefenderRanks;
+    if (activeDefenderRanks === undefined && count(value.activeDefenders)) {
+        const configuredRanks = CONFIG.missions.find(mission => mission.id === missionId)?.defenderRanks ?? [];
+        activeDefenderRanks = configuredRanks.slice(0, value.activeDefenders);
+    }
+    if (!ranks(activeDefenderRanks)) return null;
+    return { week: value.week, activeDefenderRanks, rewards: value.rewards, raided: value.raided };
+}
+
+function validReplayUnits(value: unknown): value is BattleReplayUnit[] {
+    return Array.isArray(value) && value.every(unit => record(unit) && typeof unit.id === 'string'
+        && rank(unit.rank) && finite(unit.health) && unit.health > 0);
+}
+
+function validBattleReplay(value: unknown): value is BattleReplay {
+    if (!record(value) || !validReplayUnits(value.attackers) || !validReplayUnits(value.defenders)
+        || !Array.isArray(value.rounds)) return false;
+    const ids = [...value.attackers, ...value.defenders].map(unit => unit.id);
+    const living = new Set(ids);
+    if (living.size !== ids.length) return false;
+    const attackers = new Set(value.attackers.map(unit => unit.id));
+    for (const round of value.rounds) {
+        if (!record(round) || !Array.isArray(round.hits) || !Array.isArray(round.endHealth)
+            || round.hits.length !== living.size || round.endHealth.length !== living.size) return false;
+        const actors = new Set<string>();
+        for (const hit of round.hits) {
+            if (!record(hit) || typeof hit.attackerId !== 'string' || typeof hit.targetId !== 'string'
+                || !living.has(hit.attackerId) || !living.has(hit.targetId) || actors.has(hit.attackerId)
+                || attackers.has(hit.attackerId) === attackers.has(hit.targetId)
+                || !finite(hit.damage) || hit.damage <= 0) return false;
+            actors.add(hit.attackerId);
+        }
+        const updated = new Set<string>();
+        for (const change of round.endHealth) {
+            if (!record(change) || typeof change.unitId !== 'string' || !living.has(change.unitId)
+                || updated.has(change.unitId) || !finite(change.health)) return false;
+            updated.add(change.unitId);
+            if (change.health <= 0) living.delete(change.unitId);
+        }
+    }
+    return true;
+}
+
+function restoreReport(value: unknown): RaidReportDraft | null {
+    if (!record(value) || typeof value.missionId !== 'string' || typeof value.success !== 'boolean'
+        || !strings(value.squad) || new Set(value.squad).size !== value.squad.length
+        || !nonnegative(value.goldFound) || !nonnegative(value.crystalsFound)
+        || !itemIds(value.lootCopies) || !ranks(value.prisonersFound)
+        || !optionalCount(value.raidWeek) || !optionalCount(value.defendersBefore)
+        || !optionalCount(value.defenderLosses) || !optionalCount(value.defendersRemaining)
+        || (value.durationHours !== undefined && !nonnegative(value.durationHours))) return null;
+
+    let injuredMinionIds = value.injuredMinionIds;
+    const { injuryRolls, squad } = value;
+    if (injuredMinionIds === undefined && record(injuryRolls) && Object.values(injuryRolls).every(nonnegative)) {
+        injuredMinionIds = squad.filter(id => Number(injuryRolls[id] ?? 0) > 0);
+    }
+    if (!strings(injuredMinionIds) || injuredMinionIds.some(id => !squad.includes(id))) return null;
+    return {
+        missionId: value.missionId, success: value.success, squad,
+        goldFound: value.goldFound, crystalsFound: value.crystalsFound, lootCopies: value.lootCopies, prisonersFound: value.prisonersFound,
+        injuredMinionIds, raidWeek: value.raidWeek,
+        defendersBefore: value.defendersBefore, defenderLosses: value.defenderLosses, defendersRemaining: value.defendersRemaining,
+        durationHours: value.durationHours,
+        battleReplay: validBattleReplay(value.battleReplay) ? value.battleReplay : undefined,
+    };
 }
 
 /** Reject malformed saves instead of partially loading rewards or releasing reserved squads. */
@@ -76,7 +145,7 @@ export function deserializeGame(json: string): GameState | null {
     try {
         const envelope: unknown = JSON.parse(json);
         if (!record(envelope)) return null;
-        if ('version' in envelope && envelope.version !== SAVE_VERSION) return null;
+        if ('version' in envelope && envelope.version !== SAVE_VERSION && envelope.version !== 2 && envelope.version !== 1) return null;
         const saved = 'version' in envelope ? envelope.state : envelope;
         if (!record(saved) || !nonnegative(saved.hours) || !Array.isArray(saved.minions)) return null;
 
@@ -127,19 +196,16 @@ export function deserializeGame(json: string): GameState | null {
         if (![...state.incrementalLevels.values()].every(nonnegative)
             || ![...state.missionClaimedWeek.values()].every(nonnegative)
             || ![...state.missionRunningProcess.values()].every(id => typeof id === 'string')) return null;
-        if (![...state.pendingReports].every(([id, report]) => validReport(report) && report.missionId === id)) return null;
-        for (const report of state.pendingReports.values()) {
-            let selectedSlots = 0;
-            for (const [itemId, count] of Object.entries(report.selection)) {
-                if (!Number.isInteger(count) || count > report.lootCopies.filter(id => id === itemId).length) return null;
-                selectedSlots += Math.ceil(count / CONFIG.items.find(item => item.id === itemId)!.maxStackSize);
-            }
-            if (selectedSlots > report.carryLimit) return null;
+        for (const [missionId, value] of state.pendingReports) {
+            const report = restoreReport(value);
+            if (!report || report.missionId !== missionId) return null;
+            state.pendingReports.set(missionId, report);
         }
-        if (![...state.villages.values()].every(village => record(village) && nonnegative(village.week)
-            && nonnegative(village.fullDefenders) && nonnegative(village.activeDefenders)
-            && village.activeDefenders <= village.fullDefenders && typeof village.raided === 'boolean'
-            && validRewards(village.rewards))) return null;
+        for (const [missionId, value] of state.villages) {
+            const village = restoreVillage(missionId, value);
+            if (!village) return null;
+            state.villages.set(missionId, village);
+        }
 
         const missionIds = new Set(CONFIG.missions.map(mission => mission.id));
         const unresolved = new Set<string>();
@@ -162,15 +228,20 @@ export function deserializeGame(json: string): GameState | null {
             if (!reserve(process.missionId, process.squad, process.id)) return null;
             state.missionRunningProcess.set(process.missionId, process.id);
         }
+        state.processes = state.processes.map(process => process.type === 'raid' ? restoreRaidProcess(process) : process);
         for (const [missionId, report] of state.pendingReports) {
             if (!reserve(missionId, report.squad)) return null;
             report.raidWeek ??= raidWeekForReport(state, report);
-            report.fullDefenders ??= CONFIG.missions.find(mission => mission.id === missionId)!.fullDefenders;
-            report.defendersBefore ??= report.fullDefenders;
+            report.defendersBefore ??= missionDef(missionId).defenderRanks.length;
             report.defenderLosses ??= report.success ? report.defendersBefore : 0;
             report.defendersRemaining ??= report.defendersBefore - report.defenderLosses;
         }
         if (state.minions.some(minion => minion.activity.type === 'raid' && !reserved.has(minion.id))) return null;
+        const savedSelection = 'selectedMissionIds' in saved ? state.selectedMissionIds : [];
+        state.selectedMissionIds = pickMissionIds(state.rng, [...savedSelection, ...unresolved, ...state.everClaimedMissions]);
+        for (const missionId of state.villages.keys()) {
+            if (!state.selectedMissionIds.has(missionId) && !unresolved.has(missionId)) state.villages.delete(missionId);
+        }
         // Old weekly claims included failures. Only known completed missions retain that lock.
         if (!('villages' in saved)) {
             for (const missionId of state.missionClaimedWeek.keys()) {
@@ -181,15 +252,15 @@ export function deserializeGame(json: string): GameState | null {
         for (const process of state.processes) if (process.type === 'raid') ensureRaidSnapshot(state, process);
         for (const [missionId, report] of state.pendingReports) {
             if (!report.success || report.raidWeek !== state.week) continue;
-            const village = state.villages.get(missionId)!;
+            const village = state.villages.get(missionId);
+            if (!village) continue;
             village.raided = true;
-            village.activeDefenders = 0;
+            village.activeDefenderRanks = [];
             village.rewards = { gold: 0, crystals: 0, lootCopies: [], prisoners: [] };
         }
         recoverVillages(state);
-        if (state.worldCompletedAtHour === null && CONFIG.missions.every(mission => state.everClaimedMissions.has(mission.id))) {
-            state.worldCompletedAtHour = state.hours;
-        }
+        if (!state.hasCompletedWorld()) state.worldCompletedAtHour = null;
+        updateMissionProgression(state, state.hours);
 
         const identifiers = [...state.minions, ...state.prisoners, ...state.stacks, ...state.processes].map(entry => entry.id);
         const nextFromIds = identifiers.reduce((next, id) => Math.max(next, Number(id.match(/_(\d+)$/)?.[1] ?? 0) + 1), 1);

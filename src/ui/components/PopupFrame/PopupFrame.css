@@ -8,6 +8,11 @@
 .dt-popup__diamond{color:var(--dt-gold);font-size:13px;}
 .dt-popup__x{position:absolute;right:14px;top:14px;width:43px;height:43px;border:1px solid #a3558c;border-radius:8px;color:#fff0d5;background:#3b2344;font-weight:800;font-size:34px;line-height:25px;z-index:5;}
 .dt-popup__x:hover{background:#63315e}
+.dt-popup-caption{position:relative;flex:0 0 auto;min-height:58px;padding:10px 75px;display:flex;justify-content:center;align-items:center;gap:14px;border-bottom:1px solid #744361;background:#281a2d66;border-radius:12px 12px 0 0;}
+.dt-popup-caption h1{margin:0;font:800 clamp(27px,3vw,42px)/1 Georgia,serif;letter-spacing:.015em;text-shadow:0 2px #120c16;white-space:nowrap;}
+.dt-popup-caption__dot{width:6px;height:6px;border-radius:50%;background:#f7bf4f;}
+.dt-popup-caption__close{position:absolute;right:17px;top:9px;width:40px;height:39px;padding:0;border:1px solid #aa628e;border-radius:8px;background:#351c3c;color:#ffe5d8;font:bold 32px/1 Georgia,serif;cursor:pointer;}
+.dt-popup-caption__close:hover{background:#593253;color:#ffd47c;}
 .dt-popup__body{display:flex;flex-direction:column;align-items:stretch;gap:12px;}
 .dt-popup__footer{display:flex;align-items:stretch;justify-content:center;gap:12px;margin-top:20px;flex-wrap:wrap;}
 .dt-action{min-height:56px;min-width:190px;max-width:100%;border-radius:9px;padding:8px 20px;border:2px solid #b56d58;font-size:23px;font-family:Georgia,serif;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 3px 0 #1f0e1c,inset 0 1px 0 #f8d98a33;transition:filter .14s ease,transform .14s ease;}
@@ -34,6 +39,10 @@
 .dt-money-summary .dt-stat:last-child{background:#4e2b3d;margin:5px 0;border-radius:6px;}
 .dt-section-heading{display:flex;align-items:center;justify-content:center;gap:16px;margin:4px 0;color:#d79e6c}.dt-section-heading h2{font-size:21px;font-family:Georgia,serif;color:#fff0d7;margin:0;}
 .dt-ending-message{text-align:center;font-size:17px;line-height:1.44;color:#ebd2e5;max-width:650px;margin:0 auto 2px;}
+@media(max-width:720px){
+.dt-popup-caption{padding:12px 48px;min-height:60px;}
+.dt-popup-caption h1{font-size:29px}.dt-popup-caption__close{right:9px;top:10px;width:37px;height:37px;}
+}
 @media(max-width:640px){
 .dt-popup{padding:54px 15px 16px;max-height:calc(100dvh - 112px);width:100%;border-radius:10px}
 .dt-popup__banner{height:61px;min-width:67%;padding:4px 19px;gap:9px}

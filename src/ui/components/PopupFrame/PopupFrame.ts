@@ -1,27 +1,37 @@
 /** Shared visual popup shell; no domain-specific behavior or state. */
 export interface PopupFrameOptions {
   title: string;
-  modifier: 'week' | 'payroll' | 'game-over' | 'victory';
+  modifier: 'week' | 'payroll' | 'game-over' | 'victory' | 'battle';
+  caption?: 'banner' | 'plain';
   onClose?: () => void;
 }
-export interface PopupFrameElements { root: HTMLElement; body: HTMLElement; footer: HTMLElement; }
+export interface PopupFrameElements { root: HTMLElement; body: HTMLElement; footer: HTMLElement; close: HTMLButtonElement | null; }
 export function element<K extends keyof HTMLElementTagNameMap>(tag: K, className = '', content?: string): HTMLElementTagNameMap[K] {
   const e = document.createElement(tag);
   if (className) e.className = className;
   if (content !== undefined) e.textContent = content;
   return e;
 }
-export function createPopupFrame({title,modifier,onClose}: PopupFrameOptions): PopupFrameElements {
+export function createPopupFrame({title,modifier,caption='banner',onClose}: PopupFrameOptions): PopupFrameElements {
   const root=element('section',`dt-popup dt-popup--${modifier}`);
   root.setAttribute('role','dialog'); root.setAttribute('aria-modal','true');root.setAttribute('aria-label',title);
-  const banner=element('header','dt-popup__banner');
-  const decoration=element('span','dt-popup__diamond','◆');decoration.setAttribute('aria-hidden','true');
-  banner.append(decoration,element('h1','dt-popup__title',title),decoration.cloneNode(true));
+  const plain = caption === 'plain';
+  const banner=element('header',plain ? 'dt-popup-caption' : 'dt-popup__banner');
+  const decoration=plain ? element('span','dt-popup-caption__dot') : element('span','dt-popup__diamond','◆');
+  decoration.setAttribute('aria-hidden','true');
+  banner.append(decoration,element('h1',plain ? '' : 'dt-popup__title',title),decoration.cloneNode(true));
   root.append(banner);
-  if(onClose){const close=element('button','dt-popup__x','×');close.type='button';close.setAttribute('aria-label','Close');close.addEventListener('click',onClose);root.append(close);}
+  let close: HTMLButtonElement | null = null;
+  if (onClose) {
+    close = element('button', plain ? 'dt-popup-caption__close' : 'dt-popup__x', '×');
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Close');
+    close.addEventListener('click', onClose);
+    (plain ? banner : root).append(close);
+  }
   const body=element('div','dt-popup__body');root.append(body);
   const footer=element('footer','dt-popup__footer');root.append(footer);
-  return {root,body,footer};
+  return {root,body,footer,close};
 }
 export function actionButton(label:string, kind:'gold'|'outline', action:()=>void, disabled=false, icon=''):HTMLButtonElement {
   const button=element('button',`dt-action dt-action--${kind}`);button.type='button';button.disabled=disabled;

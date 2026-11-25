@@ -42,7 +42,7 @@ For almost any task, you need a small slice:
 - All state mutation outside the UI layer goes through `src/systems/*.ts` functions or
   `GameEngine`'s action-API methods (`buyUpgrade`, `launchRaid`, `claimReport`, etc.). UI code calls
   those; it never assigns into `GameState` fields directly.
-- Pure, read-only queries (`previewRaid`, `canLaunchRaid`, `canPurchaseUpgrade`, …) may be called
+- Pure, read-only queries (`canLaunchRaid`, `canPurchaseUpgrade`, …) may be called
   directly from a ViewModel Adapter without going through `GameEngine` — that's an intentional
   read/write split, not an inconsistency to "fix."
 

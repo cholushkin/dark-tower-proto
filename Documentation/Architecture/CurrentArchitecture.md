@@ -61,7 +61,7 @@ public fields directly — it's a convention, not a type-level guarantee. In pra
 `src/systems/*.ts`, `src/engine/GameEngine.ts`, and `selftest.ts` (intentionally, for test setup)
 mutate `GameState` fields; `src/ui/**` never does (verified by inspection — UI code only calls
 `engine.*` action methods or pure `systems/*` query functions that take `state` as a read-only
-argument, e.g. `canLaunchRaid`, `previewRaid` in `WarRoomAdapter.ts:4`).
+argument, e.g. `canLaunchRaid` in `WarRoomAdapter.ts`).
 
 `GameState`'s constructor seeds starting minions/items from `CONFIG.startingBalance` /
 `CONFIG.startingItems` (`GameState.ts:56-71`) — the only place initial state is assembled.
@@ -111,7 +111,8 @@ subtype(s) it schedules:
 | `trainingHall.ts` | rank training | `training` |
 | `upgradeRequirements.ts` | Generic upgrade condition evaluation and explanations | none |
 | `dungeon.ts` | prisoner cells, processing outcome | `dungeon` |
-| `world.ts` | raid preview/launch/resolution, squad power | `raid` |
+| `world.ts` | village recovery, raid launch, and report creation | `raid` |
+| `battle.ts` | simultaneous battle turns and log messages | — (called by raid resolution) |
 | `raidReport.ts` | Claim resolution (loot/prisoner intake) | — (acts on `pendingReports`, not a `Process`) |
 | `upgrades.ts` | one-shot room upgrades | `upgrade` |
 | `incrementalUpgrades.ts` | repeatable room upgrades (beds/cells/stations) | `incrementalUpgrade` |
@@ -155,7 +156,7 @@ Each screen follows the same **View / ViewModel / Adapter** triad (e.g.
   `build<Room>ViewModel(engine, uiState?)` reads `engine.state` (and, for read-only previews, calls
   `systems/*` query functions directly — e.g. `DungeonAdapter.ts` reuses `groupUpgradeFamilies`/
   `buildUpgradeLineViewModel` from `screens/shared.ts`, and `WarRoomAdapter.ts:4` calls
-  `canLaunchRaid`/`previewRaid`/`missionDef` from `systems/world.ts`) and maps it to a ViewModel.
+  `canLaunchRaid` and `missionDef` from `systems/world.ts`) and maps it to a ViewModel.
   `handle<Room>Action(engine, uiState?, action)` is the only place that turns a UI action into a
   mutation — always via an `engine.*` action-API method (§3), never by touching `GameState` fields
   directly.

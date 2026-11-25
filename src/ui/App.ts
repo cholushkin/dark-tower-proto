@@ -38,6 +38,8 @@ import { buildPayrollViewModel, handlePayrollAction } from './screens/payroll/Pa
 import { mountRaidReportView } from './screens/raid-report/RaidReportView';
 import type { RaidReportViewHandle } from './screens/raid-report/RaidReportViewModel';
 import { buildRaidReportViewModel, handleRaidReportAction } from './screens/raid-report/RaidReportAdapter';
+import { mountBattleVisualizationView } from './screens/battle-visualization/BattleVisualizationView';
+import type { BattleVisualizationViewModel } from './screens/battle-visualization/BattleVisualizationViewModel';
 import { mountNewWeekView } from './screens/new-week/NewWeekView';
 import type { NewWeekView } from './screens/new-week/NewWeekView';
 import { buildNewWeekViewModel, handleNewWeekAction } from './screens/new-week/NewWeekAdapter';
@@ -92,6 +94,7 @@ export class App {
   private screenView: ScreenHandle<unknown> | null = null;
   private payrollView: PayrollView | null = null;
   private raidReportView: RaidReportViewHandle | null = null;
+  private battleVisualizationView: ReturnType<typeof mountBattleVisualizationView> | null = null;
   private newWeekView: NewWeekView | null = null;
   private gameOverView: GameOverView | null = null;
   private victoryView: VictoryView | null = null;
@@ -114,7 +117,9 @@ export class App {
     this.shell.slots.leftColumn.append(timeHost);
     this.timeWidget = mountTimeWidget(timeHost, this.timeWidgetModel(), action => {
       switch (action.type) {
-        case 'togglePause': this.engine.setPaused(!this.engine.state.paused); break;
+        case 'togglePause':
+          if (!this.hasOpenOverlay()) this.engine.setPaused(!this.engine.state.paused);
+          break;
         case 'setSpeed': this.engine.setSpeed(action.speed); break;
         case 'cycleSpeed': this.engine.setSpeed(this.nextSpeed()); break;
         case 'toggleExpanded': this.timeExpanded = !this.timeExpanded; break;
@@ -228,7 +233,7 @@ export class App {
     this.refresh();
   }
 
-  /** All overlay popups share the shell's single overlay slot — only one is ever shown at a time. */
+  /** The shell holds one primary popup. The battle visualization can stack over the raid report. */
   private showOverlay(host: HTMLElement): void {
     this.shell.slots.overlay.replaceChildren(host);
     this.shell.slots.overlay.hidden = false;
@@ -269,7 +274,10 @@ export class App {
     const host = document.createElement('div');
     this.showOverlay(host);
     this.raidReportView = mountRaidReportView(host, model, action => {
-      handleRaidReportAction(this.engine, missionId, action, { close: () => this.closeRaidReport() });
+      handleRaidReportAction(this.engine, missionId, action, {
+        close: () => this.closeRaidReport(),
+        openBattleVisualization: replay => this.openBattleVisualization(host, replay),
+      });
       const next = buildRaidReportViewModel(this.engine, missionId);
       if (next) this.raidReportView?.setModel(next);
       this.refresh();
@@ -278,10 +286,27 @@ export class App {
 
   private closeRaidReport(): void {
     if (!this.raidReportView) return;
+    this.closeBattleVisualization();
     this.raidReportView.destroy();
     this.raidReportView = null;
     this.hideOverlay();
     this.engine.setPaused(false);
+  }
+
+  private openBattleVisualization(reportHost: HTMLElement, model: BattleVisualizationViewModel): void {
+    if (this.battleVisualizationView) return;
+    const returnFocus = document.activeElement;
+    reportHost.inert = true;
+    this.battleVisualizationView = mountBattleVisualizationView(this.shell.slots.overlay, model, () => {
+      this.closeBattleVisualization();
+      reportHost.inert = false;
+      if (returnFocus instanceof HTMLElement) returnFocus.focus();
+    });
+  }
+
+  private closeBattleVisualization(): void {
+    this.battleVisualizationView?.destroy();
+    this.battleVisualizationView = null;
   }
 
   private openNewWeek(): void {

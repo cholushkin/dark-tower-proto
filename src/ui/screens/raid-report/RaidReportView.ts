@@ -2,10 +2,11 @@ import {mountItemTile} from '../../components/ItemTile/ItemTile';
 import type {ItemTileHandle} from '../../components/ItemTile/ItemTile.types';
 import {mountMinionComponent} from '../../components/MinionComponent/MinionComponent';
 import type {MinionComponentHandle} from '../../components/MinionComponent/MinionComponent.types';
-import type {RaidReportViewModel,RaidReportViewHandle,RaidReportActionHandler,LootChoiceViewModel} from './RaidReportViewModel';
+import type {RaidReportViewModel,RaidReportViewHandle,RaidReportActionHandler} from './RaidReportViewModel';
+import '../../components/PopupFrame/PopupFrame.css';
 import './RaidReportView.css';
 
-type LootEntry={root:HTMLElement;tile:ItemTileHandle;abort:AbortController};
+type LootEntry={root:HTMLElement;tile:ItemTileHandle};
 type CharacterEntry={root:HTMLElement;tile:MinionComponentHandle};
 
 /** State-free Raid Report popup. Parent supplies a complete immutable snapshot. */
@@ -22,8 +23,8 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
   root.setAttribute('aria-modal','true');
   root.setAttribute('aria-labelledby','dt-raid-heading');
   root.innerHTML=`
-     <header class="dt-raid__top"><div class="dt-raid__title-ornament">◆</div><h1 id="dt-raid-heading">Raid Report</h1><div class="dt-raid__title-ornament">◆</div>
-        <button class="dt-raid__close" type="button" aria-label="Close Raid Report" title="Close report without claiming">×</button>
+     <header class="dt-popup-caption"><span class="dt-popup-caption__dot" aria-hidden="true"></span><h1 id="dt-raid-heading">Raid Report</h1><span class="dt-popup-caption__dot" aria-hidden="true"></span>
+        <button class="dt-popup-caption__close" type="button" aria-label="Close Raid Report" title="Close report">×</button>
      </header>
      <div class="dt-raid__body">
        <section class="dt-raid__location" aria-label="Location and raid results">
@@ -31,15 +32,14 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
          <div class="dt-raid__location-meta"><h2 class="dt-raid__location-title"></h2><p class="dt-raid__location-description"></p>
            <div class="dt-raid__location-sub"><span class="dt-raid__difficulty"></span><span class="dt-raid__weather"></span></div>
          </div>
-         <div class="dt-raid__result"><div class="dt-raid__result-label"></div><div class="dt-raid__result-stat"><span>⏱ Raid time</span><strong class="dt-raid__duration"></strong></div><div class="dt-raid__result-stat"><span>♟ Squad</span><strong class="dt-raid__squad"></strong></div><div class="dt-raid__result-stat dt-raid__odds-row" hidden><span>🎯 Victory chance</span><strong class="dt-raid__odds"></strong></div></div>
+         <div class="dt-raid__result"><div class="dt-raid__result-label"></div><div class="dt-raid__result-stat"><span>⏱ Raid time</span><strong class="dt-raid__duration"></strong></div><div class="dt-raid__result-stat"><span>♟ Squad</span><strong class="dt-raid__squad"></strong></div></div>
        </section>
        <section class="dt-raid__village-result" aria-label="Defender losses and village recovery"><strong class="dt-raid__defenders"></strong><p class="dt-raid__recovery"></p></section>
        <div class="dt-raid__collection-row">
          <section class="dt-raid__collection dt-raid__loot" aria-labelledby="dt-raid-loot-heading">
-           <div class="dt-raid__collection-heading"><h3 id="dt-raid-loot-heading">📦 Loot Found</h3><span class="dt-raid__selection-count"></span></div>
-           <div class="dt-raid__currencies" aria-label="Automatically collected currency"></div>
-           <div class="dt-raid__horizontal-scroll dt-raid__loot-list" aria-label="Select loot stacks"></div>
-           <p class="dt-raid__collection-note dt-raid__loot-note"></p>
+           <div class="dt-raid__collection-heading"><h3 id="dt-raid-loot-heading">📦 Loot Found</h3></div>
+           <div class="dt-raid__currencies" aria-label="Currency found"></div>
+           <div class="dt-raid__horizontal-scroll dt-raid__loot-list" aria-label="Items found"></div>
          </section>
          <section class="dt-raid__collection dt-raid__prisoners" aria-labelledby="dt-raid-prisoner-heading">
            <div class="dt-raid__collection-heading"><h3 id="dt-raid-prisoner-heading">⛓ Prisoners</h3><span class="dt-raid__prisoner-count"></span></div>
@@ -52,7 +52,8 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
          <div class="dt-raid__horizontal-scroll dt-raid__minion-list" aria-label="Raid squad results"></div>
        </section>
      </div>
-     <footer class="dt-raid__footer"><div class="dt-raid__footer-info"><span class="dt-raid__pause-label"></span><span class="dt-raid__claim-summary"></span></div>
+     <footer class="dt-raid__footer"><div class="dt-raid__footer-info"><span class="dt-raid__pause-label"></span></div>
+       <button class="dt-raid__battle dt-action dt-action--outline" type="button" aria-haspopup="dialog">Battle Replay</button>
        <button class="dt-raid__claim" type="button">Claim <span aria-hidden="true">✦</span></button>
      </footer>`;
   function required<T extends Element>(q:string):T {const result=root.querySelector<T>(q);if(!result)throw new Error(`RaidReport template missing ${q}`);return result;}
@@ -61,47 +62,37 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
   const prisonerList=get('.dt-raid__prisoner-list');
   const minionList=get('.dt-raid__minion-list');
   const claim=required<HTMLButtonElement>('.dt-raid__claim');
-  const close=required<HTMLButtonElement>('.dt-raid__close');
+  const battle=required<HTMLButtonElement>('.dt-raid__battle');
+  const close=required<HTMLButtonElement>('.dt-popup-caption__close');
   const locationInfo=required<HTMLButtonElement>('.dt-raid__location-info');
   const locImage=required<HTMLImageElement>('.dt-raid__location-image');
   function dispatch(action:Parameters<RaidReportActionHandler>[0]):void{if(!destroyed)onAction(action);}
   claim.addEventListener('click',()=>{if(model.claim.canClaim)dispatch({type:'claimRequested',raidId:model.raidId});},{signal:abort.signal});
+  battle.addEventListener('click',()=>dispatch({type:'battleVisualizationRequested'}),{signal:abort.signal});
   close.addEventListener('click',()=>dispatch({type:'closeRequested',raidId:model.raidId}),{signal:abort.signal});
   locationInfo.addEventListener('click',()=>dispatch({type:'locationInfoRequested',locationId:model.location.id}),{signal:abort.signal});
 
-  function toggle(stackId:string):void {
-    const choice=model.loot.find(x=>x.id===stackId);
-    if(!choice?.canToggle)return;
-    dispatch({type:'lootSelectionRequested',raidId:model.raidId,lootStackId:stackId,selected:!choice.selected});
-  }
   function renderLoot():void {
     const scrollLeft=lootList.scrollLeft;
-    const currentIds=new Set(model.loot.map(x=>x.id));
-    for(const [key,entry] of lootNodes){if(!currentIds.has(key)){entry.tile.destroy();entry.abort.abort();entry.root.remove();lootNodes.delete(key);}}
+    const currentIds=new Set(model.loot.map(item=>item.id));
+    for(const [key,entry] of lootNodes){if(!currentIds.has(key)){entry.tile.destroy();entry.root.remove();lootNodes.delete(key);}}
     const elements:HTMLElement[]=[];
-    for(const choice of model.loot){
-      let entry=lootNodes.get(choice.id);
+    for(const item of model.loot){
+      let entry=lootNodes.get(item.id);
       if(!entry){
         const wrapper=document.createElement('div');
-        wrapper.className='dt-raid__tile-slot dt-raid__loot-choice';
-        wrapper.tabIndex=0;
-        wrapper.setAttribute('role','checkbox');
-        wrapper.innerHTML='<div class="dt-raid__tile-mount"></div>';
-        const tile=mountItemTile(wrapper.querySelector<HTMLElement>('.dt-raid__tile-mount')!,choice.item);
-        const localAbort=new AbortController();
-        wrapper.addEventListener('click',(e)=>{if((e.target as HTMLElement).closest('.dt-item__info'))return;toggle(choice.id);},{signal:localAbort.signal});
-        wrapper.addEventListener('keydown',(e)=>{if(e.target!==wrapper)return;if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle(choice.id);}}, {signal:localAbort.signal});
-        entry={root:wrapper,tile,abort:localAbort};lootNodes.set(choice.id,entry);
+        wrapper.className='dt-raid__tile-slot';
+        entry={root:wrapper,tile:mountItemTile(wrapper,item)};
+        lootNodes.set(item.id,entry);
       }
-      entry.tile.setModel(choice.item);
-      entry.root.classList.toggle('dt-raid__loot-choice--selected',choice.selected);
-      entry.root.classList.toggle('dt-raid__loot-choice--disabled',!choice.canToggle);
-      entry.root.dataset.lootStackId=choice.id;
-      entry.root.setAttribute('aria-label',`${choice.item.title}, ${choice.quantity} items, 1 carry slot; ${choice.selected?'selected':'not selected'}${choice.disabledReason?`; ${choice.disabledReason}`:''}`);
-      entry.root.setAttribute('aria-checked',String(choice.selected));
-      entry.root.setAttribute('aria-disabled',String(!choice.canToggle));
-      entry.root.title=choice.disabledReason??(choice.selected?'Click to leave behind':'Click to take');
+      entry.tile.setModel(item);
       elements.push(entry.root);
+    }
+    if(elements.length===0){
+      const note=document.createElement('p');
+      note.className='dt-raid__empty';
+      note.textContent='No items found';
+      elements.push(note);
     }
     lootList.replaceChildren(...elements);
     lootList.scrollLeft=scrollLeft;
@@ -171,17 +162,12 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
     get('.dt-raid__result-label').dataset.result=next.location.result;
     get('.dt-raid__duration').textContent=next.location.elapsedLabel;
     get('.dt-raid__squad').textContent=next.location.squadLabel;
-    get('.dt-raid__odds-row').hidden=!next.location.victoryChanceLabel;
-    get('.dt-raid__odds').textContent=next.location.victoryChanceLabel??'';
     get('.dt-raid__defenders').textContent=next.defenderResultLabel;
     get('.dt-raid__recovery').textContent=next.recoveryLabel;
     get('.dt-raid__injury-summary').textContent=next.injurySummary;
-    get('.dt-raid__selection-count').textContent=next.selection.selectedCountLabel;
-    get('.dt-raid__loot-note').textContent=next.selection.hint;
     get('.dt-raid__prisoner-count').textContent=String(next.prisoners.length);
     get('.dt-raid__minion-count').textContent=String(next.minions.length);
     get('.dt-raid__pause-label').textContent=next.pauseLabel;
-    get('.dt-raid__claim-summary').textContent=next.selection.capacityLabel;
     const currencies=get('.dt-raid__currencies');
     currencies.replaceChildren(...next.currencies.map(currency=>{
       const cell=document.createElement('div');cell.className='dt-raid__currency';
@@ -194,7 +180,9 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
     claim.textContent=next.claim.label;
     claim.disabled=!next.claim.canClaim;
     claim.title=next.claim.disabledReason??'';
+    battle.disabled=!next.canViewBattle;
+    battle.title=next.canViewBattle?'':'Battle recording unavailable for this report';
   }
   host.replaceChildren(root);setModel(initialModel);
-  return {setModel,destroy(){if(destroyed)return;destroyed=true;abort.abort();for(const value of lootNodes.values()){value.tile.destroy();value.abort.abort();}for(const value of minionNodes.values())value.tile.destroy();lootNodes.clear();prisonerNodes.clear();minionNodes.clear();root.remove();}};
+  return {setModel,destroy(){if(destroyed)return;destroyed=true;abort.abort();for(const value of lootNodes.values())value.tile.destroy();for(const value of minionNodes.values())value.tile.destroy();lootNodes.clear();prisonerNodes.clear();minionNodes.clear();root.remove();}};
 }
