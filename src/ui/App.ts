@@ -34,7 +34,7 @@ import type { LaboratoryViewHandle } from './screens/laboratory/LaboratoryViewMo
 import { buildLaboratoryViewModel, handleLaboratoryAction } from './screens/laboratory/LaboratoryAdapter';
 import { mountPayrollView } from './screens/payroll/PayrollView';
 import type { PayrollView } from './screens/payroll/PayrollView';
-import { buildPayrollViewModel, handlePayrollAction } from './screens/payroll/PayrollAdapter';
+import { buildPayrollViewModel, buildUpkeepHint, handlePayrollAction } from './screens/payroll/PayrollAdapter';
 import { mountRaidReportView } from './screens/raid-report/RaidReportView';
 import type { RaidReportViewHandle } from './screens/raid-report/RaidReportViewModel';
 import { buildRaidReportViewModel, handleRaidReportAction } from './screens/raid-report/RaidReportAdapter';
@@ -108,7 +108,7 @@ export class App {
   private readonly trainingHallUi = createTrainingHallUiState();
 
   constructor(root: HTMLElement) {
-    this.shell = mountAppShell(root, { coins: 0, crystals: 0, title: '', windowOpen: false }, action => {
+    this.shell = mountAppShell(root, { coins: 0, upkeepHint: '', crystals: 0, title: '', windowOpen: false }, action => {
       if (action.type === 'back') this.navigate(null);
     });
 
@@ -412,7 +412,13 @@ export class App {
 
   private refresh(saveImmediately = true): void {
     const state = this.engine.state;
-    this.shell.setModel({ coins: state.gold, crystals: state.crystals, title: this.screenTitle(), windowOpen: this.screen !== null });
+    this.shell.setModel({
+      coins: state.gold,
+      upkeepHint: buildUpkeepHint(state),
+      crystals: state.crystals,
+      title: this.screenTitle(),
+      windowOpen: this.screen !== null,
+    });
     this.timeWidget.setModel(this.timeWidgetModel());
     this.roomNav.setModel(this.roomNavModel());
     this.payrollButton.setModel({ visible: state.paydayPending && !this.payrollView });

@@ -54,7 +54,7 @@ export function mountRaidReportView(host:HTMLElement,initialModel:Readonly<RaidR
      </div>
      <footer class="dt-raid__footer"><div class="dt-raid__footer-info"><span class="dt-raid__pause-label"></span></div>
        <button class="dt-raid__battle dt-action dt-action--outline" type="button" aria-haspopup="dialog">Battle Replay</button>
-       <button class="dt-raid__claim" type="button">Claim <span aria-hidden="true">✦</span></button>
+       <button class="dt-raid__claim" type="button"></button>
      </footer>`;
   function required<T extends Element>(q:string):T {const result=root.querySelector<T>(q);if(!result)throw new Error(`RaidReport template missing ${q}`);return result;}
   const get=(s:string)=>required<HTMLElement>(s);

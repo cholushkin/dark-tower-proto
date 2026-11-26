@@ -1,6 +1,7 @@
 /** Display-only shell snapshot. No gameplay or navigation state lives here. */
 export interface AppShellViewModel {
   readonly coins: number;
+  readonly upkeepHint: string;
   readonly crystals: number;
   readonly title: string;
   /** Whether a room/screen window is open; the back button + caption only show while true. */

@@ -68,6 +68,8 @@ export interface RestProcess extends BaseProcess {
 export interface TreatmentProcess extends BaseProcess {
     type: "treatment";
     minionId: string;
+    /** Fatigue gained during treatment starts a new rest interval. Defaults to admission. */
+    restStartHour?: number;
 }
 
 export interface TrainingProcess extends BaseProcess {

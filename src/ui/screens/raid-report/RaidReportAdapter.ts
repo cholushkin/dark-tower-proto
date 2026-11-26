@@ -60,9 +60,7 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
       rank: rankDef ? { label: `${rankDef.name} (R${minion!.rank})`, icon: minion!.rank === 5 ? '👑' : '⌃' } : { label: '', icon: '' },
       portrait: portraitFor(minionId),
       conditions,
-      status: draft.success
-        ? { id: 'returned', label: 'Returned', icon: '✔️' }
-        : { id: 'retreated', label: 'Retreated', icon: '🏃' },
+      status: { id: 'returning', label: 'Returning', icon: '🏃' },
     };
   });
 
@@ -78,8 +76,8 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
   const recoveryLabel = oldWeek
     ? `Week ${raidWeek + 1} report. The village has recovered for the current week (${village.activeDefenderRanks.length}/${mission.defenderRanks.length} defenders).`
     : draft.success
-      ? `Village defeated for this week. Defenders and rewards recover in ${recoveryIn}. Completion stays recorded after Claim.`
-      : `Teleport your minions back before raiding again. Defender losses last until weekly recovery in ${recoveryIn}.`;
+      ? `Village defeated for this week. Defenders and rewards recover in ${recoveryIn}.`
+      : `The village can be raided again once your squad returns. Defender losses last until weekly recovery in ${recoveryIn}.`;
 
   return {
     raidId: missionId,
@@ -107,7 +105,7 @@ export function buildRaidReportViewModel(engine: GameEngine, missionId: string):
     loot,
     prisoners,
     minions,
-    claim: { label: draft.success ? 'Claim Rewards' : 'Teleport Minions Back', canClaim: true },
+    claim: { label: 'Teleport to Tower', canClaim: true },
     canViewBattle: draft.battleReplay !== undefined,
     pauseLabel: 'Time is paused while viewing this report',
   };

@@ -34,6 +34,26 @@ html, body, #app { width: 100%; height: 100%; overflow: hidden; }
 .shell-currency { display: flex; align-items: center; gap: 7px; min-width: 0; font-size: 32px; font-weight: 800; white-space: nowrap; line-height: 1; color: var(--dt-ink); }
 .shell-currency-icon { width: 54px; height: 54px; flex: none; }
 .shell-money-divider { width: 4px; height: 42px; background: var(--dt-border); border-radius: 8px; margin: 0 20px 0 8px; }
+.shell-currency--coins { position: relative; }
+.shell-upkeep-hint {
+  display: none;
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 0;
+  width: max-content;
+  max-width: 480px;
+  padding: 8px 12px;
+  border: 1px solid var(--dt-border);
+  border-radius: 7px;
+  background: var(--dt-surface);
+  color: var(--dt-ink);
+  box-shadow: 0 4px 14px #100817b3;
+  font: 600 20px/1.3 var(--dt-font);
+  white-space: normal;
+  pointer-events: none;
+}
+.shell-currency--coins:hover .shell-upkeep-hint,
+.shell-currency--coins:focus-visible .shell-upkeep-hint { display: block; }
 
 /* Header strip for the active window: back button + decorated caption, aligned above the window
    column (not spanning the left widget column). */

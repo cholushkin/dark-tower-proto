@@ -46,7 +46,9 @@ function validProcess(value: unknown): boolean {
             && (value.defenderRanks === undefined ? optionalCount(value.activeDefenders) : ranks(value.defenderRanks))
             && (value.rewards === undefined || validRewards(value.rewards));
         case 'walkback': return typeof value.missionId === 'string';
-        case 'rest': case 'treatment': return typeof value.minionId === 'string';
+        case 'rest': return typeof value.minionId === 'string';
+        case 'treatment': return typeof value.minionId === 'string' && (value.restStartHour === undefined
+            || (nonnegative(value.restStartHour) && value.restStartHour >= value.startHour && value.restStartHour <= value.endHour));
         case 'training': return typeof value.minionId === 'string' && rank(value.fromRank) && rank(value.toRank);
         case 'sale': return typeof value.stackId === 'string' && typeof value.itemId === 'string'
             && nonnegative(value.count) && nonnegative(value.goldValue);

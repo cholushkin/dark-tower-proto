@@ -9,7 +9,7 @@ is a single priority queue (Infirmary first, per design doc §4.3), not two inde
 
 | File | Role |
 |---|---|
-| `src/systems/recovery.ts` | `assignBeds` (auto-assignment, both rooms), `completeRest`, `completeTreatment`, `markWaitingIfIdle`. |
+| `src/systems/recovery.ts` | `assignBeds` (auto-assignment, both rooms), `completeRest`, `completeTreatmentRestUpTo`, `completeTreatment`, `markWaitingIfIdle`. |
 | `src/systems/lifecycle.ts` | `nightfall` (sets every minion Tired), `checkDepartures` (bed-eviction after `bedEvictionHours` idle-and-conditioned). |
 | `src/model/GameState.ts` | `bedCount()`, `treatmentBedCount()` (`GameState.ts:133-143`); `Minion.waitingSince` (`model/types.ts:16`) drives both the longest-waiting queue and the eviction clock. |
 | `src/data/config.ts` | `constants.restDurationHours`, `treatmentDurationHours`, `bedEvictionHours`. |
@@ -22,6 +22,9 @@ No dedicated "bed" entities exist — a bed is implicit capacity (`bedCount()` /
 (`recovery.ts:11-17`). `Minion.waitingSince` is the one piece of persistent per-minion state this
 system owns; it is set by `markWaitingIfIdle()` whenever a Tired/Injured minion goes idle with no
 bed, and cleared the moment a bed is assigned or recovery completes.
+
+Infirmary rest uses the treatment process's start hour or its `restStartHour` after new nightfall
+fatigue. It requires no additional bed process.
 
 ## Notes for agents
 

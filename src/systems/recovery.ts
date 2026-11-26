@@ -61,6 +61,18 @@ export function completeRest(state: GameState, process: RestProcess, now: number
     markWaitingIfIdle(state, minion, now);
 }
 
+export function completeTreatmentRestUpTo(state: GameState, now: number): void {
+    for (const process of state.processes) {
+        if (process.type !== "treatment") continue;
+        const restEndHour = (process.restStartHour ?? process.startHour) + CONFIG.constants.restDurationHours;
+        if (restEndHour > now + 1e-9) continue;
+        const minion = state.findMinion(process.minionId);
+        if (minion?.activity.type === "treatment" && minion.activity.processId === process.id) {
+            minion.tired = false;
+        }
+    }
+}
+
 export function completeTreatment(state: GameState, process: TreatmentProcess, now: number): void {
     const minion = state.findMinion(process.minionId);
     if (!minion) return;

@@ -78,9 +78,10 @@ A visible **Payday** interaction/widget lets the player reopen **Payroll** while
 
 - Current available **Gold**.
 - Total **weekly salary/upkeep** owed, with current population and optionally a Rank breakdown.
-- Gold balance that would remain after paying.
 - **Hours remaining until Bankruptcy** if the payment is not completed.
 - One prominent **Pay All** button.
+
+The coins in the HUD show total weekly upkeep and its Rank breakdown on hover.
 
 Rules:
 
@@ -182,7 +183,8 @@ Infirmary automatically treats injured minions.
 - Any idle minion with `Injured` is assigned to an available **Treatment Bed**, with **strict priority over Quarters** when both `Injured` and `Tired` are present. Such a minion cannot be assigned to Quarters while still Injured.
 - **Treatment bed queue:** assign available beds to the **longest-waiting idle, eligible** injured minion first.
 - Treatment normally takes **3 in-game days**; its duration is configurable.
-- Completion clears **both** `Injured` and `Tired` and frees the bed.
+- Tired patients rest during treatment. Rest takes **6 in-game hours**, as in Quarters, and clears `Tired` while treatment continues.
+- Treatment completion clears `Injured`, clears any remaining fatigue, and frees the bed.
 - **Extra Treatment Bed:** each completed purchase adds one bed.
 - **Treatment Efficiency:** sequential upgrades reduce treatment duration for newly started treatment.
 
@@ -313,9 +315,7 @@ For example, Rank 1 units with `Health = 5`, `Attack = 5`, and `Defense = 5` dea
 
 Victory reserves the entire launch-week reward stock for Claim. Defeat awards no rewards and leaves the surviving defender ranks eligible for another battle. Surviving defenders begin each new battle at full Health. Defeated defenders rejoin the garrison at weekly recovery.
 
-On Claim, all participating minions return to the tower. Defeated minions need Infirmary treatment and the rest need recovery from fatigue.
-
-Returning minions are reserved until the player **Claims** the Raid Report, including after a failed raid.
+The squad is reserved while walking back to the tower. **Teleport to Tower** in the Raid Report brings the squad back immediately and collects any rewards. Walking home applies the same results after the return timer. All raiders return Tired, and defeated minions also need Infirmary treatment.
 
 ### 5.4 Repeat Attacks and Weekly Village Recovery
 

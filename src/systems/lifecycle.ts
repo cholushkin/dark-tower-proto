@@ -5,6 +5,10 @@ import { markWaitingIfIdle } from "./recovery";
 
 export function nightfall(state: GameState, now: number): void {
     for (const minion of state.minions) {
+        if (!minion.tired && minion.activity.type === "treatment") {
+            const process = state.processes.find(p => p.id === minion.activity.processId);
+            if (process?.type === "treatment") process.restStartHour = now;
+        }
         minion.tired = true;
         markWaitingIfIdle(state, minion, now);
     }

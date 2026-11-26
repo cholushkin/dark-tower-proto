@@ -185,7 +185,7 @@ export function buildWarRoomViewModel(engine: GameEngine, ui: WarRoomUiState): W
       minion: minionViewModel(state, m.id),
       selected,
       selectable: canEditSquad && (idle || selected),
-      unavailableReason: idle || !canEditSquad ? undefined : m.activity.type === 'raid' ? 'Reserved until the raid report is Claimed' : m.injured ? 'Injured — needs Infirmary treatment' : m.tired ? 'Tired — needs rest' : 'Busy with another activity',
+      unavailableReason: idle || !canEditSquad ? undefined : m.activity.type === 'raid' ? 'Unavailable until the squad returns to the tower' : m.injured ? 'Injured — needs Infirmary treatment' : m.tired ? 'Tired — needs rest' : 'Busy with another activity',
     };
   });
 

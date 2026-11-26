@@ -151,7 +151,7 @@ export const WORLD_1A: WorldDef = {
             id: "t2_ravenswood", tier: 2, name: "Ravenswood Keep",
             enabled: true, groupId: "t2-1",
             description: "A fortified keep rises above a forest of black pines. Its wealthy lord keeps treasure behind layers of stone.", weather: "fog",
-            mapPosition: { x: 50.0, y: 24.5 },
+            mapPosition: { x: 43.0, y: 31.0 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2], durationHours: 16,
             rewardGoldRange: [80, 160], rewardCrystalsRange: [3, 8],
             loot: [
@@ -163,9 +163,9 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_thornwall", tier: 2, name: "Thornwall Garrison",
-            enabled: true, groupId: "t2-1",
+            enabled: true, groupId: "t2-2",
             description: "Thorn-covered walls enclose a hardened military camp. Armed patrols guard its weapons and supply wagons.", weather: "storm",
-            mapPosition: { x: 69.98, y: 29.37 },
+            mapPosition: { x: 60.0, y: 34.0 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3], durationHours: 10,
             rewardGoldRange: [100, 200], rewardCrystalsRange: [4, 10],
             loot: [
@@ -177,9 +177,9 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_blackmire", tier: 2, name: "Blackmire Citadel",
-            enabled: true, groupId: "t2-2",
+            enabled: true, groupId: "t2-3",
             description: "A sunken citadel looms over stagnant marshes. Valuable relics wait beyond treacherous causeways and guarded gates.", weather: "clear",
-            mapPosition: { x: 82.34, y: 42.12 },
+            mapPosition: { x: 68.0, y: 42.0 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3], durationHours: 14,
             rewardGoldRange: [150, 300], rewardCrystalsRange: [6, 15],
             loot: [
@@ -191,9 +191,9 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_hollowfen", tier: 2, name: "Hollowfen Marsh",
-            enabled: true, groupId: "t2-2",
+            enabled: true, groupId: "t2-4",
             description: "Reed-covered ruins shelter a remote garrison. Misty channels conceal both forgotten riches and watchful defenders.", weather: "rain",
-            mapPosition: { x: 82.34, y: 57.88 },
+            mapPosition: { x: 67.0, y: 54.0 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 2], durationHours: 9,
             rewardGoldRange: [90, 180], rewardCrystalsRange: [3, 9],
             loot: [
@@ -205,9 +205,9 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_ironspire", tier: 2, name: "Ironspire Bastion",
-            enabled: true, groupId: "t2-3",
+            enabled: true, groupId: "t2-5",
             description: "An iron-clad fortress towers above the mountain pass. Its vaults hold tribute collected from every passing caravan.", weather: "fog",
-            mapPosition: { x: 69.98, y: 70.63 },
+            mapPosition: { x: 51.0, y: 65.0 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3], durationHours: 12,
             rewardGoldRange: [120, 230], rewardCrystalsRange: [5, 12],
             loot: [
@@ -219,9 +219,9 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_wyrmscar", tier: 2, name: "Wyrmscar Hold",
-            enabled: true, groupId: "t2-3",
+            enabled: true, groupId: "t2-6",
             description: "A deep scar splits the ancient hills. Warriors guard the old ruins and the treasures buried beneath them.", weather: "storm",
-            mapPosition: { x: 50.0, y: 75.5 },
+            mapPosition: { x: 34.0, y: 57.0 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3], durationHours: 15,
             rewardGoldRange: [160, 320], rewardCrystalsRange: [7, 16],
             loot: [
@@ -233,9 +233,9 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_stormgate", tier: 2, name: "Stormgate Watch",
-            enabled: true, groupId: "t2-3",
+            enabled: true, groupId: "t2-7",
             description: "A massive gate commands the windswept coast. Its defenders keep rare goods safe behind storm-battered walls.", weather: "clear",
-            mapPosition: { x: 30.02, y: 70.63 },
+            mapPosition: { x: 32.0, y: 40.0 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2], durationHours: 11,
             rewardGoldRange: [95, 190], rewardCrystalsRange: [4, 9],
             loot: [
@@ -247,7 +247,7 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_direwood", tier: 2, name: "Direwood Thicket",
-            enabled: true, groupId: "t2-4",
+            enabled: false, groupId: "t2-4",
             description: "A dark forest surrounds a fortified refuge. Winding tracks hide well-stocked camps beneath the canopy.", weather: "rain",
             mapPosition: { x: 17.66, y: 57.88 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2], durationHours: 13,
@@ -261,7 +261,7 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_cragmoor", tier: 2, name: "Cragmoor Reach",
-            enabled: true, groupId: "t2-4",
+            enabled: false, groupId: "t2-4",
             description: "A stone stronghold clings to jagged highland cliffs. Narrow approaches protect rich stores and captured relics.", weather: "fog",
             mapPosition: { x: 17.66, y: 42.12 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 3], durationHours: 13,
@@ -275,7 +275,7 @@ export const WORLD_1A: WorldDef = {
         },
         {
             id: "t2_saltmere", tier: 2, name: "Saltmere Shoals",
-            enabled: true, groupId: "t2-1",
+            enabled: false, groupId: "t2-1",
             description: "Tidal flats surround a wealthy coastal outpost. Supply barges unload precious cargo along its salt-crusted docks.", weather: "storm",
             mapPosition: { x: 30.02, y: 29.37 },
             defenderRanks: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3], durationHours: 16,

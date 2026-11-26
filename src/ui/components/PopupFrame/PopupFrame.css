@@ -26,7 +26,6 @@
 .dt-art img{display:block;width:100%;height:100%;object-fit:cover;}
 .dt-art--week{height:200px;margin-top:0;}
 .dt-art--week img{object-position:center;}
-.dt-art--payroll{height:135px;}
 .dt-art--game-over{height:174px;}
 .dt-art--victory{height:174px;}
 .dt-art__corner{position:absolute;bottom:10px;color:#f5ca77}.dt-art__corner--left{left:12px}.dt-art__corner--right{right:12px}
@@ -35,9 +34,7 @@
 .dt-feature-title--danger{color:#ffb4c1}.dt-feature-title--victory{color:#ffe09b;}
 .dt-stat{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 15px;border-bottom:1px solid #65405c;}
 .dt-stat:last-child{border-bottom:0}.dt-stat__icon{font-size:23px;line-height:1}.dt-stat__label{font-size:17px}.dt-stat__value{font-size:21px;color:#fff0d2;white-space:nowrap}.dt-stat__value--positive{color:#ffd25a}.dt-stat__value--negative{color:#f58a9d}
-.dt-money-summary,.dt-ending-stats{background:#2e1b37;border:1px solid #734263;border-radius:10px;padding:3px 8px;}
-.dt-money-summary .dt-stat:last-child{background:#4e2b3d;margin:5px 0;border-radius:6px;}
-.dt-section-heading{display:flex;align-items:center;justify-content:center;gap:16px;margin:4px 0;color:#d79e6c}.dt-section-heading h2{font-size:21px;font-family:Georgia,serif;color:#fff0d7;margin:0;}
+.dt-ending-stats{background:#2e1b37;border:1px solid #734263;border-radius:10px;padding:3px 8px;}
 .dt-ending-message{text-align:center;font-size:17px;line-height:1.44;color:#ebd2e5;max-width:650px;margin:0 auto 2px;}
 @media(max-width:720px){
 .dt-popup-caption{padding:12px 48px;min-height:60px;}
@@ -47,7 +44,7 @@
 .dt-popup{padding:54px 15px 16px;max-height:calc(100dvh - 112px);width:100%;border-radius:10px}
 .dt-popup__banner{height:61px;min-width:67%;padding:4px 19px;gap:9px}
 .dt-popup__title{font-size:31px}.dt-popup__x{width:37px;height:37px;font-size:27px;line-height:19px;right:10px;top:11px}
-.dt-art--week{height:170px}.dt-art--payroll{height:120px}.dt-art--game-over,.dt-art--victory{height:142px}
+.dt-art--week{height:170px}.dt-art--game-over,.dt-art--victory{height:142px}
 .dt-popup__footer{margin-top:14px;gap:9px}.dt-action{min-width:0;flex:1 1 130px;font-size:17px;min-height:51px;padding:8px 8px;gap:6px}.dt-action__icon{font-size:18px}
 .dt-stat{gap:7px;padding:7px 6px;grid-template-columns:27px minmax(0,1fr) auto}.dt-stat__icon{font-size:18px}.dt-stat__label{font-size:14px}.dt-stat__value{font-size:16px}
 .dt-ending-message{font-size:15px}

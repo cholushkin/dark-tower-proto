@@ -41,8 +41,9 @@ export function mountAppShell(host: HTMLElement, initial: Readonly<AppShellViewM
       <section class="shell-stage" aria-label="Dark Tower interface">
         <div class="shell-topbar" aria-label="Status bar">
           <div class="shell-money" aria-label="Currencies">
-            <div class="shell-currency" aria-label="Coins">
+            <div class="shell-currency shell-currency--coins" role="group" aria-label="Coins" tabindex="0" aria-describedby="shell-upkeep-hint">
               ${coinIcon}<span data-shell="coins">0</span>
+              <span id="shell-upkeep-hint" class="shell-upkeep-hint" role="tooltip"></span>
             </div>
             <div class="shell-money-divider" aria-hidden="true"></div>
             <div class="shell-currency" aria-label="Crystals">
@@ -70,6 +71,7 @@ export function mountAppShell(host: HTMLElement, initial: Readonly<AppShellViewM
   const windowHeader = host.querySelector<HTMLElement>('.shell-window-header')!;
   const back = host.querySelector<HTMLButtonElement>('[data-shell-action="back"]')!;
   const coinsEl = host.querySelector<HTMLElement>('[data-shell="coins"]')!;
+  const upkeepHint = host.querySelector<HTMLElement>('#shell-upkeep-hint')!;
   const crystalsEl = host.querySelector<HTMLElement>('[data-shell="crystals"]')!;
   const titleEl = host.querySelector<HTMLElement>('[data-shell="title"]')!;
 
@@ -85,6 +87,7 @@ export function mountAppShell(host: HTMLElement, initial: Readonly<AppShellViewM
 
   function setModel(model: Readonly<AppShellViewModel>): void {
     coinsEl.textContent = new Intl.NumberFormat('en-US').format(model.coins);
+    if (upkeepHint.textContent !== model.upkeepHint) upkeepHint.textContent = model.upkeepHint;
     crystalsEl.textContent = new Intl.NumberFormat('en-US').format(model.crystals);
     titleEl.textContent = model.title;
     windowHeader.hidden = !model.windowOpen;

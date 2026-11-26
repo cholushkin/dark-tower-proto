@@ -2,7 +2,7 @@ import { CONFIG } from "../data/config";
 import { GameState } from "../model/GameState";
 import type { Process, RaidProcess, WalkbackProcess } from "../model/types";
 import { realSecondsToGameHours } from "./Clock";
-import { completeRest, completeTreatment, assignBeds } from "../systems/recovery";
+import { completeRest, completeTreatment, completeTreatmentRestUpTo, assignBeds } from "../systems/recovery";
 import { completeTraining, startTraining as sysStartTraining } from "../systems/trainingHall";
 import { cancelNormalSale, completeSale, startNormalSale as sysStartNormalSale, instantSale as sysInstantSale } from "../systems/storehouse";
 import { completeUpgrade, purchaseUpgrade as sysPurchaseUpgrade } from "../systems/upgrades";
@@ -21,6 +21,7 @@ export class GameEngine {
         for (const process of state.processes) {
             if (process.type === "raid") ensureRaidSnapshot(state, process);
         }
+        completeTreatmentRestUpTo(state, state.hours);
         recoverVillages(state);
     }
 
@@ -78,6 +79,7 @@ export class GameEngine {
             this.dispatchCompletion(process, process.endHour);
             this.state.processes = this.state.processes.filter(p => p.id !== process.id);
         }
+        completeTreatmentRestUpTo(this.state, boundary);
     }
 
     private dispatchCompletion(process: Process, now: number): void {
@@ -105,7 +107,7 @@ export class GameEngine {
             missionId: process.missionId,
         };
         this.state.processes.push(walkback);
-        this.state.log(`Raid on ${missionDef(process.missionId).name} has returned. Teleport back or the squad will walk home.`);
+        this.state.log(`Raid on ${missionDef(process.missionId).name} is over. The squad is walking back to the tower.`);
     }
 
     private completeWalkback(process: WalkbackProcess, now: number): void {

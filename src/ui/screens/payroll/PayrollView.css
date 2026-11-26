@@ -1,14 +1,52 @@
-.dt-popup--payroll{max-width:760px}.dt-salary-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
-.dt-salary-card{display:flex;align-items:center;gap:8px;min-width:0;padding:8px;border-radius:9px;border:1px solid #825174;background:#3a2241;min-height:96px;}
-.dt-salary-card__face{width:70px;height:75px;object-fit:cover;border-radius:7px;flex-shrink:0;background:#23152c;}
-.dt-salary-card__emoji{font-size:38px;}.dt-salary-card__details{min-width:0;display:flex;flex-direction:column;gap:3px}
-.dt-salary-card__name{font-family:Georgia,serif;font-size:16px;line-height:1.1;}.dt-salary-card__count{font-size:12px;color:#c8a3c2}.dt-salary-card__value{font-weight:800;color:#ffd777;white-space:nowrap;}
-.dt-payroll-status{margin:0;text-align:center;font-size:14px;color:#ffcb99;}.dt-payroll-status--paid{color:#a5ecac}
-@media(max-width:640px){.dt-salary-groups{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.dt-salary-card{flex-direction:column;min-height:120px;gap:5px;text-align:center;padding:6px 3px}.dt-salary-card__face{width:53px;height:51px}.dt-salary-card__name{font-size:13px}.dt-salary-card__count{font-size:11px}.dt-salary-card__value{font-size:12px}}
-/* Payment is the one primary action, and visually dominates Close. */
-.dt-popup--payroll .dt-popup__footer .dt-action--gold{min-width:288px;font-size:27px;}
-.dt-popup--payroll .dt-popup__footer .dt-action--outline{min-width:164px;}
-@media(max-width:640px){
- .dt-popup--payroll .dt-popup__footer .dt-action--gold{min-width:0;flex:1.45 1 0;font-size:19px;}
- .dt-popup--payroll .dt-popup__footer .dt-action--outline{min-width:0;flex:.75 1 0;}
+.dt-popup.dt-popup--payroll {
+  width: 460px;
+  max-width: 100%;
+  max-height: none;
+  padding: 0;
+  border-color: #9b578c;
+  box-shadow: 0 24px 64px #08060fb8;
+}
+
+.dt-popup--payroll .dt-popup__body {
+  gap: 0;
+  padding: 12px 24px 0;
+}
+
+.dt-popup--payroll .dt-stat {
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 0;
+}
+
+.dt-salary-groups {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 0;
+  padding: 8px 0 0 32px;
+  border-top: 1px solid #65405c;
+  list-style: none;
+}
+
+.dt-salary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(64px, auto);
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16px;
+}
+
+.dt-salary-row__count { color: var(--dt-muted); }
+.dt-salary-row__value { color: var(--dt-ink); text-align: right; }
+
+.dt-popup--payroll .dt-popup__footer {
+  margin: 0;
+  padding: 16px 24px 18px;
+}
+
+.dt-popup--payroll .dt-action {
+  flex: none;
+  min-width: 152px;
+  min-height: 46px;
+  font-size: 22px;
 }

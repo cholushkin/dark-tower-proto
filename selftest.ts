@@ -102,6 +102,7 @@ console.log("\n[3] Raid lifecycle");
     const draft = engine.state.pendingReports.get("t1_millbrook")!;
     check(draft !== undefined, "a raid report draft exists");
     check(draft.success && draft.defendersRemaining === 0, "attackers win when every defender is defeated");
+    check(buildRaidReportViewModel(engine, draft.missionId)?.claim.label === 'Teleport to Tower', 'a victory report offers to teleport the squad to the tower');
     check(squad.every(id => engine.state.findMinion(id)!.activity.type === "raid"), "squad stays reserved until Claim");
 
     const warRoom = createWarRoomUiState();
@@ -477,6 +478,37 @@ console.log("\n[12] Injured+tired minion rests when the infirmary is full");
         "an injured+tired minion takes a free Quarters bed to rest when no treatment bed is free");
 }
 
+console.log("\n[12b] Infirmary rest runs alongside treatment");
+{
+    const engine = new GameEngine();
+    const state = engine.state;
+    const patient = state.minions[0];
+    const restHours = CONFIG.constants.restDurationHours;
+    const secondsPerHour = CONFIG.constants.dayLengthRealSeconds / 24;
+    state.hours = 23;
+    patient.tired = true;
+    patient.injured = true;
+    assignBeds(state, state.hours);
+    const treatment = findProcess(engine, "treatment");
+
+    engine.tick((restHours - 0.5) * secondsPerHour);
+    check(patient.tired && patient.injured, "fatigue and injury are present before the rest timer elapses");
+
+    const restored = deserializeGame(serializeGame(state))!;
+    const resumed = new GameEngine(restored);
+    const restoredPatient = restored.findMinion(patient.id)!;
+    resumed.tick(0.5 * secondsPerHour);
+    check(!restoredPatient.tired && restoredPatient.injured && restoredPatient.activity.processId === treatment.id,
+        "Infirmary clears fatigue in the Quarters rest time while treatment continues across a save");
+    check(!restored.processes.some(process => process.type === 'rest' && process.minionId === patient.id),
+        "Infirmary rest uses no Quarters bed");
+
+    resumed.tick((48 - restored.hours) * secondsPerHour);
+    check(restoredPatient.tired, "a later nightfall can make a patient tired again");
+    resumed.tick(restHours * secondsPerHour);
+    check(!restoredPatient.tired && restoredPatient.injured, "new fatigue also clears on the Quarters rest timer");
+}
+
 // --- 13. Prisoner guarantee: every mission's prisoner-count range has a minimum of at least 1 ---
 console.log("\n[13] Prisoner guarantee");
 {
@@ -711,7 +743,7 @@ console.log("\n[21] Failed raids, persistent damage, and recovery");
     engine.forceCompleteProcess(findProcess(engine, 'raid').id);
     const report = state.pendingReports.get(id)!;
     check(!report.success && report.defenderLosses === 1 && report.defendersRemaining === 1, 'defenders win when attackers fall and a defender survives');
-    check(buildRaidReportViewModel(engine, id)?.claim.label === 'Teleport Minions Back', 'a defeat report offers to teleport the minions back');
+    check(buildRaidReportViewModel(engine, id)?.claim.label === 'Teleport to Tower', 'a defeat report offers to teleport the squad to the tower');
     check(state.villageState(id).activeDefenderRanks.join(',') === '4', 'only the surviving defender rank persists in village state');
     check(JSON.stringify(state.villageState(id).rewards) === stock, 'failed raids do not consume or reroll weekly stock');
     check(report.goldFound === 0 && report.crystalsFound === 0 && report.lootCopies.length === 0 && report.prisonersFound.length === 0, 'defeat reserves no village rewards');
